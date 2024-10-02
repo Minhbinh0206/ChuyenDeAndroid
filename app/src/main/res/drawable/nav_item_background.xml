@@ -1,0 +1,19 @@
+<!-- res/drawable/nav_item_background.xml -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#EEEEEE"/> <!-- Màu nền khi nhấn -->
+            <corners android:radius="8dp"/> <!-- Bo góc -->
+            <padding android:top="0dp" android:bottom="5dp" />
+            <stroke android:width="1dp" android:color="#000"/> <!-- Viền -->
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/white"/> <!-- Nền trong suốt cho trạng thái bình thường -->
+            <corners android:radius="8dp"/> <!-- Bo góc -->
+            <padding android:top="0dp" android:bottom="5dp" />
+            <stroke android:width="1dp" android:color="#B0BEC5"/> <!-- Viền -->
+        </shape>
+    </item>
+</selector>
