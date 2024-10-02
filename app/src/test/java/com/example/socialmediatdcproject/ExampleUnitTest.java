@@ -1,4 +1,4 @@
-package com.example.chuyendeandroid;
+package com.example.socialmediatdcproject;
 
 import org.junit.Test;
 

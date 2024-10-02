@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ChuyenDeAndroid"
+rootProject.name = "SocialMediaTDCProject"
 include(":app")
