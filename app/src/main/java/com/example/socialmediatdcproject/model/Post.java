@@ -78,12 +78,12 @@ public class Post implements Serializable {
     }
 
     public Post() {
-        this.postId = 0;
-        this.userId = 0;
+        this.postId = -1;
+        this.userId = -1;
         this.title = "";
         this.content = "";
         this.postImage = "";
-        this.status = 0;
-        this.isPublic = 0;
+        this.status = -1;
+        this.isPublic = -1;
     }
 }

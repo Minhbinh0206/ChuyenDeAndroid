@@ -60,8 +60,8 @@ public class Lecturer extends User {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
         this.lecturerNumber = "";
         this.birthday = "";
-        this.departmentId = 0;
-        this.majorId = 0;
+        this.departmentId = -1;
+        this.majorId = -1;
         this.description = "";
     }
 }
