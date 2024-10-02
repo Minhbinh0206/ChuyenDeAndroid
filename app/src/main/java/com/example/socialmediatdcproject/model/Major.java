@@ -26,7 +26,7 @@ public class Major {
     }
 
     public Major() {
-        this.majorId = 0;
+        this.majorId = -1;
         this.majorName = "";
     }
 }

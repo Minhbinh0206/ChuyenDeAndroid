@@ -7,6 +7,15 @@ import java.util.ArrayList;
 public class MajorDatabase {
     ArrayList<Major> majorsDtb = new ArrayList<>();
 
+    public Major getMajorById(int majorId, ArrayList<Major> majorArrayList) {
+        for (Major major : majorArrayList) {
+            if (major.getMajorId() == majorId) {
+                return major; // Trả về đối tượng Major nếu tìm thấy
+            }
+        }
+        return null; // Trả về null nếu không tìm thấy
+    }
+
     public ArrayList<Major> dataMajors(){
         // Ngành
         Major m1 = new Major();
