@@ -36,8 +36,8 @@ public class Group {
     }
 
     public Group() {
-        this.groupId = 0;
+        this.groupId = -1;
         this.groupName = "";
-        this.adminUserId = 0;
+        this.adminUserId = -1;
     }
 }

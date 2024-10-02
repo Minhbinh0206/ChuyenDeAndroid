@@ -111,11 +111,11 @@ public class User {
 
     public User() {
         this.email = "";
-        this.userId = 0;
+        this.userId = -1;
         this.password = "";
         this.fullName = "";
         this.avatar = "";
-        this.roleId = 0;
+        this.roleId = -1;
         this.phoneNumber = "";
     }
 }

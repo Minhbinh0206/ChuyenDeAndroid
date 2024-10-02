@@ -1,9 +1,12 @@
 package com.example.socialmediatdcproject.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Department {
     private int departmentId;
     private String departmentName;
-    private int majorId;
+    private List<Integer> majorId;
 
     public int getDepartmentId() {
         return departmentId;
@@ -21,23 +24,27 @@ public class Department {
         this.departmentName = departmentName;
     }
 
-    public int getMajorId() {
+    public List<Integer> getMajorId() {
         return majorId;
     }
 
-    public void setMajorId(int majorId) {
-        this.majorId = majorId;
+    public void setMajorId(int... majorIds) {
+        for (int id : majorIds) {
+            this.majorId.add(id);
+        }
     }
 
-    public Department(int departmentId, String departmentName, int majorId) {
+    // Constructor mặc định
+    public Department() {
+        this.departmentId = -1;
+        this.departmentName = "";
+        this.majorId = new ArrayList<>(); // Khởi tạo danh sách trong constructor
+    }
+
+    // Constructor với các tham số
+    public Department(int departmentId, String departmentName, List<Integer> majorId) {
         this.departmentId = departmentId;
         this.departmentName = departmentName;
-        this.majorId = majorId;
-    }
-
-    public Department() {
-        this.departmentId = 0;
-        this.departmentName = "";
-        this.majorId = 0;
+        this.majorId = majorId != null ? majorId : new ArrayList<>(); // Khởi tạo danh sách, nếu không có thì tạo mới
     }
 }
