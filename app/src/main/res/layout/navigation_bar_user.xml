@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/navigation_bar_user"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:background="@color/defaultBlue"
+    android:orientation="horizontal">
+
+    <ImageButton
+        android:id="@+id/icon_navigation"
+        android:layout_width="20dp"
+        android:layout_height="15dp"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="30dp"
+        android:background="@android:color/transparent"
+        android:scaleType="fitXY"
+        android:src="@drawable/icon_navigation" />
+
+    <ImageButton
+        android:id="@+id/icon_notify"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_gravity="center"
+        android:layout_marginLeft="200dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/icon_notify" />
+
+    <ImageButton
+        android:id="@+id/nav_avatar_user"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:layout_marginLeft="30dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/avatar_user" />
+
+</LinearLayout>
