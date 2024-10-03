@@ -1,5 +1,7 @@
 package com.example.socialmediatdcproject.database;
 
+import android.util.Log;
+
 import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Lecturer;
@@ -13,6 +15,8 @@ public class UserDatabase {
     protected ArrayList<Student> studentsDtb = new ArrayList<>();
     protected ArrayList<Lecturer> lecturersDtb = new ArrayList<>();
     protected ArrayList<AdminDepartment> adminDepartmentsDtb = new ArrayList<>();
+
+
 
     // Role giả dữ liệu hiện tại
     // - 0: Sinh viên
@@ -273,7 +277,7 @@ public class UserDatabase {
         u23.setPhoneNumber("0123456788");
         u23.setAvatar("hs");
         u23.setRoleId(User.ROLE_STUDENT);
-        usersDtb.add(u2);
+        usersDtb.add(u23);
 
         User u24 = new User();
         u24.setUserId(23);
@@ -354,6 +358,16 @@ public class UserDatabase {
         u31.setAvatar("hs");
         u31.setRoleId(User.ROLE_LECTURER);
         usersDtb.add(u31);
+
+        User u32 = new User();
+        u32.setUserId(31);
+        u32.setEmail("nguyenquangb@gmail.com");
+        u32.setPassword("111111");
+        u32.setFullName("Nguyễn Quang Bình");
+        u32.setPhoneNumber("0123456780");
+        u32.setAvatar("hs");
+        u32.setRoleId(User.ROLE_STUDENT);
+        usersDtb.add(u32);
 
         return usersDtb;
     }
@@ -448,5 +462,24 @@ public class UserDatabase {
 
         return adminDepartmentsDtb;
     }
+
+    // Thêm người dùng
+    public void addUser(User user) {
+        usersDtb.add(user);
+    }
+
+
+    // Tìm kiếm người dùng theo Email
+    public User getUserByEmail(String email) {
+//        Log.d("UserDatabase", "Checking email: " + email); // Debug log
+        for (User user : usersDtb) {
+            if (user.getEmail().equals(email)) {
+                Log.d("UserDatabase", "Checking email: " + email);
+                return user;
+            }
+        }
+        return null;
+    }
+
 
 }
