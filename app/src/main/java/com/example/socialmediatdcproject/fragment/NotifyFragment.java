@@ -11,11 +11,12 @@ import androidx.fragment.app.Fragment;
 
 import com.example.socialmediatdcproject.R; // Import đúng package chứa R
 
-public class BusinessFragment extends Fragment {
+public class NotifyFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate layout for this fragment
-        return inflater.inflate(R.layout.fragment_business_first, container, false);
+        setRetainInstance(true);
+        return inflater.inflate(R.layout.fragment_get_notify_first, container, false);
     }
 }

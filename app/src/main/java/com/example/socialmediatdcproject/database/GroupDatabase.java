@@ -1,19 +1,44 @@
 package com.example.socialmediatdcproject.database;
 
+import android.util.Log;
+
 import com.example.socialmediatdcproject.model.Group;
+import com.example.socialmediatdcproject.model.Lecturer;
+import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class GroupDatabase {
+
     ArrayList<Group> groupsDtb = new ArrayList<>();
+    UserDatabase userDatabase = new UserDatabase();
+
+    // Hàm tìm group bằng userId
+    public Group getGroupById(int id, ArrayList<Group> groupArrayList) {
+        for (Group group : groupArrayList) {
+            if (group.getGroupId() == id) {
+                return group;
+            }
+        }
+        return null;
+    }
 
     public ArrayList<Group> dataGroups(){
         // Phòng Đào tạo
+        ArrayList<User> groupUsersWithoutBussiness = new ArrayList<>();
         Group g1 = new Group();
         g1.setGroupId(User.ID_ADMIN_PHONGDAOTAO);
         g1.setGroupName("Phòng Đào tạo");
         g1.setAdminUserId(User.ID_ADMIN_PHONGDAOTAO);
+        for (User u: userDatabase.dataUser()) {
+            if (u.getUserId() != User.ID_ADMIN_BUSSINESS_FPT && u.getUserId() != User.ID_ADMIN_BUSSINESS_APPLE && u.getUserId() != User.ID_ADMIN_BUSSINESS_GRAB && u.getUserId() != User.ID_ADMIN_BUSSINESS_EVN && u.getUserId() != User.ID_ADMIN_BUSSINESS_MBBANK && u.getUserId() != User.ID_ADMIN_BUSSINESS_TITAN && u.getUserId() != User.ID_ADMIN_BUSSINESS_VINFAST) {
+                groupUsersWithoutBussiness.add(u);
+            }
+        }
+        g1.setGroupMember(groupUsersWithoutBussiness);
         groupsDtb.add(g1);
 
         // Đoàn Thanh niên
@@ -24,10 +49,25 @@ public class GroupDatabase {
         groupsDtb.add(g2);
 
         // Khoa Công nghệ Thông tin
+        List<User> groupStudentsAndLecturerOfDepartment = new ArrayList<>();
         Group g3 = new Group();
         g3.setGroupId(User.ID_ADMIN_DEPARTMENT_CNTT);
         g3.setGroupName("Khoa Công nghệ Thông tin");
         g3.setAdminUserId(User.ID_ADMIN_DEPARTMENT_CNTT);
+        // Tìm tất cả sinh viên có mã khoa là khoa CNTT
+        for (Student s: userDatabase.dataStudent()) {
+            if (s.getDepartmentId() == User.ID_ADMIN_DEPARTMENT_CNTT) {
+                groupStudentsAndLecturerOfDepartment.add(s);
+            }
+        }
+
+        // Tìm tất cả giảng viên có mã khoa là khoa CNTT
+        for (Lecturer l: userDatabase.dataLecturer()) {
+            if (l.getDepartmentId() == User.ID_ADMIN_DEPARTMENT_CNTT) {
+                groupStudentsAndLecturerOfDepartment.add(l);
+            }
+        }
+        g3.setGroupMember(groupStudentsAndLecturerOfDepartment);
         groupsDtb.add(g3);
 
         // Khoa Công nghệ Cơ khí - Ô tô

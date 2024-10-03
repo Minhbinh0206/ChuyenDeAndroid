@@ -1,18 +1,39 @@
 package com.example.socialmediatdcproject.database;
 
 import com.example.socialmediatdcproject.model.AdminDepartment;
+import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class UserDatabase {
     protected ArrayList<User> usersDtb = new ArrayList<>();
     protected ArrayList<Student> studentsDtb = new ArrayList<>();
     protected ArrayList<Lecturer> lecturersDtb = new ArrayList<>();
     protected ArrayList<AdminDepartment> adminDepartmentsDtb = new ArrayList<>();
+
+    // Hàm tìm student bằng userId
+    public Student getStudentById(int id, List<Student> studentArrayList) {
+        for (Student student : studentArrayList) {
+            if (student.getUserId() == id) {
+                return student;
+            }
+        }
+        return null;
+    }
+    // Hàm tìm giảng viên bằng userId
+    public Lecturer getLecturerById(int id, List<Lecturer> lecturerArrayList) {
+        for (Lecturer lecturer : lecturerArrayList) {
+            if (lecturer.getUserId() == id) {
+                return lecturer;
+            }
+        }
+        return null;
+    }
 
     // Role giả dữ liệu hiện tại
     // - 0: Sinh viên
@@ -325,6 +346,7 @@ public class UserDatabase {
         u28.setRoleId(User.ROLE_STUDENT);
         usersDtb.add(u28);
 
+        // Lecturer
         User u29 = new User();
         u29.setUserId(28);
         u29.setEmail("lethib@gmail.com");
@@ -362,15 +384,79 @@ public class UserDatabase {
     // Hiện tại đang cho sinh viên giống nhau hết
     public ArrayList<Student> dataStudent() {
         for (User u : usersDtb) {
-            if (u.getRoleId() == 1) {
-                Student student = new Student(u.getUserId(), u.getEmail(), u.getPassword(), u.getFullName(), u.getAvatar(), u.getPhoneNumber(), u.getRoleId());
-                student.setStudentNumber("22211TT00" + (u.getUserId() + 1));
-                student.setBirthday("01/01/200" + (u.getUserId() + 1));
-                student.setClassId(1);
-                student.setDepartmentId(1);
-                student.setMajorId(1);
-                student.setDescription("Student " + (u.getUserId() + 1));
-                studentsDtb.add(student);
+            switch (u.getUserId()) {
+                case 21:
+                    // Nguyễn Văn A
+                    Student s1 = new Student(u.getUserId(), u.getEmail(), u.getPassword(), u.getFullName(), u.getAvatar(), u.getPhoneNumber(), u.getRoleId());
+                    s1.setStudentNumber("22211TT0001");
+                    s1.setBirthday("22/11/2001");
+                    s1.setDescription("Học sinh năm nhất");
+                    s1.setDepartmentId(User.ID_ADMIN_DEPARTMENT_CNTT);
+                    s1.setMajorId(6);
+                    studentsDtb.add(s1);
+                    break;
+                case 22:
+                    // Trần Thị C
+                    Student s2 = new Student(u.getUserId(), u.getEmail(), u.getPassword(), u.getFullName(), u.getAvatar(), u.getPhoneNumber(), u.getRoleId());
+                    s2.setStudentNumber("22211KD0002");
+                    s2.setBirthday("15/10/2001");
+                    s2.setDescription("Học sinh năm nhất");
+                    s2.setDepartmentId(User.ID_ADMIN_DEPARTMENT_QTKD);
+                    s2.setMajorId(6);
+                    studentsDtb.add(s2);
+                    break;
+                case 23:
+                    // Phạm Văn D
+                    Student s3 = new Student(u.getUserId(), u.getEmail(), u.getPassword(), u.getFullName(), u.getAvatar(), u.getPhoneNumber(), u.getRoleId());
+                    s3.setStudentNumber("22211DH0003");
+                    s3.setBirthday("10/12/2001");
+                    s3.setDescription("Học sinh năm nhất");
+                    s3.setDepartmentId(User.ID_ADMIN_DEPARTMENT_CNTT);
+                    s3.setMajorId(6);
+                    studentsDtb.add(s3);
+                    break;
+                case 24:
+                    // Nguyễn Thị E
+                    Student s4 = new Student(u.getUserId(), u.getEmail(), u.getPassword(), u.getFullName(), u.getAvatar(), u.getPhoneNumber(), u.getRoleId());
+                    s4.setStudentNumber("22211CK0004");
+                    s4.setBirthday("05/08/2001");
+                    s4.setDescription("Học sinh năm nhất");
+                    s4.setDepartmentId(User.ID_ADMIN_DEPARTMENT_CKOT);
+                    s4.setMajorId(6);
+                    studentsDtb.add(s4);
+                    break;
+                case 25:
+                    // Bùi Quang F
+                    Student s5 = new Student(u.getUserId(), u.getEmail(), u.getPassword(), u.getFullName(), u.getAvatar(), u.getPhoneNumber(), u.getRoleId());
+                    s5.setStudentNumber("22211OT0005");
+                    s5.setBirthday("12/06/2001");
+                    s5.setDescription("Học sinh năm nhất");
+                    s5.setDepartmentId(User.ID_ADMIN_DEPARTMENT_CKOT);
+                    s5.setMajorId(6);
+                    studentsDtb.add(s5);
+                    break;
+                case 26:
+                    // Đoàn Thị G
+                    Student s6 = new Student(u.getUserId(), u.getEmail(), u.getPassword(), u.getFullName(), u.getAvatar(), u.getPhoneNumber(), u.getRoleId());
+                    s6.setStudentNumber("22211CK0006");
+                    s6.setBirthday("20/09/2001");
+                    s6.setDescription("Học sinh năm nhất");
+                    s6.setDepartmentId(User.ID_ADMIN_DEPARTMENT_CKOT);
+                    s6.setMajorId(6);
+                    studentsDtb.add(s6);
+                    break;
+                case 27:
+                    // Lê Hoàng H
+                    Student s7 = new Student(u.getUserId(), u.getEmail(), u.getPassword(), u.getFullName(), u.getAvatar(), u.getPhoneNumber(), u.getRoleId());
+                    s7.setStudentNumber("22211TT0007");
+                    s7.setBirthday("30/11/2001");
+                    s7.setDescription("Học sinh năm nhất");
+                    s7.setDepartmentId(User.ID_ADMIN_DEPARTMENT_CNTT);
+                    s7.setMajorId(6);
+                    studentsDtb.add(s7);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -381,16 +467,36 @@ public class UserDatabase {
     // Hiện tại đang cho giảng viên giống nhau hết
     public ArrayList<Lecturer> dataLecturer() {
         for (User u : usersDtb) {
-            if (u.getRoleId() == 2) {
-                Lecturer lecturer = new Lecturer(u.getUserId(), u.getEmail(), u.getPassword(), u.getFullName(), u.getAvatar(), u.getPhoneNumber(), u.getRoleId());
-                lecturer.setLecturerNumber("L200" + (u.getUserId() + 1));
-                lecturer.setBirthday("15/10/197" + (u.getUserId() + 1));
-                lecturer.setDepartmentId(1);
-                lecturer.setDescription("Lecturer " + (u.getUserId() + 1));
-                lecturersDtb.add(lecturer);
+            switch (u.getUserId()) {
+                case 28:
+                    // Lê Thị B
+                    Lecturer l1 = new Lecturer(u.getUserId(), u.getEmail(), u.getPassword(), u.getFullName(), u.getAvatar(), u.getPhoneNumber(), u.getRoleId());
+                    l1.setLecturerNumber("33311LT0001");
+                    l1.setBirthday("12/05/1980");
+                    l1.setDescription("Giảng viên chính");
+                    l1.setDepartmentId(User.ID_ADMIN_DEPARTMENT_CNTT);
+                    lecturersDtb.add(l1);
+                    break;
+                case 29:
+                    // Trần Văn C
+                    Lecturer l2 = new Lecturer(u.getUserId(), u.getEmail(), u.getPassword(), u.getFullName(), u.getAvatar(), u.getPhoneNumber(), u.getRoleId());
+                    l2.setLecturerNumber("33311LT0002");
+                    l2.setBirthday("08/03/1978");
+                    l2.setDescription("Giảng viên thỉnh giảng");
+                    l2.setDepartmentId(User.ID_ADMIN_DEPARTMENT_QTKD);
+                    lecturersDtb.add(l2);
+                    break;
+                case 30:
+                    // Nguyễn Quang D
+                    Lecturer l3 = new Lecturer(u.getUserId(), u.getEmail(), u.getPassword(), u.getFullName(), u.getAvatar(), u.getPhoneNumber(), u.getRoleId());
+                    l3.setLecturerNumber("33311LT0003");
+                    l3.setBirthday("25/10/1975");
+                    l3.setDescription("Giảng viên cơ hữu");
+                    l3.setDepartmentId(User.ID_ADMIN_DEPARTMENT_CNTT);
+                    lecturersDtb.add(l3);
+                    break;
             }
         }
-
         return lecturersDtb;
     }
 
