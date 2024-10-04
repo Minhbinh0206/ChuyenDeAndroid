@@ -22,13 +22,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
+import com.example.socialmediatdcproject.database.NotifyDatabase;
 import com.example.socialmediatdcproject.database.PostDatabase;
 import com.example.socialmediatdcproject.fragment.BusinessFragment;
 import com.example.socialmediatdcproject.fragment.DepartmentFragment;
 import com.example.socialmediatdcproject.fragment.GroupFragment;
 import com.example.socialmediatdcproject.fragment.HomeFragment;
+import com.example.socialmediatdcproject.fragment.NotifyFragment;
 import com.example.socialmediatdcproject.fragment.YouthFragment;
+import com.example.socialmediatdcproject.model.Notify;
 import com.example.socialmediatdcproject.model.Post;
 import com.google.android.material.navigation.NavigationView;
 
@@ -65,6 +69,30 @@ public class SharedActivity extends AppCompatActivity {
             }
         });
 
+        // Xử lý sự kiện nhấn vào icon thông báo
+        ImageButton notifyButton = findViewById(R.id.icon_notify);
+        notifyButton.setOnClickListener(v -> {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            Fragment fragment = new NotifyFragment();
+
+            // Thay thế nội dung của FrameLayout bằng Fragment tương ứng
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.first_content_fragment, fragment);
+
+            // Hiển thị tất cả thông báo
+            NotifyDatabase notifyDatabase = new NotifyDatabase();
+            ArrayList<Notify> notifies = notifyDatabase.dataNotifies();
+
+            // Setup RecyclerView với Adapter
+            RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
+            NotifyAdapter notifyAdapter = new NotifyAdapter(notifies);
+            recyclerView.setAdapter(notifyAdapter);
+
+            // Sử dụng LayoutManager cho RecyclerView
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            fragmentTransaction.commit();
+        });
+
         // Thêm item vào NavigationView
         addNavigationItems(navigationView);
 
@@ -97,13 +125,6 @@ public class SharedActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
     }
 
-
-    private void changeFrameLayoutHeight(int height) {
-        ViewGroup.LayoutParams params = firstContentFragment.getLayoutParams();
-        params.height = height; // Đặt chiều cao mới
-        firstContentFragment.setLayoutParams(params); // Cập nhật LayoutParams
-    }
-
     private void addNavigationItems(NavigationView navigationView) {
         LinearLayout navLayout = (LinearLayout) navigationView.getHeaderView(0).findViewById(R.id.nav_container);
 
@@ -130,37 +151,29 @@ public class SharedActivity extends AppCompatActivity {
                     case 0:
                         // Home
                         fragment = new HomeFragment();
-                        // Đặt chiều cao nếu là trang chủ thì là 100
-                        changeFrameLayoutHeight(200);
                         break;
                     case 1:
                         // Phòng đào tạo
                         fragment = new DepartmentFragment();
-                        changeFrameLayoutHeight(400);
                         break;
                     case 2:
                         // Khoa
                         fragment = new DepartmentFragment();
-                        changeFrameLayoutHeight(750);
                         break;
                     case 3:
                         // Doanh nghiệp
                         fragment = new BusinessFragment();
-                        changeFrameLayoutHeight(400);
                         break;
                     case 4:
                         // Đoàn thanh niên
                         fragment = new YouthFragment();
-                        changeFrameLayoutHeight(800);
                         break;
                     case 5:
                         // Group
                         fragment = new GroupFragment();
-                        changeFrameLayoutHeight(400);
                         break;
                     default:
                         fragment = new HomeFragment();
-                        changeFrameLayoutHeight(200);
                         break;
                 }
 

@@ -16,6 +16,6 @@ public class YouthFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate layout for this fragment
-        return inflater.inflate(R.layout.fragment_youth, container, false);
+        return inflater.inflate(R.layout.fragment_youth_first, container, false);
     }
 }

@@ -18,7 +18,7 @@ public class MemberFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_member, container, false);
+        View view = inflater.inflate(R.layout.item_member, container, false);
 
         // Lấy dữ liệu từ arguments
         String postText = getArguments() != null ? getArguments().getString(ARG_POST_TEXT) : "No Post";
