@@ -17,24 +17,24 @@ public class UserDatabase {
     protected ArrayList<AdminDepartment> adminDepartmentsDtb = new ArrayList<>();
 
     // Hàm tìm student bằng userId
-    public Student getStudentById(int id, List<Student> studentArrayList) {
-        for (Student student : studentArrayList) {
-            if (student.getUserId() == id) {
-                return student;
-            }
-        }
-        return null;
-    }
-    // Hàm tìm giảng viên bằng userId
-    public Lecturer getLecturerById(int id, List<Lecturer> lecturerArrayList) {
-        for (Lecturer lecturer : lecturerArrayList) {
-            if (lecturer.getUserId() == id) {
-                return lecturer;
+    public Student getStudentById(int id) {
+        for (User user : usersDtb) {
+            if (user.getUserId() == id && user instanceof Student) {
+                return (Student) user;
             }
         }
         return null;
     }
 
+    // Hàm tìm giảng viên bằng userId
+    public Lecturer getLecturerById(int id) {
+        for (User user : usersDtb) {
+            if (user.getUserId() == id && user instanceof Lecturer) {
+                return (Lecturer) user;
+            }
+        }
+        return null;
+    }
     // Role giả dữ liệu hiện tại
     // - 0: Sinh viên
     // - 1: Giảng viên - Nhân viên

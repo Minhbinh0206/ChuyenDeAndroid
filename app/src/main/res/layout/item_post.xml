@@ -44,6 +44,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/parent_avatar_name" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="10dp"
+        android:background="@drawable/line_black_split"
+        app:layout_constraintBottom_toTopOf="@+id/parent_button_interact"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/post_content" />
+
     <LinearLayout
         android:id="@+id/parent_button_interact"
         android:layout_width="match_parent"
@@ -51,27 +61,27 @@
         android:orientation="horizontal"
         android:paddingHorizontal="70dp"
         android:layout_margin="10dp"
-        android:background="#D9D9D9"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/post_content">
 
         <LinearLayout
+            android:id="@+id/button_like"
             android:layout_width="70dp"
-            android:layout_height="30dp"
+            android:layout_height="wrap_content"
             android:layout_marginRight="70dp"
+            android:padding="2dp"
             android:background="@drawable/button_custom"
             android:gravity="center"
             android:orientation="horizontal">
 
             <ImageButton
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:scaleX="0.7"
-                android:scaleY="0.7"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:scaleX="0.5"
+                android:scaleY="0.5"
                 android:layout_marginHorizontal="5dp"
-                android:background="@drawable/button_custom"
                 android:src="@drawable/icon_tym" />
 
             <TextView
@@ -79,24 +89,25 @@
                 android:layout_height="wrap_content"
                 android:paddingRight="10dp"
                 android:text="30"
-                android:textSize="15dp" />
+                android:textSize="13dp" />
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/button_comment"
             android:layout_width="70dp"
-            android:layout_height="30dp"
+            android:layout_height="wrap_content"
             android:layout_marginRight="50dp"
+            android:padding="2dp"
             android:background="@drawable/button_custom"
             android:gravity="center"
             android:orientation="horizontal">
 
             <ImageButton
                 android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:scaleX="0.7"
-                android:scaleY="0.7"
+                android:layout_height="25dp"
+                android:scaleX="0.5"
+                android:scaleY="0.5"
                 android:layout_marginHorizontal="5dp"
-                android:background="@drawable/button_custom"
                 android:src="@drawable/icon_comment" />
 
             <TextView
@@ -104,7 +115,7 @@
                 android:layout_height="wrap_content"
                 android:paddingRight="10dp"
                 android:text="30"
-                android:textSize="15dp" />
+                android:textSize="13dp" />
         </LinearLayout>
 
     </LinearLayout>

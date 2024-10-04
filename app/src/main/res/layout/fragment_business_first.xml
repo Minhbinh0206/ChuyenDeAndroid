@@ -41,7 +41,7 @@
             android:paddingHorizontal="5dp">
 
             <Button
-                android:id="@+id/button_department_post"
+                android:id="@+id/button_bussiness_post"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:backgroundTint="@color/white"
@@ -60,7 +60,7 @@
             android:paddingHorizontal="5dp">
 
             <Button
-                android:id="@+id/button_department_member"
+                android:id="@+id/button_bussiness_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:backgroundTint="@color/white"
