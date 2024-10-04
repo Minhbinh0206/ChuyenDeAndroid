@@ -70,9 +70,9 @@ public class Student extends User {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
         this.studentNumber = "";
         this.birthday = "";
-        this.departmentId = 0;
-        this.majorId = 0;
-        this.classId = 0;
+        this.departmentId = -1;
+        this.majorId = -1;
+        this.classId = -1;
         this.description = "";
     }
 }

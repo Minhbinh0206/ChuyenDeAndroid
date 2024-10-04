@@ -1,17 +1,13 @@
 package com.example.socialmediatdcproject.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Group {
     private int groupId;
     private String groupName;
     private int adminUserId;
-
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public void setGroupName(String groupName) {
-        groupName = groupName;
-    }
+    private List<User> groupMember;
 
     public int getGroupId() {
         return groupId;
@@ -19,6 +15,14 @@ public class Group {
 
     public void setGroupId(int groupId) {
         this.groupId = groupId;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     public int getAdminUserId() {
@@ -29,15 +33,30 @@ public class Group {
         this.adminUserId = adminUserId;
     }
 
-    public Group(int groupId, String groupName, int adminUserId) {
+    public List<User> getGroupMember() {
+        return groupMember;
+    }
+
+    public void setGroupMember(List<User> groupMembers) {
+        if (this.groupMember == null) {
+            this.groupMember = new ArrayList<>();
+        }
+        this.groupMember.addAll(groupMembers);  // Thêm tất cả các thành viên vào danh sách
+    }
+
+
+
+    public Group(int groupId, String groupName, int adminUserId, List<User> groupMember) {
         this.groupId = groupId;
         this.groupName = groupName;
         this.adminUserId = adminUserId;
+        this.groupMember = groupMember;
     }
 
     public Group() {
-        this.groupId = 0;
+        this.groupId = -1;
         this.groupName = "";
-        this.adminUserId = 0;
+        this.adminUserId = -1;
+        this.groupMember = new ArrayList<>();
     }
 }

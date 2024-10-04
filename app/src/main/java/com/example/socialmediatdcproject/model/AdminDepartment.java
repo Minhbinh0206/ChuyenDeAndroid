@@ -18,6 +18,6 @@ public class AdminDepartment extends User{
 
     public AdminDepartment(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId) {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
-        this.departmentId = 0;
+        this.departmentId = -1;
     }
 }
