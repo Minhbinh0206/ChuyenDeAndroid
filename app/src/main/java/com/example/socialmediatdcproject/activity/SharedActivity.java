@@ -3,7 +3,6 @@ package com.example.socialmediatdcproject.activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -26,7 +25,7 @@ import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
 import com.example.socialmediatdcproject.database.NotifyDatabase;
 import com.example.socialmediatdcproject.database.PostDatabase;
-import com.example.socialmediatdcproject.fragment.BusinessFragment;
+import com.example.socialmediatdcproject.fragment.BussinessFragment;
 import com.example.socialmediatdcproject.fragment.DepartmentFragment;
 import com.example.socialmediatdcproject.fragment.GroupFragment;
 import com.example.socialmediatdcproject.fragment.HomeFragment;
@@ -151,6 +150,19 @@ public class SharedActivity extends AppCompatActivity {
                     case 0:
                         // Home
                         fragment = new HomeFragment();
+
+                        // Giả dữ liệu các post
+                        PostDatabase postDatabase = new PostDatabase();
+                        ArrayList<Post> posts = postDatabase.dataPost();
+
+                        // Setup RecyclerView với Adapter
+                        RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
+                        PostAdapter postAdapter = new PostAdapter(posts);
+                        recyclerView.setAdapter(postAdapter);
+
+                        // Sử dụng LayoutManager cho RecyclerView
+                        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
                         break;
                     case 1:
                         // Phòng đào tạo
@@ -162,7 +174,7 @@ public class SharedActivity extends AppCompatActivity {
                         break;
                     case 3:
                         // Doanh nghiệp
-                        fragment = new BusinessFragment();
+                        fragment = new BussinessFragment();
                         break;
                     case 4:
                         // Đoàn thanh niên

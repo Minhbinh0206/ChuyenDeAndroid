@@ -46,6 +46,7 @@ public class GroupDatabase {
         g2.setGroupId(User.ID_ADMIN_DOANTHANHNIEN);
         g2.setGroupName("Đoàn Thanh niên");
         g2.setAdminUserId(User.ID_ADMIN_DOANTHANHNIEN);
+        g2.setGroupMember(groupUsersWithoutBussiness);
         groupsDtb.add(g2);
 
         // Khoa Công nghệ Thông tin
@@ -147,48 +148,24 @@ public class GroupDatabase {
         g14.setAdminUserId(User.ID_ADMIN_DEPARTMENT_CHINESE);
         groupsDtb.add(g14);
 
-        // Doanh nghiệp FPT
-        Group g15 = new Group();
-        g15.setGroupId(User.ID_ADMIN_BUSSINESS_FPT);
-        g15.setGroupName("Doanh nghiệp FPT");
-        g15.setAdminUserId(User.ID_ADMIN_BUSSINESS_FPT);
-        groupsDtb.add(g15);
+        // Nhóm được tạo bởi các User
+        Group gr1 = new Group();
+        gr1.setGroupId(20);
+        gr1.setGroupName("Chiến dịch mùa hè xanh");
+        gr1.setAdminUserId(User.ID_ADMIN_DOANTHANHNIEN);
+        groupsDtb.add(gr1);
 
-        // Doanh nghiệp MB Bank
-        Group g16 = new Group();
-        g16.setGroupId(User.ID_ADMIN_BUSSINESS_MBBANK);
-        g16.setGroupName("Doanh nghiệp MB Bank");
-        g16.setAdminUserId(User.ID_ADMIN_BUSSINESS_MBBANK);
-        groupsDtb.add(g16);
+        Group gr2 = new Group();
+        gr2.setGroupId(21);
+        gr2.setGroupName("Chiến dịch xuân tình nguyện");
+        gr2.setAdminUserId(User.ID_ADMIN_DOANTHANHNIEN);
+        groupsDtb.add(gr2);
 
-        // Doanh nghiệp Vinfast
-        Group g17 = new Group();
-        g17.setGroupId(User.ID_ADMIN_BUSSINESS_VINFAST);
-        g17.setGroupName("Doanh nghiệp Vinfast");
-        g17.setAdminUserId(User.ID_ADMIN_BUSSINESS_VINFAST);
-        groupsDtb.add(g17);
-
-        // Doanh nghiệp Apple
-        Group g18 = new Group();
-        g18.setGroupId(User.ID_ADMIN_BUSSINESS_APPLE);
-        g18.setGroupName("Doanh nghiệp Apple");
-        g18.setAdminUserId(User.ID_ADMIN_BUSSINESS_APPLE);
-        groupsDtb.add(g18);
-
-        // Doanh nghiệp Grab
-        Group g19 = new Group();
-        g19.setGroupId(User.ID_ADMIN_BUSSINESS_GRAB);
-        g19.setGroupName("Doanh nghiệp Grab");
-        g19.setAdminUserId(User.ID_ADMIN_BUSSINESS_GRAB);
-        groupsDtb.add(g19);
-
-        // Doanh nghiệp EVN
-        Group g20 = new Group();
-        g20.setGroupId(User.ID_ADMIN_BUSSINESS_EVN);
-        g20.setGroupName("Doanh nghiệp EVN");
-        g20.setAdminUserId(User.ID_ADMIN_BUSSINESS_EVN);
-        groupsDtb.add(g20);
-
+        Group gr3 = new Group();
+        gr3.setGroupId(22);
+        gr3.setGroupName("Chiến dịch xanh sạch đẹp");
+        gr3.setAdminUserId(User.ID_ADMIN_DOANTHANHNIEN);
+        groupsDtb.add(gr3);
 
         return  groupsDtb;
     }

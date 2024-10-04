@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.database.UserDatabase;
 import com.example.socialmediatdcproject.model.Lecturer;
+import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
     @NonNull
     @Override
     public MemberViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_member, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_member_list, parent, false);
         return new MemberViewHolder(view);
     }
 
@@ -55,16 +56,19 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
 
     // Hàm lấy chức vụ
     public String getPositionJob(User user) {
-        String s = "";
-        UserDatabase userDatabase = new UserDatabase();
-
-        if (user.getRoleId() == User.ROLE_STUDENT) {
-            s = "Sinh viên";
-        } else if (user.getRoleId() == User.ROLE_LECTURER){
-            s = "Giảng viên";
+        if (user instanceof Lecturer) {
+            Lecturer lecturer = (Lecturer) user;
+            if (lecturer != null && lecturer.getDescription() != null) {
+                return lecturer.getDescription();
+            } else {
+                return "No description available";  // Trả về một chuỗi mặc định nếu không có mô tả
+            }
+        } else if (user instanceof Student) {
+            return "Học sinh";
         }
-        return s;
+        return "Unknown position";  // Xử lý trường hợp không phải Lecturer hoặc Student
     }
+
 
 
     // Lớp ViewHolder

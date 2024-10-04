@@ -50,7 +50,7 @@ public class DepartmentFragment extends Fragment {
 
         // Lấy dữ liệu bài viết
         for (Post p : postDatabase.dataPost()) {
-            if (p.getUserId() == 10) {  // Điều kiện lấy bài đăng theo userId
+            if (p.getUserId() == User.ID_ADMIN_DEPARTMENT_CNTT) {
                 postsDepartment.add(p);
             }
         }
@@ -60,9 +60,6 @@ public class DepartmentFragment extends Fragment {
 
         PostAdapter postAdapter = new PostAdapter(postsDepartment);
         MemberAdapter memberAdapter = new MemberAdapter(memberGroup);
-
-        Log.d("TAG", "Số lượng bài viết: " + postsDepartment.size());
-        Log.d("TAG", "Số lượng thành viên: " + memberGroup.size());
 
         recyclerView.setAdapter(postAdapter);
 
