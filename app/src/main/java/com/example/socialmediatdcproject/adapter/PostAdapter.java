@@ -1,12 +1,15 @@
 package com.example.socialmediatdcproject.adapter;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.CommentPostActivity;
 import com.example.socialmediatdcproject.database.UserDatabase;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.User;
@@ -56,8 +59,8 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Post post = postList.get(position);
         UserDatabase userDatabase = new UserDatabase();
+
         if (holder.getItemViewType() == VIEW_TYPE_IMAGE) {
-            // Xử lý logic cho view có ảnh
             PostImageViewHolder imageViewHolder = (PostImageViewHolder) holder;
             imageViewHolder.postcontent.setText(post.getContent());
             for (User u : userDatabase.dataUser()) {
@@ -65,11 +68,12 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     imageViewHolder.postAdminUserId.setText(u.getFullName());
                 }
             }
-            // Gán ảnh vào ImageView (giả sử bạn có một phương thức để làm điều này)
-            // imageViewHolder.postImageView.setImageBitmap(post.getPostImage());
-
+            imageViewHolder.buttonComment.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
+                intent.putExtra("postId", post.getPostId());  // Truyền postId qua Activity mới
+                v.getContext().startActivity(intent);
+            });
         } else {
-            // Xử lý logic cho view không có ảnh
             PostTextViewHolder textViewHolder = (PostTextViewHolder) holder;
             textViewHolder.postcontent.setText(post.getContent());
             for (User u : userDatabase.dataUser()) {
@@ -77,8 +81,14 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     textViewHolder.postAdminUserId.setText(u.getFullName());
                 }
             }
+            textViewHolder.buttonComment.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
+                intent.putExtra("postId", post.getPostId());  // Truyền postId qua Activity mới
+                v.getContext().startActivity(intent);
+            });
         }
     }
+
 
     @Override
     public int getItemCount() {
@@ -89,11 +99,13 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static class PostTextViewHolder extends RecyclerView.ViewHolder {
         TextView postcontent;
         TextView postAdminUserId;
+        LinearLayout buttonComment;
 
         public PostTextViewHolder(View itemView) {
             super(itemView);
             postcontent = itemView.findViewById(R.id.post_content);
             postAdminUserId = itemView.findViewById(R.id.post_name);
+            buttonComment = itemView.findViewById(R.id.button_comment);
         }
     }
 
@@ -102,11 +114,13 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         // ImageView postImageView;  // Giả sử bạn có ImageView cho ảnh bài post
         TextView postcontent;
         TextView postAdminUserId;
+        LinearLayout buttonComment;
 
         public PostImageViewHolder(View itemView) {
             super(itemView);
             postcontent = itemView.findViewById(R.id.post_content);
             postAdminUserId = itemView.findViewById(R.id.post_name);
+            buttonComment = itemView.findViewById(R.id.button_comment);
             // postImageView = itemView.findViewById(R.id.post_image);  // Gán ImageView cho ảnh bài post
         }
     }

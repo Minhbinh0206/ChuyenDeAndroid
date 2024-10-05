@@ -5,15 +5,18 @@ public class Comment {
     private int postId;
     private int userId;
     private String content;
+    private int commentLike;
+    private String commentCreateAt;
 
 
     // Constructor
-    public Comment(int id, int postId, int userId, String content) {
+    public Comment(int id, int postId, int userId, String content, int commentLike, String commentCreateAt) {
         this.id = id;
         this.postId = postId;
         this.userId = userId;
         this.content = content;
-
+        this.commentLike = commentLike;
+        this.commentCreateAt = commentCreateAt;
     }
 
     public Comment() {
@@ -21,6 +24,8 @@ public class Comment {
         this.postId = -1;
         this.userId = -1;
         this.content = "";
+        this.commentLike = 0;
+        this.commentCreateAt = "";
     }
 
     // Getters and Setters
@@ -54,5 +59,21 @@ public class Comment {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public int getCommentLike() {
+        return commentLike;
+    }
+
+    public void setCommentLike(int commentLike) {
+        this.commentLike = commentLike;
+    }
+
+    public String getCommentCreateAt() {
+        return commentCreateAt;
+    }
+
+    public void setCommentCreateAt(String commentCreateAt) {
+        this.commentCreateAt = commentCreateAt;
     }
 }
