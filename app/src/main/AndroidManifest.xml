@@ -40,6 +40,10 @@
             android:name=".activity.SharedActivity"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".activity.CommentPostActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>

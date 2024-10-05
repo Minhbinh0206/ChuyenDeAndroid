@@ -1,23 +1,21 @@
 package com.example.socialmediatdcproject.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class Post implements Serializable {
     private int postId;
     private int userId;
+    private int postLike;
+    private List<Comment> postComment;
     private String title;
     private String postImage;
     private String content;
     private int status;
     private int isPublic;
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
+    private String createdAt;
 
     public int getPostId() {
         return postId;
@@ -33,6 +31,22 @@ public class Post implements Serializable {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public int getPostLike() {
+        return postLike;
+    }
+
+    public void setPostLike(int postLike) {
+        this.postLike = postLike;
+    }
+
+    public List<Comment> getPostComment() {
+        return postComment;
+    }
+
+    public void setPostComment(List<Comment> postComment) {
+        this.postComment = postComment;
     }
 
     public String getTitle() {
@@ -51,6 +65,14 @@ public class Post implements Serializable {
         this.postImage = postImage;
     }
 
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
     public int getStatus() {
         return status;
     }
@@ -67,23 +89,37 @@ public class Post implements Serializable {
         this.isPublic = isPublic;
     }
 
-    public Post(int postId, int userId, String title, String content, String postImage, int status, int isPublic) {
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Post(int postId, int userId, int postLike, List<Comment> postComment, String title, String postImage, String content, int status, int isPublic, String createdAt) {
         this.postId = postId;
         this.userId = userId;
+        this.postLike = postLike;
+        this.postComment = postComment;
         this.title = title;
         this.postImage = postImage;
         this.content = content;
         this.status = status;
         this.isPublic = isPublic;
+        this.createdAt = createdAt;
     }
 
     public Post() {
         this.postId = -1;
         this.userId = -1;
+        this.postLike = 0;
+        this.postComment = new ArrayList<>();
         this.title = "";
-        this.content = "";
         this.postImage = "";
+        this.content = "";
         this.status = -1;
         this.isPublic = -1;
+        this.createdAt = "";
     }
 }

@@ -9,6 +9,15 @@ public class PostDatabase {
     protected ArrayList<Post> postsDtb = new ArrayList<>();
     protected ArrayList<Post> postsBussiness = new ArrayList<>();
 
+    public Post getPostById(int id){
+        for (Post p : dataPost()) {
+            if (p.getPostId() == id){
+                return p;
+            }
+        }
+        return null;
+    }
+
     public ArrayList<Post> dataPost() {
         // Post 1
         Post p1 = new Post();

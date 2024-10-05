@@ -1,5 +1,6 @@
 package com.example.socialmediatdcproject.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -122,6 +123,7 @@ public class SharedActivity extends AppCompatActivity {
         // Thiết lập sự kiện click cho icon_back
         ImageButton backButton = navigationView.getHeaderView(0).findViewById(R.id.icon_back);
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
+
     }
 
     private void addNavigationItems(NavigationView navigationView) {
