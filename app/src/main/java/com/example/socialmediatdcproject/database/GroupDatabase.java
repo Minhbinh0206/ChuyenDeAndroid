@@ -1,19 +1,44 @@
 package com.example.socialmediatdcproject.database;
 
+import android.util.Log;
+
 import com.example.socialmediatdcproject.model.Group;
+import com.example.socialmediatdcproject.model.Lecturer;
+import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class GroupDatabase {
+
     ArrayList<Group> groupsDtb = new ArrayList<>();
+    UserDatabase userDatabase = new UserDatabase();
+
+    // Hàm tìm group bằng userId
+    public Group getGroupById(int id, ArrayList<Group> groupArrayList) {
+        for (Group group : groupArrayList) {
+            if (group.getGroupId() == id) {
+                return group;
+            }
+        }
+        return null;
+    }
 
     public ArrayList<Group> dataGroups(){
         // Phòng Đào tạo
+        ArrayList<User> groupUsersWithoutBussiness = new ArrayList<>();
         Group g1 = new Group();
         g1.setGroupId(User.ID_ADMIN_PHONGDAOTAO);
         g1.setGroupName("Phòng Đào tạo");
         g1.setAdminUserId(User.ID_ADMIN_PHONGDAOTAO);
+        for (User u: userDatabase.dataUser()) {
+            if (u.getUserId() != User.ID_ADMIN_BUSSINESS_FPT && u.getUserId() != User.ID_ADMIN_BUSSINESS_APPLE && u.getUserId() != User.ID_ADMIN_BUSSINESS_GRAB && u.getUserId() != User.ID_ADMIN_BUSSINESS_EVN && u.getUserId() != User.ID_ADMIN_BUSSINESS_MBBANK && u.getUserId() != User.ID_ADMIN_BUSSINESS_TITAN && u.getUserId() != User.ID_ADMIN_BUSSINESS_VINFAST) {
+                groupUsersWithoutBussiness.add(u);
+            }
+        }
+        g1.setGroupMember(groupUsersWithoutBussiness);
         groupsDtb.add(g1);
 
         // Đoàn Thanh niên
@@ -21,13 +46,29 @@ public class GroupDatabase {
         g2.setGroupId(User.ID_ADMIN_DOANTHANHNIEN);
         g2.setGroupName("Đoàn Thanh niên");
         g2.setAdminUserId(User.ID_ADMIN_DOANTHANHNIEN);
+        g2.setGroupMember(groupUsersWithoutBussiness);
         groupsDtb.add(g2);
 
         // Khoa Công nghệ Thông tin
+        List<User> groupStudentsAndLecturerOfDepartment = new ArrayList<>();
         Group g3 = new Group();
         g3.setGroupId(User.ID_ADMIN_DEPARTMENT_CNTT);
         g3.setGroupName("Khoa Công nghệ Thông tin");
         g3.setAdminUserId(User.ID_ADMIN_DEPARTMENT_CNTT);
+        // Tìm tất cả sinh viên có mã khoa là khoa CNTT
+        for (Student s: userDatabase.dataStudent()) {
+            if (s.getDepartmentId() == User.ID_ADMIN_DEPARTMENT_CNTT) {
+                groupStudentsAndLecturerOfDepartment.add(s);
+            }
+        }
+
+        // Tìm tất cả giảng viên có mã khoa là khoa CNTT
+        for (Lecturer l: userDatabase.dataLecturer()) {
+            if (l.getDepartmentId() == User.ID_ADMIN_DEPARTMENT_CNTT) {
+                groupStudentsAndLecturerOfDepartment.add(l);
+            }
+        }
+        g3.setGroupMember(groupStudentsAndLecturerOfDepartment);
         groupsDtb.add(g3);
 
         // Khoa Công nghệ Cơ khí - Ô tô
@@ -107,48 +148,24 @@ public class GroupDatabase {
         g14.setAdminUserId(User.ID_ADMIN_DEPARTMENT_CHINESE);
         groupsDtb.add(g14);
 
-        // Doanh nghiệp FPT
-        Group g15 = new Group();
-        g15.setGroupId(User.ID_ADMIN_BUSSINESS_FPT);
-        g15.setGroupName("Doanh nghiệp FPT");
-        g15.setAdminUserId(User.ID_ADMIN_BUSSINESS_FPT);
-        groupsDtb.add(g15);
+        // Nhóm được tạo bởi các User
+        Group gr1 = new Group();
+        gr1.setGroupId(20);
+        gr1.setGroupName("Chiến dịch mùa hè xanh");
+        gr1.setAdminUserId(User.ID_ADMIN_DOANTHANHNIEN);
+        groupsDtb.add(gr1);
 
-        // Doanh nghiệp MB Bank
-        Group g16 = new Group();
-        g16.setGroupId(User.ID_ADMIN_BUSSINESS_MBBANK);
-        g16.setGroupName("Doanh nghiệp MB Bank");
-        g16.setAdminUserId(User.ID_ADMIN_BUSSINESS_MBBANK);
-        groupsDtb.add(g16);
+        Group gr2 = new Group();
+        gr2.setGroupId(21);
+        gr2.setGroupName("Chiến dịch xuân tình nguyện");
+        gr2.setAdminUserId(User.ID_ADMIN_DOANTHANHNIEN);
+        groupsDtb.add(gr2);
 
-        // Doanh nghiệp Vinfast
-        Group g17 = new Group();
-        g17.setGroupId(User.ID_ADMIN_BUSSINESS_VINFAST);
-        g17.setGroupName("Doanh nghiệp Vinfast");
-        g17.setAdminUserId(User.ID_ADMIN_BUSSINESS_VINFAST);
-        groupsDtb.add(g17);
-
-        // Doanh nghiệp Apple
-        Group g18 = new Group();
-        g18.setGroupId(User.ID_ADMIN_BUSSINESS_APPLE);
-        g18.setGroupName("Doanh nghiệp Apple");
-        g18.setAdminUserId(User.ID_ADMIN_BUSSINESS_APPLE);
-        groupsDtb.add(g18);
-
-        // Doanh nghiệp Grab
-        Group g19 = new Group();
-        g19.setGroupId(User.ID_ADMIN_BUSSINESS_GRAB);
-        g19.setGroupName("Doanh nghiệp Grab");
-        g19.setAdminUserId(User.ID_ADMIN_BUSSINESS_GRAB);
-        groupsDtb.add(g19);
-
-        // Doanh nghiệp EVN
-        Group g20 = new Group();
-        g20.setGroupId(User.ID_ADMIN_BUSSINESS_EVN);
-        g20.setGroupName("Doanh nghiệp EVN");
-        g20.setAdminUserId(User.ID_ADMIN_BUSSINESS_EVN);
-        groupsDtb.add(g20);
-
+        Group gr3 = new Group();
+        gr3.setGroupId(22);
+        gr3.setGroupName("Chiến dịch xanh sạch đẹp");
+        gr3.setAdminUserId(User.ID_ADMIN_DOANTHANHNIEN);
+        groupsDtb.add(gr3);
 
         return  groupsDtb;
     }

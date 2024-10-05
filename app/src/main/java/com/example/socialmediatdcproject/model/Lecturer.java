@@ -47,7 +47,7 @@ public class Lecturer extends User {
         this.description = description;
     }
 
-    public Lecturer(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String studentNumber, String birthday, int departmentId, int majorId, int classId, String description) {
+    public Lecturer(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String lecturerNumber, String birthday, int departmentId, int majorId, String description) {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
         this.lecturerNumber = lecturerNumber;
         this.birthday = birthday;
@@ -60,8 +60,8 @@ public class Lecturer extends User {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
         this.lecturerNumber = "";
         this.birthday = "";
-        this.departmentId = 0;
-        this.majorId = 0;
+        this.departmentId = -1;
+        this.majorId = -1;
         this.description = "";
     }
 }

@@ -1,5 +1,7 @@
 package com.example.socialmediatdcproject.database;
 
+import android.util.Log;
+
 import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Lecturer;
@@ -13,6 +15,8 @@ public class UserDatabase {
     protected ArrayList<Student> studentsDtb = new ArrayList<>();
     protected ArrayList<Lecturer> lecturersDtb = new ArrayList<>();
     protected ArrayList<AdminDepartment> adminDepartmentsDtb = new ArrayList<>();
+
+
 
     // Role giả dữ liệu hiện tại
     // - 0: Sinh viên
@@ -243,106 +247,127 @@ public class UserDatabase {
         u20.setRoleId(User.ROLE_ADMIN_BUSSINESS);
         usersDtb.add(u20);
 
-        // Student
+        // Doanh nghiệp TITAN ENGLISH
         User u21 = new User();
-        u21.setUserId(21);
-        u21.setEmail("nguyenvana@gmail.com");
-        u21.setPassword("111");
-        u21.setFullName("Nguyễn Văn A");
-        u21.setPhoneNumber("0123456789");
-        u21.setAvatar("hs");
-        u21.setRoleId(User.ROLE_STUDENT);
+        u21.setUserId(User.ID_ADMIN_BUSSINESS_TITAN);
+        u21.setEmail("titan@gmail.com");
+        u21.setPassword("999");
+        u21.setFullName("TITAN");
+        u21.setPhoneNumber("0987654340");
+        u21.setAvatar("");
+        u21.setRoleId(User.ROLE_ADMIN_BUSSINESS);
         usersDtb.add(u21);
 
+        // Student
         User u22 = new User();
-        u22.setUserId(22);
-        u22.setEmail("tranthic@gmail.com");
+        u22.setUserId(21);
+        u22.setEmail("nguyenvana@gmail.com");
         u22.setPassword("111");
-        u22.setFullName("Trần Thị C");
-        u22.setPhoneNumber("0123456788");
+        u22.setFullName("Nguyễn Văn A");
+        u22.setPhoneNumber("0123456789");
         u22.setAvatar("hs");
         u22.setRoleId(User.ROLE_STUDENT);
         usersDtb.add(u22);
 
         User u23 = new User();
-        u23.setUserId(23);
-        u23.setEmail("phamvand@gmail.com");
+        u23.setUserId(22);
+        u23.setEmail("tranthic@gmail.com");
         u23.setPassword("111");
-        u23.setFullName("Phạm Văn D");
-        u23.setPhoneNumber("0123456787");
+        u23.setFullName("Trần Thị C");
+        u23.setPhoneNumber("0123456788");
         u23.setAvatar("hs");
         u23.setRoleId(User.ROLE_STUDENT);
         usersDtb.add(u23);
 
         User u24 = new User();
-        u24.setUserId(24);
-        u24.setEmail("nguyenthie@gmail.com");
+        u24.setUserId(23);
+        u24.setEmail("phamvand@gmail.com");
         u24.setPassword("111");
-        u24.setFullName("Nguyễn Thị E");
-        u24.setPhoneNumber("0123456786");
+        u24.setFullName("Phạm Văn D");
+        u24.setPhoneNumber("0123456787");
         u24.setAvatar("hs");
         u24.setRoleId(User.ROLE_STUDENT);
         usersDtb.add(u24);
 
         User u25 = new User();
-        u25.setUserId(25);
-        u25.setEmail("buiquangf@gmail.com");
+        u25.setUserId(24);
+        u25.setEmail("nguyenthie@gmail.com");
         u25.setPassword("111");
-        u25.setFullName("Bùi Quang F");
-        u25.setPhoneNumber("0123456785");
+        u25.setFullName("Nguyễn Thị E");
+        u25.setPhoneNumber("0123456786");
         u25.setAvatar("hs");
         u25.setRoleId(User.ROLE_STUDENT);
         usersDtb.add(u25);
 
         User u26 = new User();
-        u26.setUserId(26);
-        u26.setEmail("doanthig@gmail.com");
+        u26.setUserId(25);
+        u26.setEmail("buiquangf@gmail.com");
         u26.setPassword("111");
-        u26.setFullName("Đoàn Thị G");
-        u26.setPhoneNumber("0123456784");
+        u26.setFullName("Bùi Quang F");
+        u26.setPhoneNumber("0123456785");
         u26.setAvatar("hs");
         u26.setRoleId(User.ROLE_STUDENT);
         usersDtb.add(u26);
 
         User u27 = new User();
-        u27.setUserId(27);
-        u27.setEmail("lehoangh@gmail.com");
+        u27.setUserId(26);
+        u27.setEmail("doanthig@gmail.com");
         u27.setPassword("111");
-        u27.setFullName("Lê Hoàng H");
-        u27.setPhoneNumber("0123456783");
+        u27.setFullName("Đoàn Thị G");
+        u27.setPhoneNumber("0123456784");
         u27.setAvatar("hs");
         u27.setRoleId(User.ROLE_STUDENT);
         usersDtb.add(u27);
 
         User u28 = new User();
-        u28.setUserId(28);
-        u28.setEmail("lethib@gmail.com");
+        u28.setUserId(27);
+        u28.setEmail("lehoangh@gmail.com");
         u28.setPassword("111");
-        u28.setFullName("Lê Thị B");
-        u28.setPhoneNumber("0123456782");
+        u28.setFullName("Lê Hoàng H");
+        u28.setPhoneNumber("0123456783");
         u28.setAvatar("hs");
-        u28.setRoleId(User.ROLE_LECTURER);
+        u28.setRoleId(User.ROLE_STUDENT);
         usersDtb.add(u28);
 
         User u29 = new User();
-        u29.setUserId(29);
-        u29.setEmail("tranvanc@gmail.com");
+        u29.setUserId(28);
+        u29.setEmail("lethib@gmail.com");
         u29.setPassword("111");
-        u29.setFullName("Trần Văn C");
-        u29.setPhoneNumber("0123456781");
+        u29.setFullName("Lê Thị B");
+        u29.setPhoneNumber("0123456782");
         u29.setAvatar("hs");
         u29.setRoleId(User.ROLE_LECTURER);
         usersDtb.add(u29);
 
         User u30 = new User();
-        u30.setUserId(30);
-        u30.setEmail("nguyenquangd@gmail.com");
+        u30.setUserId(29);
+        u30.setEmail("tranvanc@gmail.com");
         u30.setPassword("111");
-        u30.setFullName("Nguyễn Quang D");
-        u30.setPhoneNumber("0123456780");
+        u30.setFullName("Trần Văn C");
+        u30.setPhoneNumber("0123456781");
         u30.setAvatar("hs");
         u30.setRoleId(User.ROLE_LECTURER);
         usersDtb.add(u30);
+
+        User u31 = new User();
+        u31.setUserId(30);
+        u31.setEmail("nguyenquangd@gmail.com");
+        u31.setPassword("111");
+        u31.setFullName("Nguyễn Quang D");
+        u31.setPhoneNumber("0123456780");
+        u31.setAvatar("hs");
+        u31.setRoleId(User.ROLE_LECTURER);
+        usersDtb.add(u31);
+
+        User u32 = new User();
+        u32.setUserId(31);
+        u32.setEmail("nguyenquangb@gmail.com");
+        u32.setPassword("111111");
+        u32.setFullName("Nguyễn Quang Bình");
+        u32.setPhoneNumber("0123456780");
+        u32.setAvatar("hs");
+        u32.setRoleId(User.ROLE_STUDENT);
+        usersDtb.add(u32);
 
         return usersDtb;
     }
@@ -437,5 +462,24 @@ public class UserDatabase {
 
         return adminDepartmentsDtb;
     }
+
+    // Thêm người dùng
+    public void addUser(User user) {
+        usersDtb.add(user);
+    }
+
+
+    // Tìm kiếm người dùng theo Email
+    public User getUserByEmail(String email) {
+//        Log.d("UserDatabase", "Checking email: " + email); // Debug log
+        for (User user : usersDtb) {
+            if (user.getEmail().equals(email)) {
+                Log.d("UserDatabase", "Checking email: " + email);
+                return user;
+            }
+        }
+        return null;
+    }
+
 
 }
