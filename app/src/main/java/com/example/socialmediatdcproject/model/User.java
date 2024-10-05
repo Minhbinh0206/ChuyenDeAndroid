@@ -42,6 +42,8 @@ public class User {
     public static final int ROLE_DOANTHANHNIEN = 4;                 // Đoàn thanh niên
     public static final int ROLE_PHONGDAOTAO = 5;                   // Phòng đào tạo
 
+
+
     // Getter - Setter
     public String getPhoneNumber() {
         return phoneNumber;
@@ -114,6 +116,15 @@ public class User {
         this.userId = -1;
         this.password = "";
         this.fullName = "";
+        this.avatar = "";
+        this.roleId = -1;
+        this.phoneNumber = "";
+    }
+
+    public User(String fullName, String email, String password) {
+        this.password = password;
+        this.fullName = fullName;
+        this.email = email;
         this.avatar = "";
         this.roleId = -1;
         this.phoneNumber = "";
