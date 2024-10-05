@@ -140,7 +140,7 @@
         android:id="@+id/textSignUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
+        android:layout_marginBottom="80dp"
         android:text="Bạn chưa có tài khoản ? Đăng ký ngay"
         android:textColor="#fff"
         android:textSize="16dp"

@@ -4,30 +4,56 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ImageView
+        android:id="@+id/logo_department"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/image_logo_login"
+        app:layout_constraintBottom_toTopOf="@+id/name_department"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/name_department"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Doanh nghiệp"
-        android:textSize="35dp"
+        android:text="Khoa Ối dồi ôi"
+        android:textSize="30dp"
         android:textStyle="bold|italic"
+        android:layout_marginVertical="10dp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/logo_department" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingHorizontal="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/name_department">
 
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_first_style"
+            android:paddingHorizontal="5dp">
+
+            <Button
+                android:id="@+id/button_department_info"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:backgroundTint="@color/white"
+                android:text="Thông tin"
+                android:textColor="@color/defaultBlue"
+                android:textSize="14sp" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -42,10 +68,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:backgroundTint="@color/white"
-                android:paddingVertical="10dp"
-                android:text="Tin tuyển dụng"
+                android:text="Bài viết"
                 android:textColor="@color/defaultBlue"
-                android:textSize="15dp" />
+                android:textSize="14sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -60,11 +85,11 @@
                 android:id="@+id/button_department_member"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+
                 android:backgroundTint="@color/white"
-                android:paddingVertical="10dp"
-                android:text="Doanh nghiệp"
+                android:text="Thành viên"
                 android:textColor="@color/defaultBlue"
-                android:textSize="15dp" />
+                android:textSize="13sp" />
         </LinearLayout>
 
     </LinearLayout>

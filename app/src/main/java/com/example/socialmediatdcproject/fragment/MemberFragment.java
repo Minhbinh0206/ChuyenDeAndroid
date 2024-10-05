@@ -18,20 +18,7 @@ public class MemberFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_member, container, false);
-
-        // Lấy dữ liệu từ arguments
-        String postText = getArguments() != null ? getArguments().getString(ARG_POST_TEXT) : "No Post";
-
-        // Hiển thị nội dung post
-        TextView memberName = view.findViewById(R.id.member_name);
-        TextView memberPosition = view.findViewById(R.id.member_position_job);
-        TextView memberEmail = view.findViewById(R.id.member_email);
-        ImageView memberImage = view.findViewById(R.id.member_avatar);
-
-        memberName.setText("Nguyễn Huy Hoàng");
-        memberPosition.setText("Trưởng bộ môn Công nghệ phần mềm");
-        memberEmail.setText("hoanghn@example.com");
+        View view = inflater.inflate(R.layout.item_member_list, container, false);
         return view;
     }
 }

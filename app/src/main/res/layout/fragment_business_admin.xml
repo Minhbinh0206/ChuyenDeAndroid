@@ -6,10 +6,10 @@
 
 
     <TextView
-        android:id="@+id/name_department"
+        android:id="@+id/name_business_admin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Group - Club"
+        android:text="Các doanh nghiệp"
         android:textSize="35dp"
         android:textStyle="bold|italic"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
@@ -26,7 +26,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/name_department">
+        app:layout_constraintTop_toBottomOf="@+id/name_business_admin">
 
 
         <LinearLayout
@@ -38,12 +38,12 @@
             android:paddingHorizontal="5dp">
 
             <Button
-                android:id="@+id/button_department_post"
+                android:id="@+id/button_business_admin_acount"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:backgroundTint="@color/white"
                 android:paddingVertical="10dp"
-                android:text="Nhóm hiện tại"
+                android:text="Thông báo"
                 android:textColor="@color/defaultBlue"
                 android:textSize="15dp" />
         </LinearLayout>
@@ -57,12 +57,12 @@
             android:paddingHorizontal="5dp">
 
             <Button
-                android:id="@+id/button_department_member"
+                android:id="@+id/button_business_admin_business"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:backgroundTint="@color/white"
                 android:paddingVertical="10dp"
-                android:text="Tạo mới"
+                android:text="Doanh nghiệp"
                 android:textColor="@color/defaultBlue"
                 android:textSize="15dp" />
         </LinearLayout>
