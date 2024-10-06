@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -41,40 +42,47 @@ public class UploadProfileActivity extends AppCompatActivity {
 
         // Danh sách các tùy chọn
         DepartmentDatabase departmentDatabase = new DepartmentDatabase();
+        MajorDatabase majorDatabase = new MajorDatabase();
+
         List<String> optionsDepartment = new ArrayList<>();
+        List<String> optionsMajor = new ArrayList<>();
+
         // Lấy danh sách tên các khoa
-        for (Department d: departmentDatabase.dataDepartments())
-        {
+        for (Department d: departmentDatabase.dataDepartments()) {
             optionsDepartment.add(d.getDepartmentName());
         }
 
-        // Danh sách các ngành tương ứng với mỗi khoa
-        MajorDatabase majorDatabase = new MajorDatabase();
-        majorDatabase.dataMajors();
-
         // Tạo ArrayAdapter cho Khoa
-        ArrayAdapter<String> khoaAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, optionsDepartment);
-        khoaAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        department.setAdapter(khoaAdapter);
+        ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, optionsDepartment);
+        departmentAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        department.setAdapter(departmentAdapter);
 
         // Xử lý khi người dùng chọn Khoa
         department.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 String selectedKhoa = optionsDepartment.get(position);
-                String[] nganhList = nganhMap.get(selectedKhoa);
 
-                // Tạo ArrayAdapter cho Ngành dựa trên Khoa được chọn
-                ArrayAdapter<String> nganhAdapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_spinner_item, nganhList);
-                nganhAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                major.setAdapter(nganhAdapter);
+                // Làm rỗng danh sách ngành trước khi thêm mới
+                optionsMajor.clear();
+
+                for (int majorId : departmentDatabase.getDepartmentByName(selectedKhoa, departmentDatabase.dataDepartments()).getMajorId()) {
+                    Major major1 = majorDatabase.getMajorById(majorId, majorDatabase.dataMajors());
+                    optionsMajor.add(major1.getMajorName());
+                }
+
+                // Tạo ArrayAdapter cho Ngành
+                ArrayAdapter<String> majorAdapter = new ArrayAdapter<>(UploadProfileActivity.this, android.R.layout.simple_spinner_item, optionsMajor);
+                majorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                major.setAdapter(majorAdapter);
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
-                // Không có gì được chọn
+                optionsMajor.clear();
             }
         });
+
 
         // Xử lý chọn năm tối đa
         EditText yearInput = findViewById(R.id.year_born_info);

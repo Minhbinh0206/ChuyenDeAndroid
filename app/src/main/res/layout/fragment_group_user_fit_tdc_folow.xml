@@ -5,26 +5,36 @@
     android:layout_height="match_parent">
 
     <ImageView
-        android:id="@+id/logo_department"
+        android:id="@+id/logo_group_user"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:src="@drawable/image_logo_login"
-        app:layout_constraintBottom_toTopOf="@+id/name_department"
+        android:src="@drawable/fit_tdc_group"
+        app:layout_constraintBottom_toTopOf="@+id/name_group_admin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageButton
+        android:id="@+id/imageButton_group_user_newpost"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/icon_new_posst"
+        app:layout_constraintBottom_toBottomOf="@+id/logo_group_user"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/logo_group_user"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
-        android:id="@+id/name_department"
+        android:id="@+id/name_group_user"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Khoa Ối dồi ôi"
+        android:text="Fit TDC"
         android:textSize="30dp"
         android:textStyle="bold|italic"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo_department" />
+        app:layout_constraintTop_toBottomOf="@+id/logo_group_user" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -34,7 +44,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/name_department">
+        app:layout_constraintTop_toBottomOf="@+id/logo_group_user">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -45,11 +55,11 @@
             android:paddingHorizontal="5dp">
 
             <Button
-                android:id="@+id/button_department_info"
+                android:id="@+id/button_group_user_member"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:backgroundTint="@color/white"
-                android:text="Thông tin"
+                android:text="Thành viên"
                 android:textColor="@color/defaultBlue"
                 android:textSize="14sp" />
         </LinearLayout>
@@ -63,7 +73,7 @@
             android:paddingHorizontal="5dp">
 
             <Button
-                android:id="@+id/button_department_post"
+                android:id="@+id/button_group_user_post"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:backgroundTint="@color/white"
@@ -81,12 +91,12 @@
             android:paddingHorizontal="5dp">
 
             <Button
-                android:id="@+id/button_department_member"
+                android:id="@+id/button_group_user_me"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
 
                 android:backgroundTint="@color/white"
-                android:text="Thành viên"
+                android:text="Tôi"
                 android:textColor="@color/defaultBlue"
                 android:textSize="13sp" />
         </LinearLayout>

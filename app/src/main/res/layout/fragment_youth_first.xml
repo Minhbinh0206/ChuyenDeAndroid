@@ -52,7 +52,7 @@
                 android:paddingHorizontal="5dp">
 
                 <Button
-                    android:id="@+id/button_department_info"
+                    android:id="@+id/button_youth_info"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:backgroundTint="@color/white"
@@ -70,7 +70,7 @@
                 android:paddingHorizontal="5dp">
 
                 <Button
-                    android:id="@+id/button_department_post"
+                    android:id="@+id/button_youth_post"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:backgroundTint="@color/white"
@@ -95,7 +95,7 @@
                 android:paddingHorizontal="5dp">
 
                 <Button
-                    android:id="@+id/button_department_group"
+                    android:id="@+id/button_youth_group"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
 
@@ -114,7 +114,7 @@
                 android:paddingHorizontal="5dp">
 
                 <Button
-                    android:id="@+id/button_department_member"
+                    android:id="@+id/button_youth_member"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
 

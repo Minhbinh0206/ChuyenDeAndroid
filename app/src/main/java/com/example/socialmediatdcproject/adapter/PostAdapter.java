@@ -1,13 +1,19 @@
 package com.example.socialmediatdcproject.adapter;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.CommentPostActivity;
+import com.example.socialmediatdcproject.database.UserDatabase;
 import com.example.socialmediatdcproject.model.Post;
+import com.example.socialmediatdcproject.model.User;
+
 import java.util.ArrayList;
 
 public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -52,18 +58,37 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Post post = postList.get(position);
+        UserDatabase userDatabase = new UserDatabase();
+
         if (holder.getItemViewType() == VIEW_TYPE_IMAGE) {
-            // Xử lý logic cho view có ảnh
             PostImageViewHolder imageViewHolder = (PostImageViewHolder) holder;
-            imageViewHolder.contentTextView.setText(post.getContent());
-            // Gán ảnh vào ImageView (giả sử bạn có một phương thức để làm điều này)
-            // imageViewHolder.postImageView.setImageBitmap(post.getPostImage());
+            imageViewHolder.postcontent.setText(post.getContent());
+            for (User u : userDatabase.dataUser()) {
+                if (u.getUserId() == post.getUserId()) {
+                    imageViewHolder.postAdminUserId.setText(u.getFullName());
+                }
+            }
+            imageViewHolder.buttonComment.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
+                intent.putExtra("postId", post.getPostId());  // Truyền postId qua Activity mới
+                v.getContext().startActivity(intent);
+            });
         } else {
-            // Xử lý logic cho view không có ảnh
             PostTextViewHolder textViewHolder = (PostTextViewHolder) holder;
-            textViewHolder.contentTextView.setText(post.getContent());
+            textViewHolder.postcontent.setText(post.getContent());
+            for (User u : userDatabase.dataUser()) {
+                if (u.getUserId() == post.getUserId()) {
+                    textViewHolder.postAdminUserId.setText(u.getFullName());
+                }
+            }
+            textViewHolder.buttonComment.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
+                intent.putExtra("postId", post.getPostId());  // Truyền postId qua Activity mới
+                v.getContext().startActivity(intent);
+            });
         }
     }
+
 
     @Override
     public int getItemCount() {
@@ -72,22 +97,30 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     // ViewHolder cho post không có ảnh
     public static class PostTextViewHolder extends RecyclerView.ViewHolder {
-        TextView contentTextView;
+        TextView postcontent;
+        TextView postAdminUserId;
+        LinearLayout buttonComment;
 
         public PostTextViewHolder(View itemView) {
             super(itemView);
-            contentTextView = itemView.findViewById(R.id.post_content);
+            postcontent = itemView.findViewById(R.id.post_content);
+            postAdminUserId = itemView.findViewById(R.id.post_name);
+            buttonComment = itemView.findViewById(R.id.button_comment);
         }
     }
 
     // ViewHolder cho post có ảnh
     public static class PostImageViewHolder extends RecyclerView.ViewHolder {
-        TextView contentTextView;
         // ImageView postImageView;  // Giả sử bạn có ImageView cho ảnh bài post
+        TextView postcontent;
+        TextView postAdminUserId;
+        LinearLayout buttonComment;
 
         public PostImageViewHolder(View itemView) {
             super(itemView);
-            contentTextView = itemView.findViewById(R.id.post_content);
+            postcontent = itemView.findViewById(R.id.post_content);
+            postAdminUserId = itemView.findViewById(R.id.post_name);
+            buttonComment = itemView.findViewById(R.id.button_comment);
             // postImageView = itemView.findViewById(R.id.post_image);  // Gán ImageView cho ảnh bài post
         }
     }
