@@ -202,4 +202,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             dayInput.setText(String.valueOf(maxDay));
         }
     }
+
+    //Cập nhật hình ảnh
 }
