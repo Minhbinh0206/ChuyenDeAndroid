@@ -38,7 +38,6 @@ public class GroupDatabase {
                 groupUsersWithoutBussiness.add(u);
             }
         }
-        g1.setGroupMember(groupUsersWithoutBussiness);
         groupsDtb.add(g1);
 
         // Đoàn Thanh niên
@@ -46,7 +45,6 @@ public class GroupDatabase {
         g2.setGroupId(User.ID_ADMIN_DOANTHANHNIEN);
         g2.setGroupName("Đoàn Thanh niên");
         g2.setAdminUserId(User.ID_ADMIN_DOANTHANHNIEN);
-        g2.setGroupMember(groupUsersWithoutBussiness);
         groupsDtb.add(g2);
 
         // Khoa Công nghệ Thông tin
@@ -68,7 +66,6 @@ public class GroupDatabase {
                 groupStudentsAndLecturerOfDepartment.add(l);
             }
         }
-        g3.setGroupMember(groupStudentsAndLecturerOfDepartment);
         groupsDtb.add(g3);
 
         // Khoa Công nghệ Cơ khí - Ô tô

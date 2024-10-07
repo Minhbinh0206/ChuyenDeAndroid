@@ -7,7 +7,7 @@ public class Group {
     private int groupId;
     private String groupName;
     private int adminUserId;
-    private List<User> groupMember;
+    private String avatar;
 
     public int getGroupId() {
         return groupId;
@@ -33,30 +33,26 @@ public class Group {
         this.adminUserId = adminUserId;
     }
 
-    public List<User> getGroupMember() {
-        return groupMember;
+    // Getter và setter cho imageUrl
+    public String getAvatar() {
+        return avatar;
     }
 
-    public void setGroupMember(List<User> groupMembers) {
-        if (this.groupMember == null) {
-            this.groupMember = new ArrayList<>();
-        }
-        this.groupMember.addAll(groupMembers);  // Thêm tất cả các thành viên vào danh sách
+    public void setAvatar(String imageUrl) {
+        this.avatar = imageUrl;
     }
 
-
-
-    public Group(int groupId, String groupName, int adminUserId, List<User> groupMember) {
+    public Group(int groupId, String groupName, int adminUserId, String avatar) {
         this.groupId = groupId;
         this.groupName = groupName;
         this.adminUserId = adminUserId;
-        this.groupMember = groupMember;
+        this.avatar = avatar;
     }
 
     public Group() {
         this.groupId = -1;
         this.groupName = "";
         this.adminUserId = -1;
-        this.groupMember = new ArrayList<>();
+        this.avatar = "";
     }
 }

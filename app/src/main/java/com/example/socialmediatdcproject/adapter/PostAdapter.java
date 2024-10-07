@@ -63,6 +63,8 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (holder.getItemViewType() == VIEW_TYPE_IMAGE) {
             PostImageViewHolder imageViewHolder = (PostImageViewHolder) holder;
             imageViewHolder.postcontent.setText(post.getContent());
+            imageViewHolder.postLike.setText(post.getPostLike() + "");
+            imageViewHolder.postComment.setText(post.getPostComment() + "");
             for (User u : userDatabase.dataUser()) {
                 if (u.getUserId() == post.getUserId()) {
                     imageViewHolder.postAdminUserId.setText(u.getFullName());
@@ -76,6 +78,8 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         } else {
             PostTextViewHolder textViewHolder = (PostTextViewHolder) holder;
             textViewHolder.postcontent.setText(post.getContent());
+            textViewHolder.postLike.setText(post.getPostLike() + "");
+            textViewHolder.postComment.setText(post.getPostComment() + "");
             for (User u : userDatabase.dataUser()) {
                 if (u.getUserId() == post.getUserId()) {
                     textViewHolder.postAdminUserId.setText(u.getFullName());
@@ -100,12 +104,17 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         TextView postcontent;
         TextView postAdminUserId;
         LinearLayout buttonComment;
+        TextView postLike;
+        TextView postComment;
+
 
         public PostTextViewHolder(View itemView) {
             super(itemView);
             postcontent = itemView.findViewById(R.id.post_content);
             postAdminUserId = itemView.findViewById(R.id.post_name);
             buttonComment = itemView.findViewById(R.id.button_comment);
+            postLike = itemView.findViewById(R.id.post_like);
+            postComment = itemView.findViewById(R.id.post_comment);
         }
     }
 
@@ -115,6 +124,8 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         TextView postcontent;
         TextView postAdminUserId;
         LinearLayout buttonComment;
+        TextView postLike;
+        TextView postComment;
 
         public PostImageViewHolder(View itemView) {
             super(itemView);
@@ -122,6 +133,8 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             postAdminUserId = itemView.findViewById(R.id.post_name);
             buttonComment = itemView.findViewById(R.id.button_comment);
             // postImageView = itemView.findViewById(R.id.post_image);  // Gán ImageView cho ảnh bài post
+            postLike = itemView.findViewById(R.id.post_like);
+            postComment = itemView.findViewById(R.id.post_comment);
         }
     }
 }

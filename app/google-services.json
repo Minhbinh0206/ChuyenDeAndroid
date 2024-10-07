@@ -1,13 +1,33 @@
 {
   "project_info": {
-    "project_number": "655181486682",
-    "project_id": "socialmediatdc-cf2c0",
-    "storage_bucket": "socialmediatdc-cf2c0.appspot.com"
+    "project_number": "878251601548",
+    "firebase_url": "https://socialmediatdcproject-default-rtdb.firebaseio.com",
+    "project_id": "socialmediatdcproject",
+    "storage_bucket": "socialmediatdcproject.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:655181486682:android:029218ab4f5c747ce2d663",
+        "mobilesdk_app_id": "1:878251601548:android:9bbe64d2ab323208aed5a9",
+        "android_client_info": {
+          "package_name": "com.example.chuyendeandroid"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrmDM-bRdXKE8nEyrtzGFgPRQzMkvmrwI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:878251601548:android:a8e91946ef3dc9eeaed5a9",
         "android_client_info": {
           "package_name": "com.example.socialmediatdcproject"
         }
@@ -15,7 +35,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCK8SzP-voQuHLgsCz4dYYShUVm14KTPxg"
+          "current_key": "AIzaSyCrmDM-bRdXKE8nEyrtzGFgPRQzMkvmrwI"
         }
       ],
       "services": {
