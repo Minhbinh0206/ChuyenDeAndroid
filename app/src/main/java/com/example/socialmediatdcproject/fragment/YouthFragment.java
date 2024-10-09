@@ -68,11 +68,9 @@ public class YouthFragment extends Fragment {
             }
         }
 
-        // Lấy dữ liệu thành viên
-        List<User> memberGroup = groupDatabase.getGroupById(User.ID_ADMIN_DOANTHANHNIEN).getGroupMember();
+
 
         PostAdapter postAdapter = new PostAdapter(postsYouth);
-        MemberAdapter memberAdapter = new MemberAdapter(memberGroup);
         GroupAdapter groupAdapter = new GroupAdapter(groupsYouth);
 
         recyclerView.setAdapter(postAdapter);
@@ -109,8 +107,6 @@ public class YouthFragment extends Fragment {
 
         // Sự kiện khi nhấn vào nút memberButton
         memberButton.setOnClickListener(v -> {
-            recyclerView.setAdapter(memberAdapter);
-            memberAdapter.notifyDataSetChanged();
 
             // Cập nhật màu cho các nút
             groupButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
