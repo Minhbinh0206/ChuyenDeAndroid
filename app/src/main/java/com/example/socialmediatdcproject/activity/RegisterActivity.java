@@ -14,48 +14,36 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.R;
-import com.example.socialmediatdcproject.database.UserDatabase;
-import com.example.socialmediatdcproject.model.User;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class RegisterActivity extends AppCompatActivity {
 
     private EditText editTextName, editTextEmail, editTextPassword, editTextPasswordConfirm;
+    private FirebaseAuth mAuth; // Khởi tạo biến FirebaseAuth
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        UserDatabase userDatabase = new UserDatabase();
-
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.register_layout);
 
+        // Khởi tạo FirebaseAuth
+        mAuth = FirebaseAuth.getInstance();
+
         // Thiết kế giao diện
-        // - Bo tròn logo
         ImageView imageView = findViewById(R.id.image_logo);
         Glide.with(this)
-                .load(R.drawable.image_logo_login) // Hoặc URL nếu bạn dùng ảnh từ mạng
+                .load(R.drawable.image_logo_login)
                 .circleCrop()
                 .into(imageView);
 
-        ImageView iconEmail = findViewById(R.id.icon_profile);
-        Glide.with(this)
-                .load(R.drawable.icon_profile) // Hoặc URL nếu bạn dùng ảnh từ mạng
-                .circleCrop()
-                .into(iconEmail);
-
         // Xử lý chức năng
-        // - Chuyển qua trang đăng nhập
-        TextView textSignUp = findViewById(R.id.textLogIn);
-        textSignUp.setOnClickListener(v -> {
+        TextView textLogIn = findViewById(R.id.textLogIn);
+        textLogIn.setOnClickListener(v -> {
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
             startActivity(intent);
         });
-
-        // - Chuyển qua trang tạo hồ sơ thông tin
-//        Button buttonRegister = findViewById(R.id.buttonRegister);
-//        buttonRegister.setOnClickListener(v -> {
-//            Intent intent = new Intent(RegisterActivity.this, UploadProfileActivity.class);
-//            startActivity(intent);
-//        });
 
         // Xử lý chức năng đăng ký
         Button buttonRegister = findViewById(R.id.buttonRegister);
@@ -66,35 +54,39 @@ public class RegisterActivity extends AppCompatActivity {
             EditText passwordEditText = findViewById(R.id.password_register);
             EditText passwordConfirmEditText = findViewById(R.id.password_confirm_register);
 
-            String fullName = fullNameEditText.getText().toString();
-            String email = emailEditText.getText().toString();
-            String password = passwordEditText.getText().toString();
-            String passwordConfirm = passwordConfirmEditText.getText().toString();
+            String fullName = fullNameEditText.getText().toString().trim();
+            String email = emailEditText.getText().toString().trim();
+            String password = passwordEditText.getText().toString().trim();
+            String passwordConfirm = passwordConfirmEditText.getText().toString().trim();
 
-            // Kiểm tra thông tin
+            // Kiểm tra thông tin đầu vào
             if (fullName.isEmpty() || email.isEmpty() || password.isEmpty() || passwordConfirm.isEmpty()) {
-                Toast.makeText(this, "Vui lòng điền đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(RegisterActivity.this, "Vui lòng điền đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             if (!password.equals(passwordConfirm)) {
-                Toast.makeText(this, "Mật khẩu không khớp!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(RegisterActivity.this, "Mật khẩu không khớp!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            userDatabase.dataUser();
-            // Thêm người dùng vào cơ sở dữ liệu
-            User newUser = new User(fullName, email, password);
-            Log.d("Nguoi dung moi" , "fullname" + fullName);
-            Log.d("Nguoi dung moi" , "email" + email);
-            Log.d("Nguoi dung moi" , "password" + password);
-            userDatabase.addUser(newUser);
+            // Đăng ký người dùng với Firebase Authentication
+            mAuth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(RegisterActivity.this, task -> {
+                        if (task.isSuccessful()) {
+                            // Đăng ký thành công, người dùng đã được tạo
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            Toast.makeText(RegisterActivity.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
 
-            Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
-
-            // Chuyển qua trang tạo hồ sơ thông tin
-            Intent intent = new Intent(RegisterActivity.this, UploadProfileActivity.class);
-            startActivity(intent);
+                            // Điều hướng đến trang tạo hồ sơ
+                            Intent intent = new Intent(RegisterActivity.this, UploadProfileActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            // Đăng ký thất bại
+                            Toast.makeText(RegisterActivity.this, "Đăng ký thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
         });
     }
 }
