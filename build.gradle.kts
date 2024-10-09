@@ -8,6 +8,6 @@ plugins {
 buildscript {
     dependencies {
         // Thêm Firebase plugin
-        classpath("com.google.gms:google-services:4.3.10") // hoặc phiên bản mới nhất
+        classpath(libs.google.services) // hoặc phiên bản mới nhất
     }
 }
