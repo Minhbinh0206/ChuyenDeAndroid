@@ -39,6 +39,7 @@ import com.example.socialmediatdcproject.fragment.YouthFragment;
 import com.example.socialmediatdcproject.model.Notify;
 import com.example.socialmediatdcproject.model.Post;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -160,8 +161,8 @@ public class SharedActivity extends AppCompatActivity {
         LinearLayout navLayout = (LinearLayout) navigationView.getHeaderView(0).findViewById(R.id.nav_container);
 
         // Danh sách item để thêm vào Navigation Drawer
-        int[] icons = {R.drawable.icon_home, R.drawable.icon_flag, R.drawable.icon_department, R.drawable.icon_department, R.drawable.icon_department, R.drawable.icon_group, R.drawable.icon_personal};
-        String[] titles = {"Trang chủ", "Phòng đào tạo", "Khoa", "Doanh nghiệp", "Đoàn thanh niên", "Câu lạc bộ - Nhóm", "Trang cá nhân"};
+        int[] icons = {R.drawable.icon_home, R.drawable.icon_flag, R.drawable.icon_department, R.drawable.icon_department, R.drawable.icon_department, R.drawable.icon_group, R.drawable.icon_personal, R.drawable.icon_home};
+        String[] titles = {"Trang chủ", "Phòng đào tạo", "Khoa", "Doanh nghiệp", "Đoàn thanh niên", "Câu lạc bộ - Nhóm", "Trang cá nhân", "Đăng xuất"};
 
         // Khởi tạo FragmentManager
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -175,16 +176,14 @@ public class SharedActivity extends AppCompatActivity {
             title.setText(titles[i]);
 
             // Thêm sự kiện click cho mỗi item
-            final int index = i; // Lưu chỉ số để sử dụng trong sự kiện click
+            final int index = i;
             itemView.setOnClickListener(v -> {
                 Fragment fragment = null;
                 switch (index) {
                     case 0:
                         // Home
                         fragment = new HomeFragment();
-
                         loadPostsFromFirebase();
-
                         break;
                     case 1:
                         // Phòng đào tạo
@@ -206,19 +205,34 @@ public class SharedActivity extends AppCompatActivity {
                         // Group
                         fragment = new GroupFragment();
                         break;
+                    case 6:
+                        // Trang cá nhân
+                        fragment = new GroupFragment();
+                        break;
+                    case 7:
+                        // Đăng xuất người dùng và chuyển đến LoginActivity
+                        FirebaseAuth auth = FirebaseAuth.getInstance();
+                        auth.signOut();
+                        Intent intent = new Intent(SharedActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish(); // Đóng SharedActivity
+                        return;  // Thoát phương thức để không thực hiện fragmentTransaction
                     default:
                         fragment = new HomeFragment();
                         break;
                 }
 
-                // Thay thế nội dung của FrameLayout bằng Fragment tương ứng
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.first_content_fragment, fragment);
-                fragmentTransaction.commit();
+                // Thay thế nội dung của FrameLayout bằng Fragment tương ứng nếu fragment không null
+                if (fragment != null) {
+                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                    fragmentTransaction.replace(R.id.first_content_fragment, fragment);
+                    fragmentTransaction.commit();
+                }
 
                 // Đóng Navigation Drawer sau khi chọn mục
                 drawerLayout.closeDrawer(GravityCompat.START);
             });
+
 
             navLayout.addView(itemView);
         }
