@@ -18,11 +18,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.GroupAPI;
+import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.MemberAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
+import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.example.socialmediatdcproject.database.GroupDatabase;
 import com.example.socialmediatdcproject.database.PostDatabase;
 import com.example.socialmediatdcproject.model.Group;
@@ -36,9 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DepartmentFragment extends Fragment {
-    private RecyclerView memberRecyclerView; // RecyclerView để hiển thị danh sách người dùng
-    private MemberAdapter memberAdapter; // Adapter cho RecyclerView
-    private List<User> userList; // Danh sách người dùng
+    private RecyclerView recyclerView; // RecyclerView để hiển thị danh sách người dùng
 
     @Nullable
     @Override
@@ -52,10 +52,37 @@ public class DepartmentFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Khởi tạo danh sách người dùng và RecyclerView
-        userList = new ArrayList<>();
-        memberRecyclerView = view.findViewById(R.id.second_content_fragment); // Giả sử bạn đã thêm RecyclerView này trong layout
+        recyclerView = requireActivity().findViewById(R.id.second_content_fragment); // Giả sử bạn đã thêm RecyclerView này trong layout
 
-        loadPostFromFirebase();
+        GroupAPI groupAPI = new GroupAPI();
+        groupAPI.getGroupById(User.ID_ADMIN_DEPARTMENT_CNTT, new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Group g = snapshot.getValue(Group.class);
+                    if (g != null) {
+                        TextView nameTraining = getView().findViewById(R.id.name_department);
+                        ImageView avatarTraining = getView().findViewById(R.id.logo_department);
+                        nameTraining.setText(g.getGroupName());
+
+                        Glide.with(requireContext())
+                                .load(g.getAvatar())
+                                .into(avatarTraining);
+
+
+                    }
+                } else {
+                    Log.d("Group", "No group found for ID: " + User.ID_ADMIN_DEPARTMENT_CNTT);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Group", "Error: " + error.getMessage());
+            }
+        });
+
+        loadPostFromFirebase(User.ID_ADMIN_DEPARTMENT_CNTT);
 
         // Tìm các nút
         Button infoButton = view.findViewById(R.id.button_department_info);
@@ -68,104 +95,139 @@ public class DepartmentFragment extends Fragment {
 
         // Sự kiện khi nhấn vào nút memberButton
         memberButton.setOnClickListener(v -> {
-            loadUsersByGroupId(3); // Tải người dùng từ groupId 3
+            loadUsersByGroupId(User.ID_ADMIN_DEPARTMENT_CNTT);
 
             // Cập nhật màu cho các nút
-            infoButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
-            infoButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-            postButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
-            postButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-            memberButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-            memberButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+            changeColorButtonActive(memberButton);
+            changeColorButtonNormal(infoButton);
+            changeColorButtonNormal(postButton);
+        });
+
+        // Sự kiện khi nhấn vào nút postButton
+        postButton.setOnClickListener(v -> {
+            loadPostFromFirebase(User.ID_ADMIN_DEPARTMENT_CNTT);
+
+            // Cập nhật màu cho các nút
+            changeColorButtonActive(postButton);
+            changeColorButtonNormal(infoButton);
+            changeColorButtonNormal(memberButton);
         });
     }
 
-    public void loadPostFromFirebase() {
-        // Khởi tạo danh sách bài đăng
-        ArrayList<Post> postsTraining = new ArrayList<>();
+    public void loadPostFromFirebase(int id) {
+        ArrayList<Post> posts = new ArrayList<>(); // Danh sách bài viết
 
-        // Lấy RecyclerView từ layout của Activity (shared_layout)
-        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        // Tạo instance của PostAPI
+        PostAPI postAPI = new PostAPI();
 
-        // Lấy Group của phòng đào tạo
-        GroupAPI groupAPI = new GroupAPI();
-        groupAPI.getGroupById(User.ID_ADMIN_DEPARTMENT_CNTT, new ValueEventListener() {
+        // Lấy bài viết theo groupId
+        postAPI.getPostByGroupId(id, new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                // Nếu hàm get by ID thì trả về là 1 đối tượng, cụ thể ở đây là Group
-                if (snapshot.exists()) {
-                    // Tạo mới 1 thằng group để lưu giá trị của firebase trả về
-                    Group g = snapshot.getValue(Group.class);
-
-                    // Set dữ liệu cho fragment
-                    TextView nameTraining = getView().findViewById(R.id.name_department);
-                    ImageView avatarTraining = getView().findViewById(R.id.logo_department);
-                    nameTraining.setText(g.getGroupName());
-
-                    String imageUrl = g.getAvatar();
-                    Log.d("TrainingFragment", "Image URL: " + imageUrl);
-                    // Sử dụng Glide để tải hình ảnh
-                    Glide.with(requireContext())
-                            .load(g.getAvatar())
-                            .into(avatarTraining);
-
-                    // Mặc định vào bài viết trước
-                    PostAPI postAPI = new PostAPI();
-                    postAPI.getPostByGroupId(g.getGroupId(), new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot postSnapshot) {
-                            if (postSnapshot.exists()) {
-                                // Duyệt qua tất cả các bài viết
-                                for (DataSnapshot post : postSnapshot.getChildren()) {
-                                    Post p = post.getValue(Post.class); // Lấy từng bài viết
-                                    postsTraining.add(p); // Thêm vào danh sách
-                                }
-
-                                // Lấy dữ liệu bài viết
-                                PostAdapter postAdapter = new PostAdapter(postsTraining);
-                                recyclerView.setAdapter(postAdapter);
-
-                                // Thiết lập LayoutManager cho RecyclerView
-                                recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                            } else {
-                                // Xử lý trường hợp không tìm thấy bài viết
-                            }
+            public void onDataChange(@NonNull DataSnapshot postSnapshot) {
+                // Kiểm tra nếu có bài viết
+                if (postSnapshot.exists()) {
+                    for (DataSnapshot post : postSnapshot.getChildren()) {
+                        Post p = post.getValue(Post.class);
+                        if (p != null) {
+                            posts.add(p); // Thêm bài viết vào danh sách
                         }
+                    }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            // Xử lý lỗi nếu có
-                        }
-                    });
+                    // Cập nhật RecyclerView với dữ liệu bài viết
+                    PostAdapter postAdapter = new PostAdapter(posts);
+                    recyclerView.setAdapter(postAdapter);
+                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
                 } else {
-                    // Xử lý trường hợp không tìm thấy nhóm
+                    Log.d("Post", "No posts found for groupId: " + id);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Xử lý lỗi nếu có
+                Log.e("Post", "Error: " + error.getMessage());
             }
         });
     }
 
-    private void loadUsersByGroupId(int groupId) {
-        // Khởi tạo API để lấy người dùng
+
+    private void loadUsersByGroupId(int id) {
+        ArrayList<User> memberGroup = new ArrayList<>();
         UserAPI userAPI = new UserAPI();
-        userAPI.getUsersByGroupId(groupId, new UserAPI.UserCallback() {
+        userAPI.getAllUsers(new UserAPI.UserCallback() {
             @Override
             public void onUserReceived(User user) {
-                // Không sử dụng ở đây
+                // Không cần làm gì ở đây nếu không sử dụng
             }
 
             @Override
             public void onUsersReceived(List<User> users) {
-                userList.clear(); // Xóa danh sách trước khi thêm mới
-                userList.addAll(users); // Thêm danh sách người dùng vào
-                memberAdapter = new MemberAdapter(userList); // Tạo adapter cho RecyclerView
-                memberRecyclerView.setAdapter(memberAdapter); // Thiết lập adapter cho RecyclerView
-                memberRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext())); // Thiết lập LayoutManager
+                GroupUserAPI groupUserAPI = new GroupUserAPI();
+                groupUserAPI.getAllGroupUsers(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<GroupUser> groupList = new ArrayList<>();
+
+                        for (DataSnapshot groupSnapshot : snapshot.getChildren()) {
+                            GroupUser groupUser = groupSnapshot.getValue(GroupUser.class);
+                            if (groupUser != null) {
+                                groupList.add(groupUser);
+                            }
+                        }
+
+                        Log.d("Group", "Total groups: " + groupList.size());
+
+                        for (GroupUser gu : groupList) {
+                            groupUserAPI.getGroupUserByIdGroup(gu.getGroupId(), new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    List<GroupUser> groupUserList = new ArrayList<>();
+                                    for (DataSnapshot groupUserSnapshot : snapshot.getChildren()) {
+                                        GroupUser groupUser = groupUserSnapshot.getValue(GroupUser.class);
+                                        if (groupUser.getGroupId() == id) {
+                                            groupUserList.add(groupUser);
+                                        }
+                                    }
+
+                                    // Chỉ thêm vào memberGroup nếu chưa có
+                                    for (GroupUser gus : groupUserList) {
+                                        for (User u : users) {
+                                            if (u.getUserId() == gus.getUserId() && !memberGroup.contains(u)) {
+                                                memberGroup.add(u);
+                                            }
+                                        }
+                                    }
+
+                                    // Cập nhật RecyclerView sau khi thêm tất cả member
+                                    MemberAdapter memberAdapter = new MemberAdapter(memberGroup);
+                                    recyclerView.removeAllViews();
+                                    recyclerView.setAdapter(memberAdapter);
+                                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                    Log.e("Group", "Error: " + error.getMessage());
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("Group", "Error: " + error.getMessage());
+                    }
+                });
             }
         });
+    }
+
+    public void changeColorButtonActive(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+    }
+
+    public void changeColorButtonNormal(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 }
