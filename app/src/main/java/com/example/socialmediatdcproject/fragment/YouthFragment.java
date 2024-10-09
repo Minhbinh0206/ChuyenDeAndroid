@@ -69,7 +69,7 @@ public class YouthFragment extends Fragment {
         }
 
         // Lấy dữ liệu thành viên
-        List<User> memberGroup = groupDatabase.getGroupById(User.ID_ADMIN_DOANTHANHNIEN, groupDatabase.dataGroups()).getGroupMember();
+        List<User> memberGroup = groupDatabase.getGroupById(User.ID_ADMIN_DOANTHANHNIEN).getGroupMember();
 
         PostAdapter postAdapter = new PostAdapter(postsYouth);
         MemberAdapter memberAdapter = new MemberAdapter(memberGroup);

@@ -50,7 +50,6 @@ public class BussinessFragment extends Fragment {
         BussinessDatabase bussinessDatabase = new BussinessDatabase();
 
         // Lấy dữ liệu bài viết
-        postsBussiness = postDatabase.dataPostFilterBussiness();
         bussinesses = bussinessDatabase.dataBussiness();
 
         PostAdapter postAdapter = new PostAdapter(postsBussiness);

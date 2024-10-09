@@ -16,9 +16,8 @@ public class GroupDatabase {
     ArrayList<Group> groupsDtb = new ArrayList<>();
     UserDatabase userDatabase = new UserDatabase();
 
-    // Hàm tìm group bằng userId
-    public Group getGroupById(int id, ArrayList<Group> groupArrayList) {
-        for (Group group : groupArrayList) {
+    public Group getGroupById(int id) {
+        for (Group group : dataGroups()) {
             if (group.getGroupId() == id) {
                 return group;
             }

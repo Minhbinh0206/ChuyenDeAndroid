@@ -38,7 +38,7 @@ public class LoginActivity extends AppCompatActivity {
         // - Chuyển qua trang đăng ký
         TextView textSignUp = findViewById(R.id.textSignUp);
         textSignUp.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            Intent intent = new Intent(LoginActivity.this, UploadProfileActivity.class);
             startActivity(intent);
         });
 

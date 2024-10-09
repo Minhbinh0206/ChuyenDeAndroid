@@ -9,13 +9,13 @@ public class Post implements Serializable {
     private int postId;
     private int userId;
     private int postLike;
-    private List<Comment> postComment;
-    private String title;
     private String postImage;
     private String content;
     private int status;
     private int isPublic;
     private String createdAt;
+    private int groupId;
+
 
     public int getPostId() {
         return postId;
@@ -41,20 +41,13 @@ public class Post implements Serializable {
         this.postLike = postLike;
     }
 
-    public List<Comment> getPostComment() {
-        return postComment;
+
+    public int getGroupId() {
+        return groupId;
     }
 
-    public void setPostComment(List<Comment> postComment) {
-        this.postComment = postComment;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
     }
 
     public String getPostImage() {
@@ -97,12 +90,11 @@ public class Post implements Serializable {
         this.createdAt = createdAt;
     }
 
-    public Post(int postId, int userId, int postLike, List<Comment> postComment, String title, String postImage, String content, int status, int isPublic, String createdAt) {
+    public Post(int postId, int userId, int postLike, int groupId, String postImage, String content, int status, int isPublic, String createdAt) {
         this.postId = postId;
         this.userId = userId;
         this.postLike = postLike;
-        this.postComment = postComment;
-        this.title = title;
+        this.groupId = groupId;
         this.postImage = postImage;
         this.content = content;
         this.status = status;
@@ -114,8 +106,7 @@ public class Post implements Serializable {
         this.postId = -1;
         this.userId = -1;
         this.postLike = 0;
-        this.postComment = new ArrayList<>();
-        this.title = "";
+        this.groupId = -1;
         this.postImage = "";
         this.content = "";
         this.status = -1;

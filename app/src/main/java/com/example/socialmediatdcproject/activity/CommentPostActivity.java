@@ -58,28 +58,28 @@ public class CommentPostActivity extends AppCompatActivity {
         Intent intent = getIntent();
         int postId = intent.getIntExtra("postId", -1);  // Nhận postId, giá trị mặc định là -1 nếu không có postId
 
-        if (postId != -1) {
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            // Xử lý postId ở đây, ví dụ: lấy dữ liệu bài post từ cơ sở dữ liệu dựa trên postId
-            PostDatabase postDatabase = new PostDatabase();
-            CommentDatabase commentDatabase = new CommentDatabase();
-            Post post = postDatabase.getPostById(postId);
-            ArrayList<Post> posts = new ArrayList<>();
-            posts.add(post);
-
-            ArrayList<Comment> comments = commentDatabase.getCommentsByPostId(post.getPostId());
-            RecyclerView recyclerViewSecond = findViewById(R.id.second_content_comment_post);
-
-            PostAdapter postAdapter = new PostAdapter(posts);
-            CommentAdapter commentAdapter = new CommentAdapter(comments);
-
-            recyclerViewFirst.setAdapter(postAdapter);
-            recyclerViewSecond.setAdapter(commentAdapter);
-
-            // Sử dụng LayoutManager cho RecyclerView
-            recyclerViewFirst.setLayoutManager(new LinearLayoutManager(this));
-            recyclerViewSecond.setLayoutManager(new LinearLayoutManager(this));
-        }
+//        if (postId != -1) {
+//            FragmentManager fragmentManager = getSupportFragmentManager();
+//            // Xử lý postId ở đây, ví dụ: lấy dữ liệu bài post từ cơ sở dữ liệu dựa trên postId
+//            PostDatabase postDatabase = new PostDatabase();
+//            CommentDatabase commentDatabase = new CommentDatabase();
+////            Post post = postDatabase.getPostById(postId);
+//            ArrayList<Post> posts = new ArrayList<>();
+//            posts.add(post);
+//
+//            ArrayList<Comment> comments = commentDatabase.getCommentsByPostId(post.getPostId());
+//            RecyclerView recyclerViewSecond = findViewById(R.id.second_content_comment_post);
+//
+//            PostAdapter postAdapter = new PostAdapter(posts);
+//            CommentAdapter commentAdapter = new CommentAdapter(comments);
+//
+//            recyclerViewFirst.setAdapter(postAdapter);
+//            recyclerViewSecond.setAdapter(commentAdapter);
+//
+//            // Sử dụng LayoutManager cho RecyclerView
+//            recyclerViewFirst.setLayoutManager(new LinearLayoutManager(this));
+//            recyclerViewSecond.setLayoutManager(new LinearLayoutManager(this));
+//        }
 
         // Thiết lập iconback
         ImageButton iconBack = findViewById(R.id.icon_back);

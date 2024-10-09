@@ -31,9 +31,9 @@ public class UserDatabase {
         User u1 = new User();
         u1.setUserId(User.ID_ADMIN_PHONGDAOTAO);
         u1.setEmail("phongdaotao@gmail.com");
-        u1.setPassword("999");
+        u1.setPassword("999999");
         u1.setFullName("Phòng đào tạo");
-        u1.setPhoneNumber("0987654321");
+            u1.setPhoneNumber("0987654321");
         u1.setAvatar("");
         u1.setRoleId(User.ROLE_PHONGDAOTAO);
         usersDtb.add(u1);
