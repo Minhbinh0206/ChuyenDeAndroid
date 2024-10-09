@@ -31,7 +31,7 @@ public class UserDatabase {
         User u1 = new User();
         u1.setUserId(User.ID_ADMIN_PHONGDAOTAO);
         u1.setEmail("phongdaotao@gmail.com");
-        u1.setPassword("999");
+        u1.setPassword("999999");
         u1.setFullName("Phòng đào tạo");
         u1.setPhoneNumber("0987654321");
         u1.setAvatar("");
@@ -42,7 +42,7 @@ public class UserDatabase {
         User u2 = new User();
         u2.setUserId(User.ID_ADMIN_DOANTHANHNIEN);
         u2.setEmail("doanthanhnien@gmail.com");
-        u2.setPassword("999");
+        u2.setPassword("999999");
         u2.setFullName("Đoàn thanh niên");
         u2.setPhoneNumber("0987654322");
         u2.setAvatar("");
@@ -53,7 +53,7 @@ public class UserDatabase {
         User u3 = new User();
         u3.setUserId(User.ID_ADMIN_DEPARTMENT_CNTT);
         u3.setEmail("cntt@gmail.com");
-        u3.setPassword("999");
+        u3.setPassword("999999");
         u3.setFullName("Khoa Công nghệ thông tin");
         u3.setPhoneNumber("0987654323");
         u3.setAvatar("");
@@ -64,7 +64,7 @@ public class UserDatabase {
         User u4 = new User();
         u4.setUserId(User.ID_ADMIN_DEPARTMENT_CKOT);
         u4.setEmail("ckot@gmail.com");
-        u4.setPassword("999");
+        u4.setPassword("999999");
         u4.setFullName("Khoa Công nghệ cơ khí - ô tô");
         u4.setPhoneNumber("0987654324");
         u4.setAvatar("");
@@ -75,7 +75,7 @@ public class UserDatabase {
         User u5 = new User();
         u5.setUserId(User.ID_ADMIN_DEPARTMENT_CKCTM);
         u5.setEmail("ckctm@gmail.com");
-        u5.setPassword("999");
+        u5.setPassword("999999");
         u5.setFullName("Khoa Cơ khí chế tạo máy");
         u5.setPhoneNumber("0987654325");
         u5.setAvatar("");
@@ -86,7 +86,7 @@ public class UserDatabase {
         User u6 = new User();
         u6.setUserId(User.ID_ADMIN_DEPARTMENT_CNTD);
         u6.setEmail("cntd@gmail.com");
-        u6.setPassword("999");
+        u6.setPassword("999999");
         u6.setFullName("Khoa Công nghệ tự động");
         u6.setPhoneNumber("0987654326");
         u6.setAvatar("");
@@ -97,7 +97,7 @@ public class UserDatabase {
         User u7 = new User();
         u7.setUserId(User.ID_ADMIN_DEPARTMENT_DDT);
         u7.setEmail("ddt@gmail.com");
-        u7.setPassword("999");
+        u7.setPassword("999999");
         u7.setFullName("Khoa Điện - Điện tử");
         u7.setPhoneNumber("0987654327");
         u7.setAvatar("");
@@ -108,7 +108,7 @@ public class UserDatabase {
         User u8 = new User();
         u8.setUserId(User.ID_ADMIN_DEPARTMENT_KOREA);
         u8.setEmail("tienghan@gmail.com");
-        u8.setPassword("999");
+        u8.setPassword("999999");
         u8.setFullName("Khoa Tiếng Hàn");
         u8.setPhoneNumber("0987654328");
         u8.setAvatar("");
@@ -119,7 +119,7 @@ public class UserDatabase {
         User u9 = new User();
         u9.setUserId(User.ID_ADMIN_DEPARTMENT_DULICH);
         u9.setEmail("dulich@gmail.com");
-        u9.setPassword("999");
+        u9.setPassword("999999");
         u9.setFullName("Khoa Du lịch");
         u9.setPhoneNumber("0987654329");
         u9.setAvatar("");
@@ -130,7 +130,7 @@ public class UserDatabase {
         User u10 = new User();
         u10.setUserId(User.ID_ADMIN_DEPARTMENT_QTKD);
         u10.setEmail("qtkd@gmail.com");
-        u10.setPassword("999");
+        u10.setPassword("999999");
         u10.setFullName("Khoa Quản trị kinh doanh");
         u10.setPhoneNumber("0987654330");
         u10.setAvatar("");
@@ -141,7 +141,7 @@ public class UserDatabase {
         User u11 = new User();
         u11.setUserId(User.ID_ADMIN_DEPARTMENT_ENGLISH);
         u11.setEmail("tienganh@gmail.com");
-        u11.setPassword("999");
+        u11.setPassword("999999");
         u11.setFullName("Khoa Tiếng Anh");
         u11.setPhoneNumber("0987654331");
         u11.setAvatar("");
@@ -152,7 +152,7 @@ public class UserDatabase {
         User u12 = new User();
         u12.setUserId(User.ID_ADMIN_DEPARTMENT_TCKT);
         u12.setEmail("tckt@gmail.com");
-        u12.setPassword("999");
+        u12.setPassword("999999");
         u12.setFullName("Khoa Tài chính - Kế toán");
         u12.setPhoneNumber("0987654332");
         u12.setAvatar("");
@@ -163,7 +163,7 @@ public class UserDatabase {
         User u13 = new User();
         u13.setUserId(User.ID_ADMIN_DEPARTMENT_JAPANESE);
         u13.setEmail("tiengnhat@gmail.com");
-        u13.setPassword("999");
+        u13.setPassword("999999");
         u13.setFullName("Khoa Tiếng Nhật");
         u13.setPhoneNumber("0987654333");
         u13.setAvatar("");
@@ -174,7 +174,7 @@ public class UserDatabase {
         User u14 = new User();
         u14.setUserId(User.ID_ADMIN_DEPARTMENT_CHINESE);
         u14.setEmail("tiengtrung@gmail.com");
-        u14.setPassword("999");
+        u14.setPassword("999999");
         u14.setFullName("Khoa Tiếng Trung");
         u14.setPhoneNumber("0987654334");
         u14.setAvatar("");
@@ -185,7 +185,7 @@ public class UserDatabase {
         User u15 = new User();
         u15.setUserId(User.ID_ADMIN_BUSSINESS_FPT);
         u15.setEmail("fpt@gmail.com");
-        u15.setPassword("999");
+        u15.setPassword("999999");
         u15.setFullName("FPT");
         u15.setPhoneNumber("0987654335");
         u15.setAvatar("");
@@ -196,7 +196,7 @@ public class UserDatabase {
         User u16 = new User();
         u16.setUserId(User.ID_ADMIN_BUSSINESS_MBBANK);
         u16.setEmail("mbbank@gmail.com");
-        u16.setPassword("999");
+        u16.setPassword("999999");
         u16.setFullName("MB Bank");
         u16.setPhoneNumber("0987654336");
         u16.setAvatar("");
@@ -207,7 +207,7 @@ public class UserDatabase {
         User u17 = new User();
         u17.setUserId(User.ID_ADMIN_BUSSINESS_VINFAST);
         u17.setEmail("vinfast@gmail.com");
-        u17.setPassword("999");
+        u17.setPassword("999999");
         u17.setFullName("Vinfast");
         u17.setPhoneNumber("0987654337");
         u17.setAvatar("");
@@ -218,7 +218,7 @@ public class UserDatabase {
         User u18 = new User();
         u18.setUserId(User.ID_ADMIN_BUSSINESS_APPLE);
         u18.setEmail("apple@gmail.com");
-        u18.setPassword("999");
+        u18.setPassword("999999");
         u18.setFullName("Apple");
         u18.setPhoneNumber("0987654338");
         u18.setAvatar("");
@@ -229,7 +229,7 @@ public class UserDatabase {
         User u19 = new User();
         u19.setUserId(User.ID_ADMIN_BUSSINESS_GRAB);
         u19.setEmail("grab@gmail.com");
-        u19.setPassword("999");
+        u19.setPassword("999999");
         u19.setFullName("Grab");
         u19.setPhoneNumber("0987654339");
         u19.setAvatar("");
@@ -240,7 +240,7 @@ public class UserDatabase {
         User u20 = new User();
         u20.setUserId(User.ID_ADMIN_BUSSINESS_EVN);
         u20.setEmail("evn@gmail.com");
-        u20.setPassword("999");
+        u20.setPassword("999999");
         u20.setFullName("EVN");
         u20.setPhoneNumber("0987654340");
         u20.setAvatar("");
@@ -251,7 +251,7 @@ public class UserDatabase {
         User u21 = new User();
         u21.setUserId(User.ID_ADMIN_BUSSINESS_TITAN);
         u21.setEmail("titan@gmail.com");
-        u21.setPassword("999");
+        u21.setPassword("999999");
         u21.setFullName("TITAN");
         u21.setPhoneNumber("0987654340");
         u21.setAvatar("");

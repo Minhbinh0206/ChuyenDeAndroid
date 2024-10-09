@@ -9,12 +9,13 @@ public class Post implements Serializable {
     private int postId;
     private int userId;
     private int postLike;
-    private List<Comment> postComment;
+    private int postComment;
     private String title;
     private String postImage;
     private String content;
     private int status;
     private int isPublic;
+    private int groupId;
     private String createdAt;
 
     public int getPostId() {
@@ -41,11 +42,11 @@ public class Post implements Serializable {
         this.postLike = postLike;
     }
 
-    public List<Comment> getPostComment() {
+    public int getPostComment() {
         return postComment;
     }
 
-    public void setPostComment(List<Comment> postComment) {
+    public void setPostComment(int postComment) {
         this.postComment = postComment;
     }
 
@@ -97,7 +98,15 @@ public class Post implements Serializable {
         this.createdAt = createdAt;
     }
 
-    public Post(int postId, int userId, int postLike, List<Comment> postComment, String title, String postImage, String content, int status, int isPublic, String createdAt) {
+    public int getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
+    }
+
+    public Post(int postId, int userId, int postLike, int postComment, String title, String postImage, String content, int status, int isPublic, int groupId, String createdAt) {
         this.postId = postId;
         this.userId = userId;
         this.postLike = postLike;
@@ -108,18 +117,20 @@ public class Post implements Serializable {
         this.status = status;
         this.isPublic = isPublic;
         this.createdAt = createdAt;
+        this.groupId = groupId;
     }
 
     public Post() {
         this.postId = -1;
         this.userId = -1;
         this.postLike = 0;
-        this.postComment = new ArrayList<>();
+        this.postComment = 0;
         this.title = "";
         this.postImage = "";
         this.content = "";
         this.status = -1;
         this.isPublic = -1;
+        this.groupId = -1;
         this.createdAt = "";
     }
 }
