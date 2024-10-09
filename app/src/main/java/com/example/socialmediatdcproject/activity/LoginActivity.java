@@ -17,13 +17,21 @@ import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.database.UserDatabase;
 import com.example.socialmediatdcproject.model.User;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
+
+    private FirebaseAuth mAuth;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.login_layout);
+
+        mAuth = FirebaseAuth.getInstance(); // Khởi tạo FirebaseAuth
 
         // Thiết kế giao diện
         // - Bo tròn logo
@@ -51,13 +59,16 @@ public class LoginActivity extends AppCompatActivity {
 
         // - Chuyển qua trang Home
         Button btnLogin = findViewById(R.id.btnLogin);
+        // ****************************************************************************************************
 
 //        btnLogin.setOnClickListener(v -> {
 //            Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
 //            startActivity(intent);
 //        });
 
-        // xử lý đăng nhập
+        // ****************************************************************************************************
+
+        // xử lý đăng nhập ( Firebase )
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -79,6 +90,29 @@ public class LoginActivity extends AppCompatActivity {
                     return;
                 }
 
+                // Xử lý đăng nhập ( bằng Firebase )
+
+                // Đăng nhập với Firebase Authentication
+                mAuth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(LoginActivity.this, task -> {
+                            if (task.isSuccessful()) {
+                                // Đăng nhập thành công, chuyển đến màn hình chính
+                                FirebaseUser user = mAuth.getCurrentUser();
+                                if (user != null && user.isEmailVerified()) {
+                                Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
+                                startActivity(intent);
+                                finish();
+                                }
+                            } else {
+                                // Đăng nhập thất bại
+                                Toast.makeText(LoginActivity.this, "Email chưa được xác minh. Vui lòng kiểm tra email của bạn.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+
+                /*
+                // đăng nhập bằng mã giả (cũ)
                 // Tạo đối tượng
                 UserDatabase userDatabase = new UserDatabase();
                 // khởi tạo danh sách người dùng
@@ -86,7 +120,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 // Lấy thông tin người dùng từ cơ sở dữ liệu theo email
                 User user = userDatabase.getUserByEmail(email);
-//                Log.d("Kiem tra" , "Email: " + userDatabase.getUserByEmail(email));
+                Log.d("Kiem tra" , "Email: " + userDatabase.getUserByEmail(email));
 
                 if ( user!=null && user.getPassword().equals(password)) {
                     Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
@@ -97,7 +131,13 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(LoginActivity.this, "Email hoặc mật khẩu không đúng", Toast.LENGTH_SHORT).show();
                 }
+                */
+
             }
+
+
         });
+
+
     }
 }
