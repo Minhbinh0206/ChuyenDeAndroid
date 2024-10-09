@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -10,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
@@ -21,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
@@ -31,10 +34,14 @@ import com.example.socialmediatdcproject.fragment.DepartmentFragment;
 import com.example.socialmediatdcproject.fragment.GroupFragment;
 import com.example.socialmediatdcproject.fragment.HomeFragment;
 import com.example.socialmediatdcproject.fragment.NotifyFragment;
+import com.example.socialmediatdcproject.fragment.TrainingFragment;
 import com.example.socialmediatdcproject.fragment.YouthFragment;
 import com.example.socialmediatdcproject.model.Notify;
 import com.example.socialmediatdcproject.model.Post;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -104,17 +111,8 @@ public class SharedActivity extends AppCompatActivity {
             // Nạp HomeFragment vào first_content_fragment
             fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
 
-            // Giả dữ liệu các post
-            PostDatabase postDatabase = new PostDatabase();
-            ArrayList<Post> posts = postDatabase.dataPost();
-
-            // Setup RecyclerView với Adapter
-            RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-            PostAdapter postAdapter = new PostAdapter(posts);
-            recyclerView.setAdapter(postAdapter);
-
-            // Sử dụng LayoutManager cho RecyclerView
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            // Lấy dữ lệu từ firebase
+            loadPostsFromFirebase();
 
             fragmentTransaction.commit();
         }
@@ -124,6 +122,38 @@ public class SharedActivity extends AppCompatActivity {
         ImageButton backButton = navigationView.getHeaderView(0).findViewById(R.id.icon_back);
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
 
+    }
+
+    private void loadPostsFromFirebase() {
+        PostAPI postAPI = new PostAPI();  // Sử dụng PostAPI để lấy dữ liệu từ Firebase
+
+        postAPI.getAllPosts(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ArrayList<Post> posts = new ArrayList<>();
+
+                // Lấy dữ liệu từ Firebase
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Post post = snapshot.getValue(Post.class);
+                    posts.add(post);
+                }
+
+                // Setup RecyclerView với Adapter
+                RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
+                PostAdapter postAdapter = new PostAdapter(posts);
+                recyclerView.setAdapter(postAdapter);
+
+                // Sử dụng LayoutManager cho RecyclerView
+                recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
+
+                Log.d("POST", "onDataChange: " + posts.size());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Xử lý lỗi khi không thể lấy dữ liệu
+            }
+        });
     }
 
     private void addNavigationItems(NavigationView navigationView) {
@@ -153,22 +183,12 @@ public class SharedActivity extends AppCompatActivity {
                         // Home
                         fragment = new HomeFragment();
 
-                        // Giả dữ liệu các post
-                        PostDatabase postDatabase = new PostDatabase();
-                        ArrayList<Post> posts = postDatabase.dataPost();
-
-                        // Setup RecyclerView với Adapter
-                        RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-                        PostAdapter postAdapter = new PostAdapter(posts);
-                        recyclerView.setAdapter(postAdapter);
-
-                        // Sử dụng LayoutManager cho RecyclerView
-                        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+                        loadPostsFromFirebase();
 
                         break;
                     case 1:
                         // Phòng đào tạo
-                        fragment = new DepartmentFragment();
+                        fragment = new TrainingFragment();
                         break;
                     case 2:
                         // Khoa
