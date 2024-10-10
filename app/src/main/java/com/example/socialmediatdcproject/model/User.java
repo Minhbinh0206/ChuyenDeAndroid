@@ -10,6 +10,9 @@ public class User {
     private String phoneNumber;
     private int roleId;
 
+    // Key đăng nhập
+    public static final int USER_KEY = -999;
+
     // Các id đặc biệt
     public static final int ID_ADMIN_PHONGDAOTAO = 0;
     public static final int ID_ADMIN_DOANTHANHNIEN = 1;
