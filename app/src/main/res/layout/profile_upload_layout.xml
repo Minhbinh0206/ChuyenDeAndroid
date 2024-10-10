@@ -17,12 +17,12 @@ android:layout_height="match_parent">
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/include">
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:background="@drawable/image_background_password"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="@drawable/image_background_password">
 
 
             <TextView
@@ -122,6 +122,7 @@ android:layout_height="match_parent">
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/parent_student_number_info">
+
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -137,33 +138,35 @@ android:layout_height="match_parent">
                     android:layout_height="match_parent"
                     android:layout_margin="5dp"
                     android:layout_weight="1"
-                    android:inputType="number"
-                    android:gravity="center"
-                    android:textSize="12dp"
                     android:background="@drawable/field_custom_infomation"
-                    android:hint="Ngày" />
+                    android:gravity="center"
+                    android:hint="Ngày"
+                    android:inputType="number"
+                    android:textSize="12dp" />
+
                 <EditText
                     android:id="@+id/month_born_info"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_margin="5dp"
                     android:layout_weight="1"
-                    android:gravity="center"
-                    android:inputType="number"
-                    android:textSize="12dp"
                     android:background="@drawable/field_custom_infomation"
-                    android:hint="Tháng" />
+                    android:gravity="center"
+                    android:hint="Tháng"
+                    android:inputType="number"
+                    android:textSize="12dp" />
+
                 <EditText
                     android:id="@+id/year_born_info"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_margin="5dp"
                     android:layout_weight="1"
-                    android:gravity="center"
-                    android:inputType="number"
-                    android:textSize="12dp"
                     android:background="@drawable/field_custom_infomation"
-                    android:hint="Năm" />
+                    android:gravity="center"
+                    android:hint="Năm"
+                    android:inputType="number"
+                    android:textSize="12dp" />
 
             </LinearLayout>
 
@@ -310,10 +313,10 @@ android:layout_height="match_parent">
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
+                        android:layout_marginTop="5dp"
                         android:layout_weight="6"
                         android:paddingLeft="10dp"
                         android:text="Avatar: "
-                        android:layout_marginTop="5dp"
                         android:textSize="15dp" />
 
                     <Button
@@ -326,7 +329,7 @@ android:layout_height="match_parent">
                 </LinearLayout>
 
                 <ImageView
-                    android:id="@+id/clickToUpLoadingImg"
+                    android:id="@+id/pfofileImages"
                     android:layout_width="100dp"
                     android:layout_height="0dp"
                     android:layout_gravity="center"

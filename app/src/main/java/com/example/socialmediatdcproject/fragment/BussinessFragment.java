@@ -34,6 +34,7 @@ public class BussinessFragment extends Fragment {
         // Inflate layout for this fragment
         return inflater.inflate(R.layout.fragment_business_first, container, false);
     }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

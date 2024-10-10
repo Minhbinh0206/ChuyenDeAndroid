@@ -1,8 +1,14 @@
 package com.example.socialmediatdcproject.activity;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -16,8 +22,15 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.database.DepartmentDatabase;
@@ -25,6 +38,7 @@ import com.example.socialmediatdcproject.database.MajorDatabase;
 import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Major;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -32,16 +46,65 @@ import java.util.List;
 import java.util.Map;
 
 public class UploadProfileActivity extends AppCompatActivity {
-    private static final int PICK_IMAGE_REQUEST = 1;
-    private static final int STORAGE_PERMISSION_CODE = 101;
-    private Uri imageUri;
-    private ImageView profileImageView;
+    public static final String TAG = UploadProfileActivity.class.getName();
+    private static final int MY_REQUEST_CODE = 10;
+    private static final int REQUEST_CODE_STORAGE_PERMISSION = 2 ;
+
+    private ImageView imgFromGallery;
+    private Button btnSelectImage;
+
+//Hàm chạy một intent để xử lý kết quả trả về là mở Gallery để chọn hình ảnh
+    private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    Log.e(TAG, "onActivityResult");
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        if (data == null) {
+                            return;
+                        }
+
+                        //Dữ liệu ảnh chọn từ Gallery
+                        Uri uri = data.getData();
+                        // mUri = uri;
+                        try {
+                                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                                imgFromGallery.setImageBitmap(bitmap);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                        }
+                    }
+                }
+            }
+    );
+
+
+
+    //Hàm khởi tạo giá trị ánh xạ
+    private void initUi() {
+        imgFromGallery = findViewById(R.id.pfofileImages);
+        btnSelectImage = findViewById(R.id.button_upload_image);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.profile_upload_layout);
+
+        //Gọi lại hàm ánh xạ initUi ở trên
+        initUi();
+        checkAndRequestPermissions();
+
+        //Nhấn vào nút chọn và mở quyền
+        btnSelectImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickRequestPermission();
+            }
+        });
 
         // Xử lý spinner các ngành và khoa
         Spinner department = findViewById(R.id.department_infomation);
@@ -55,7 +118,7 @@ public class UploadProfileActivity extends AppCompatActivity {
         List<String> optionsMajor = new ArrayList<>();
 
         // Lấy danh sách tên các khoa
-        for (Department d: departmentDatabase.dataDepartments()) {
+        for (Department d : departmentDatabase.dataDepartments()) {
             optionsDepartment.add(d.getDepartmentName());
         }
 
@@ -96,7 +159,8 @@ public class UploadProfileActivity extends AppCompatActivity {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
         yearInput.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -115,7 +179,8 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         });
 
         // Xử lý chọn tháng và ngày
@@ -124,7 +189,8 @@ public class UploadProfileActivity extends AppCompatActivity {
 
         monthInput.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -146,12 +212,14 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         });
 
         dayInput.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -172,7 +240,8 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+            }
         });
 
         // Xử lý chuyển trang qua trang home
@@ -182,6 +251,7 @@ public class UploadProfileActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
+
 
     // Hàm kiểm tra xem năm có phải năm nhuận hay không
     private boolean isLeapYear(int year) {
@@ -193,7 +263,10 @@ public class UploadProfileActivity extends AppCompatActivity {
         switch (month) {
             case 2:
                 return isLeapYear(year) ? 29 : 28;
-            case 4: case 6: case 9: case 11:
+            case 4:
+            case 6:
+            case 9:
+            case 11:
                 return 30;
             default:
                 return 31;
@@ -210,7 +283,70 @@ public class UploadProfileActivity extends AppCompatActivity {
         }
     }
 
-    //Cập nhật hình ảnh
 
+    //Cấp quyền mở file ảnh trong thiết bị
+    private void onClickRequestPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            openGallery();
+            return;
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            openGallery();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_REQUEST_CODE);
+        }
+    }
+
+
+
+    //Lắng nghe người dùng cho phép hay từ chối
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            // Hiển thị lý do tại sao ứng dụng cần quyền này
+            Toast.makeText(this, "This app needs storage permission to upload images.", Toast.LENGTH_SHORT).show();
+        }
+
+        // Kiểm tra mã yêu cầu quyền
+        if (requestCode == MY_REQUEST_CODE) {
+            // Kiểm tra xem có quyền nào đã được cấp hay không
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Nếu quyền đã được cấp, mở thư viện ảnh
+                openGallery();
+            } else {
+                // Nếu quyền bị từ chối, hiển thị thông báo cho người dùng
+                Toast.makeText(this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    //Hàm chọn ảnh từ Gallery
+    private void openGallery() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
+
+    }
+
+    private void checkAndRequestPermissions() {
+        if (ContextCompat.checkSelfPermission(
+                this, Manifest.permission.READ_EXTERNAL_STORAGE
+        ) != PackageManager.PERMISSION_GRANTED) {
+            // Nếu chưa được cấp quyền, yêu cầu quyền
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_CODE_STORAGE_PERMISSION
+            );
+        } else {
+            // Nếu đã có quyền, mở thư viện ảnh
+            openGallery();
+        }
+    }
 
 }

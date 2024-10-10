@@ -1,6 +1,7 @@
 package com.example.socialmediatdcproject.model;
 
 public class User {
+    public static final int ID_ADMIN_BUSINES = 1;
     private int userId;
     private String email;
     private String password;
