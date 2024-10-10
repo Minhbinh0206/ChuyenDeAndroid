@@ -128,18 +128,6 @@ public class UploadProfileActivity extends AppCompatActivity {
         Spinner department = findViewById(R.id.department_infomation);
         Spinner major = findViewById(R.id.major_infomation);
 
-        // Danh sách các tùy chọn
-        DepartmentDatabase departmentDatabase = new DepartmentDatabase();
-        MajorDatabase majorDatabase = new MajorDatabase();
-
-        List<String> optionsDepartment = new ArrayList<>();
-        List<String> optionsMajor = new ArrayList<>();
-
-        // Lấy danh sách tên các khoa
-        for (Department d : departmentDatabase.dataDepartments()) {
-            optionsDepartment.add(d.getDepartmentName());
-        }
-
         // Lấy danh sách phòng ban từ API
         loadDepartments();
 
@@ -195,7 +183,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
         });
     }
-
 
     // Sử dụng trong UploadProfileActivity
     private void loadMajors(int departmentId) {
@@ -381,8 +368,6 @@ public class UploadProfileActivity extends AppCompatActivity {
         }
     }
 
-
-
     //Lắng nghe người dùng cho phép hay từ chối
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -405,7 +390,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
         }
     }
-
 
     //Hàm chọn ảnh từ Gallery
     private void openGallery() {
