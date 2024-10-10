@@ -68,8 +68,6 @@ public class YouthFragment extends Fragment {
             }
         }
 
-
-
         PostAdapter postAdapter = new PostAdapter(postsYouth);
         GroupAdapter groupAdapter = new GroupAdapter(groupsYouth);
 

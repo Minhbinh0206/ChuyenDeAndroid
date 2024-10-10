@@ -34,6 +34,7 @@ public class BussinessFragment extends Fragment {
         // Inflate layout for this fragment
         return inflater.inflate(R.layout.fragment_business_first, container, false);
     }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -50,7 +51,6 @@ public class BussinessFragment extends Fragment {
         BussinessDatabase bussinessDatabase = new BussinessDatabase();
 
         // Lấy dữ liệu bài viết
-        postsBussiness = postDatabase.dataPostFilterBussiness();
         bussinesses = bussinessDatabase.dataBussiness();
 
         PostAdapter postAdapter = new PostAdapter(postsBussiness);

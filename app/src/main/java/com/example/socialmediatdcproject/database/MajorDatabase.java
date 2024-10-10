@@ -17,91 +17,102 @@ public class MajorDatabase {
     }
 
     public ArrayList<Major> dataMajors(){
-        // Ngành
+        // Ngành Công Nghệ Thông Tin
         Major m1 = new Major();
         m1.setMajorId(0);
-        m1.setMajorName("Công nghệ kỹ thuật ôtô");
+        m1.setMajorName("Công nghệ thông tin");
         majorsDtb.add(m1);
 
         Major m2 = new Major();
         m2.setMajorId(1);
-        m2.setMajorName("Chế tạo thiết bị cơ khí");
+        m2.setMajorName("Công nghệ thông tin (TFT)");
         majorsDtb.add(m2);
 
         Major m3 = new Major();
         m3.setMajorId(2);
-        m3.setMajorName("Công nghệ kỹ thuật cơ khí");
+        m3.setMajorName("Thiết kế đồ họa");
         majorsDtb.add(m3);
 
         Major m4 = new Major();
         m4.setMajorId(3);
-        m4.setMajorName("Công nghệ kỹ thuật cơ điện tử");
+        m4.setMajorName("Mạng máy tính");
         majorsDtb.add(m4);
+
+        //Ngành Khoa Điện _ Điện Tử
 
         Major m5 = new Major();
         m5.setMajorId(4);
-        m5.setMajorName("Công nghệ kỹ thuật điều khiển và tự động hóa");
+        m5.setMajorName("Điện công nghiệp");
         majorsDtb.add(m5);
 
         Major m6 = new Major();
         m6.setMajorId(5);
-        m6.setMajorName("Tự động hóa công nghiệp");
+        m6.setMajorName("Công nghệ kĩ thuật điện, điện tử");
         majorsDtb.add(m6);
 
         Major m7 = new Major();
         m7.setMajorId(6);
-        m7.setMajorName("Công nghệ thông tin");
+        m7.setMajorName("Công nghệ kĩ thuật điện tử truyền thông");
         majorsDtb.add(m7);
 
         Major m8 = new Major();
         m8.setMajorId(7);
-        m8.setMajorName("Thiết kế đồ họa");
+        m8.setMajorName("Điện tử công nghiệp");
         majorsDtb.add(m8);
 
         Major m9 = new Major();
         m9.setMajorId(8);
-        m9.setMajorName("Truyền thông và mạng máy tính");
+        m9.setMajorName("Kỹ thuật lắp đặt điện và điều khiển trong công nghiệp");
         majorsDtb.add(m9);
 
         Major m10 = new Major();
         m10.setMajorId(9);
-        m10.setMajorName("Công nghệ kỹ thuật điện - điện tử");
+        m10.setMajorName(" Kỹ thuật máy lạnh và điều hòa không khí");
         majorsDtb.add(m10);
 
         Major m11 = new Major();
         m11.setMajorId(10);
-        m11.setMajorName("Công nghệ kỹ thuật điện tử - truyền thông");
+        m11.setMajorName("Điện Công nghiệp và Dân dụng ");
         majorsDtb.add(m11);
+
+
+       //Ngành Khoa Công Nghệ Tự Động
 
         Major m12 = new Major();
         m12.setMajorId(11);
-        m12.setMajorName("Điện công nghiệp");
+        m12.setMajorName("Công nghệ kỹ thuật cơ điện tử");
         majorsDtb.add(m12);
 
         Major m13 = new Major();
         m13.setMajorId(12);
-        m13.setMajorName("Điện tử công nghiệp");
+        m13.setMajorName("Công nghệ kỹ thuật điều khiển và tự động hóa");
         majorsDtb.add(m13);
 
         Major m14 = new Major();
         m14.setMajorId(13);
-        m14.setMajorName("Kỹ thuật lắp đặt điện và điều khiển trong công nghiệp");
+        m14.setMajorName("Tự động hóa công nghiệp");
         majorsDtb.add(m14);
+
+        //Ngành Khoa Cơ Khí Chế Tạo Máy
 
         Major m15 = new Major();
         m15.setMajorId(14);
-        m15.setMajorName("Kỹ thuật máy lạnh và điều hòa không khí");
+        m15.setMajorName("Cơ Khí Chế Tạo Máy");
         majorsDtb.add(m15);
+
+        //Ngành Khoa Cơ Khí Ô tô
 
         Major m16 = new Major();
         m16.setMajorId(15);
-        m16.setMajorName("Tiếng Hàn Quốc");
+        m16.setMajorName("Công nghệ kĩ thuật ô tô");
         majorsDtb.add(m16);
 
         Major m17 = new Major();
         m17.setMajorId(16);
-        m17.setMajorName("Quản trị dịch vụ du lịch và lữ hành");
+        m17.setMajorName("Bảo trif và sửa chữa ô tô");
         majorsDtb.add(m17);
+
+        ////////////////////////////
 
         Major m18 = new Major();
         m18.setMajorId(17);
