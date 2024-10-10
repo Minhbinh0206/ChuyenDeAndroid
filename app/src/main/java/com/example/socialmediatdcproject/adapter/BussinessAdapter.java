@@ -41,7 +41,7 @@ public class BussinessAdapter extends RecyclerView.Adapter<BussinessAdapter.Buss
         UserDatabase userDatabase = new UserDatabase();
         if (bussiness != null) {
             // Set dữ liệu cho các view
-            holder.bussinessName.setText(bussiness.getBussinessName());
+            holder.bussinessName.setText(bussiness.getName());
             holder.bussinessAddress.setText(bussiness.getAddress());
         } else {
             Log.e("BusinessAdapter", "Bussiness at position " + position + " is null");
