@@ -170,7 +170,6 @@ public class BussinessFragment extends Fragment {
         });
     }
 
-
     private void updateButtonColors(Button activeButton, Button inactiveButton) {
         activeButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
         activeButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
@@ -179,3 +178,4 @@ public class BussinessFragment extends Fragment {
         inactiveButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 }
+
