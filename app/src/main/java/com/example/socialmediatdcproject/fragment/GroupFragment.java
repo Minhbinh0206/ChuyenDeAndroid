@@ -14,21 +14,23 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.GroupAdapter;
 import com.example.socialmediatdcproject.adapter.MemberAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
-import com.example.socialmediatdcproject.database.GroupDatabase;
-import com.example.socialmediatdcproject.database.PostDatabase;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.User;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GroupFragment extends Fragment {
-
+    RecyclerView recyclerView;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -41,19 +43,9 @@ public class GroupFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Lấy RecyclerView từ layout của Activity (shared_layout)
-        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
 
-        GroupDatabase groupDatabase = new GroupDatabase();
-
-        ArrayList<Group> groups = new ArrayList<>();
-        for (Group g: groupDatabase.dataGroups()) {
-            groups.add(g);
-        }
-
-        GroupAdapter groupAdapter = new GroupAdapter(groups);
-        recyclerView.setAdapter(groupAdapter);
-        // Thiết lập LayoutManager cho RecyclerView
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        loadGroups();
 
         // Tìm các nút
         Button groupAvailable = view.findViewById(R.id.button_group_available);
@@ -65,9 +57,7 @@ public class GroupFragment extends Fragment {
 
         // Sự kiện khi nhấn vào nút postButton
         groupAvailable.setOnClickListener(v -> {
-            // Thiết lập Adapter cho RecyclerView (khởi tạo Adapter với danh sách postsDepartment)
-            recyclerView.setAdapter(groupAdapter);
-            groupAdapter.notifyDataSetChanged();
+            loadGroups();
 
             // Cập nhật màu cho các nút
             groupCreateNew.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
@@ -84,6 +74,30 @@ public class GroupFragment extends Fragment {
             groupAvailable.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
             groupCreateNew.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
             groupCreateNew.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        });
+    }
+
+    public void loadGroups(){
+        GroupAPI groupAPI = new GroupAPI();
+        groupAPI.getAllGroups(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                ArrayList<Group> groups = new ArrayList<>();
+                for (DataSnapshot groupSnapshot : snapshot.getChildren()) {
+                    Group group = groupSnapshot.getValue(Group.class);
+                    if (group != null) {
+                        groups.add(group);
+                    }
+                }
+                GroupAdapter groupAdapter = new GroupAdapter(groups, requireContext());
+                recyclerView.setAdapter(groupAdapter);
+                recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
         });
     }
 }

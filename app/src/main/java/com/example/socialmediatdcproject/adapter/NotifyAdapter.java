@@ -8,8 +8,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
-import com.example.socialmediatdcproject.database.UserDatabase;
 import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Notify;
 import com.example.socialmediatdcproject.model.User;
@@ -36,15 +37,25 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
     @Override
     public void onBindViewHolder(@NonNull NotifyAdapter.NotifyViewHolder holder, int position) {
         Notify notify = notifyList.get(position);
-        UserDatabase userDatabase = new UserDatabase();
+        UserAPI userAPI = new UserAPI();
         if (notify != null) {
             // Set dữ liệu cho các view
-            for (User u: userDatabase.dataUser()) {
-                if (u.getUserId() == notify.getUserSendId()){
-                    holder.userSendID.setText(u.getFullName());
-                    break;
+            userAPI.getAllUsers(new UserAPI.UserCallback() {
+                @Override
+                public void onUserReceived(User user) {
+
                 }
-            }
+
+                @Override
+                public void onUsersReceived(List<User> users) {
+                    for (User u: users) {
+                        if (u.getUserId() == notify.getUserSendId()){
+                            holder.userSendID.setText(u.getFullName());
+                            break;
+                        }
+                    }
+                }
+            });
             holder.notifyTitle.setText(notify.getNotifyTitle());
             holder.notifyContent.setText(notify.getNotifyContent());
         } else {
@@ -60,7 +71,6 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
     // Hàm lấy chức vụ
     public String getPositionJob(User user) {
         String s = "";
-        UserDatabase userDatabase = new UserDatabase();
 
         if (user.getRoleId() == User.ROLE_STUDENT) {
             s = "Sinh viên";

@@ -13,7 +13,9 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.model.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -70,16 +72,28 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
+            // Tao User
+            User userDTB = new User();
+            userDTB.setEmail(email);
+            userDTB.setPassword(password);
+            userDTB.setFullName(fullName);
+
             // Đăng ký người dùng với Firebase Authentication
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(RegisterActivity.this, task -> {
                         if (task.isSuccessful()) {
                             // Đăng ký thành công, người dùng đã được tạo
                             FirebaseUser user = mAuth.getCurrentUser();
+                            String userId = user.getUid();
                             Toast.makeText(RegisterActivity.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
 
-                            // Điều hướng đến trang tạo hồ sơ
+                            UserAPI userAPI = new UserAPI();
+                            userAPI.addUser(userDTB);
                             Intent intent = new Intent(RegisterActivity.this, UploadProfileActivity.class);
+                            intent.putExtra("fullName", fullName);
+                            intent.putExtra("email", email);
+                            intent.putExtra("password", password);
+                            intent.putExtra("userId", userId);
                             startActivity(intent);
                             finish();
                         } else {

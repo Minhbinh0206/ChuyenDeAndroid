@@ -36,7 +36,7 @@
             android:layout_marginHorizontal="6dp"
             android:layout_marginTop="3dp"
             android:background="@drawable/circle_logo"
-            android:src="@drawable/icon_profile" />
+            android:src="@drawable/icon_personal" />
 
         <ImageView
             android:layout_width="1dp"

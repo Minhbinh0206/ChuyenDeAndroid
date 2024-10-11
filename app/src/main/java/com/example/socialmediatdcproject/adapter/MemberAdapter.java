@@ -9,7 +9,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.socialmediatdcproject.R;
-import com.example.socialmediatdcproject.database.UserDatabase;
 import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;

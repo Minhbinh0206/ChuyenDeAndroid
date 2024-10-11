@@ -23,12 +23,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.NotifyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
-import com.example.socialmediatdcproject.database.NotifyDatabase;
-import com.example.socialmediatdcproject.database.PostDatabase;
 import com.example.socialmediatdcproject.fragment.BussinessFragment;
 import com.example.socialmediatdcproject.fragment.DepartmentFragment;
 import com.example.socialmediatdcproject.fragment.GroupFragment;
@@ -45,6 +44,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SharedActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
@@ -90,17 +90,26 @@ public class SharedActivity extends AppCompatActivity {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.first_content_fragment, fragment);
 
-            // Hiển thị tất cả thông báo
-            NotifyDatabase notifyDatabase = new NotifyDatabase();
-            ArrayList<Notify> notifies = notifyDatabase.dataNotifies();
+            NotifyAPI notifyAPI = new NotifyAPI();
+            notifyAPI.getNotifications(new NotifyAPI.NotificationCallback() {
+                @Override
+                public void onNotificationsReceived(List<Notify> notifications) {
+                    // Xử lý danh sách thông báo
+                    // Setup RecyclerView với Adapter
+                    RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
+                    NotifyAdapter notifyAdapter = new NotifyAdapter(notifications);
+                    recyclerView.setAdapter(notifyAdapter);
 
-            // Setup RecyclerView với Adapter
-            RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-            NotifyAdapter notifyAdapter = new NotifyAdapter(notifies);
-            recyclerView.setAdapter(notifyAdapter);
+                    // Sử dụng LayoutManager cho RecyclerView
+                    recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
+                }
 
-            // Sử dụng LayoutManager cho RecyclerView
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+                @Override
+                public void onError(String errorMessage) {
+                    // Xử lý lỗi
+                    System.err.println("Error: " + errorMessage);
+                }
+            });
             fragmentTransaction.commit();
         });
 
@@ -144,7 +153,7 @@ public class SharedActivity extends AppCompatActivity {
 
                 // Setup RecyclerView với Adapter
                 RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-                PostAdapter postAdapter = new PostAdapter(posts);
+                PostAdapter postAdapter = new PostAdapter(posts, SharedActivity.this);
                 recyclerView.setAdapter(postAdapter);
 
                 // Sử dụng LayoutManager cho RecyclerView
@@ -164,7 +173,7 @@ public class SharedActivity extends AppCompatActivity {
         LinearLayout navLayout = (LinearLayout) navigationView.getHeaderView(0).findViewById(R.id.nav_container);
 
         // Danh sách item để thêm vào Navigation Drawer
-        int[] icons = {R.drawable.icon_home, R.drawable.icon_flag, R.drawable.icon_department, R.drawable.icon_department, R.drawable.icon_department, R.drawable.icon_group, R.drawable.icon_personal, R.drawable.icon_home};
+        int[] icons = {R.drawable.icon_home, R.drawable.icon_flag, R.drawable.icon_department, R.drawable.icon_department, R.drawable.icon_department, R.drawable.icon_group, R.drawable.icon_profile, R.drawable.icon_logout};
         String[] titles = {"Trang chủ", "Phòng đào tạo", "Khoa", "Doanh nghiệp", "Đoàn thanh niên", "Câu lạc bộ - Nhóm", "Trang cá nhân", "Đăng xuất"};
 
         // Khởi tạo FragmentManager

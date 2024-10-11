@@ -27,6 +27,7 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 
+import androidx.annotation.LongDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,10 +36,13 @@ import androidx.core.content.ContextCompat;
 
 import com.example.socialmediatdcproject.API.DepartmentAPI;
 import com.example.socialmediatdcproject.API.MajorAPI;
+import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Major;
 import com.example.socialmediatdcproject.model.Post;
+import com.example.socialmediatdcproject.model.Student;
+import com.example.socialmediatdcproject.model.User;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -63,8 +67,10 @@ public class UploadProfileActivity extends AppCompatActivity {
 
     private ImageView imgFromGallery;
     private Button btnSelectImage;
+    private EditText studentNumberEditText;
+    private EditText phoneNumber;
 
-//Hàm chạy một intent để xử lý kết quả trả về là mở Gallery để chọn hình ảnh
+    //Hàm chạy một intent để xử lý kết quả trả về là mở Gallery để chọn hình ảnh
     private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
@@ -103,12 +109,22 @@ public class UploadProfileActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.profile_upload_layout);
 
+        Intent intent = getIntent();
+
+        // Nhận dữ liệu từ Intent
+        String fullName = intent.getStringExtra("fullName");
+        String email = intent.getStringExtra("email");
+        String password = intent.getStringExtra("password");
+        int userId = intent.getIntExtra("userId", -1);
+
         // Khởi tạo các view
         departmentSpinner = findViewById(R.id.department_infomation);
         majorSpinner = findViewById(R.id.major_infomation);
         yearInput = findViewById(R.id.year_born_info);
         monthInput = findViewById(R.id.month_born_info);
         dayInput = findViewById(R.id.day_born_info);
+        studentNumberEditText = findViewById(R.id.student_number_infomation);
+        phoneNumber = findViewById(R.id.phone_infomation);
         Button buttonUploadProfile = findViewById(R.id.button_upload_profile);
         //Gọi lại hàm ánh xạ initUi ở trên
         initUi();
@@ -152,9 +168,56 @@ public class UploadProfileActivity extends AppCompatActivity {
 
         // Xử lý chuyển trang qua trang home
         buttonUploadProfile.setOnClickListener(v -> {
-            Intent intent = new Intent(UploadProfileActivity.this, SharedActivity.class);
-            startActivity(intent);
+            // Lấy dữ liệu từ các trường
+            String studentNumber = studentNumberEditText.getText().toString().trim(); // Thêm EditText cho số sinh viên
+            String birthday = yearInput.getText().toString() + "-" + monthInput.getText().toString() + "-" + dayInput.getText().toString();
+
+            // Lấy ID từ spinner
+            int departmentId = departmentSpinner.getSelectedItemPosition(); // Thay đổi nếu bạn cần lấy ID thực sự từ đối tượng Department
+            int majorId = majorSpinner.getSelectedItemPosition(); // Tương tự
+            int classId = 0; // Thay đổi nếu bạn có EditText cho lớp học
+            String phoneNumberInfo = phoneNumber.getText().toString();
+            int roleId = User.ROLE_STUDENT;
+            String description = ""; // Thêm mô tả nếu cần
+
+            // Kiểm tra xem người dùng đã nhập đầy đủ thông tin chưa
+            if (studentNumber.isEmpty() || birthday.isEmpty()) {
+                Toast.makeText(UploadProfileActivity.this, "Please fill in all the fields.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Tạo đối tượng Student
+            Student student = new Student(userId, email, password, fullName, "", phoneNumberInfo, roleId , studentNumber, birthday, departmentId, majorId, classId, description);
+
+            // Lưu thông tin vào Firebase hoặc cơ sở dữ liệu
+            StudentAPI studentAPI = new StudentAPI();
+            studentAPI.addStudent(student, new StudentAPI.StudentCallback() {
+                @Override
+                public void onStudentReceived(Student student) {
+                    Toast.makeText(getApplicationContext(), "Sinh viên đã được thêm thành công!", Toast.LENGTH_SHORT).show();
+
+                    // Chuyển đến trang tiếp theo
+                    Intent i = new Intent(UploadProfileActivity.this, SharedActivity.class);
+                    startActivity(i);
+                }
+
+                @Override
+                public void onStudentsReceived(List<Student> students) {
+                    // Không cần thực hiện ở đây
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    Toast.makeText(getApplicationContext(), "Lỗi: " + errorMessage, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onStudentDeleted(int studentId) {
+                    // Không cần xử lý ở đây khi thêm sinh viên
+                }
+            });
         });
+
     }
 
     // Sử dụng trong UploadProfileActivity
@@ -322,7 +385,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
         });
     }
-
 
     // Hàm kiểm tra xem năm có phải năm nhuận hay không
     private boolean isLeapYear(int year) {

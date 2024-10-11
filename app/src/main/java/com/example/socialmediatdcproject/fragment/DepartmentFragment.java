@@ -25,8 +25,6 @@ import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.MemberAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
 import com.example.socialmediatdcproject.dataModels.GroupUser;
-import com.example.socialmediatdcproject.database.GroupDatabase;
-import com.example.socialmediatdcproject.database.PostDatabase;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.User;
@@ -67,6 +65,7 @@ public class DepartmentFragment extends Fragment {
 
                         Glide.with(requireContext())
                                 .load(g.getAvatar())
+                                .circleCrop()
                                 .into(avatarTraining);
 
 
@@ -134,7 +133,7 @@ public class DepartmentFragment extends Fragment {
                     }
 
                     // Cập nhật RecyclerView với dữ liệu bài viết
-                    PostAdapter postAdapter = new PostAdapter(posts);
+                    PostAdapter postAdapter = new PostAdapter(posts, requireContext());
                     recyclerView.setAdapter(postAdapter);
                     recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
                 } else {
