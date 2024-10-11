@@ -5,7 +5,7 @@ import com.example.socialmediatdcproject.model.User;
 
 import java.util.ArrayList;
 
-public class PostDatabase {
+public class    PostDatabase {
     protected ArrayList<Post> postsDtb = new ArrayList<>();
     protected ArrayList<Post> postsBussiness = new ArrayList<>();
 
