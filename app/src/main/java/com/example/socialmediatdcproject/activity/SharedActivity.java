@@ -47,6 +47,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 public class SharedActivity extends AppCompatActivity {
+    private FirebaseAuth mAuth;
     protected DrawerLayout drawerLayout;
     private FrameLayout firstContentFragment;
 
@@ -54,6 +55,8 @@ public class SharedActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shared_layout);
+
+        mAuth = FirebaseAuth.getInstance();
 
         // Thiết lập DrawerLayout và NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
