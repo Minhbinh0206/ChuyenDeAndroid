@@ -52,6 +52,41 @@ public class PostAPI {
         databaseReference.orderByChild("groupId").equalTo(id).addListenerForSingleValueEvent(listener);
     }
 
+    // Lấy post theo nhiều groupId
+    public void getPostsByGroupIds(List<Integer> groupIds, ValueEventListener listener) {
+        // Tạo một Query cho từng groupId và lưu kết quả vào một List
+        List<ValueEventListener> listeners = new ArrayList<>();
+        List<Post> allPosts = new ArrayList<>();
+
+        for (Integer groupId : groupIds) {
+            ValueEventListener groupListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                        Post post = postSnapshot.getValue(Post.class);
+                        if (post != null) {
+                            allPosts.add(post); // Thêm bài viết vào danh sách
+                        }
+                    }
+                    // Gọi lại listener đã truyền vào với kết quả
+                    listener.onDataChange(dataSnapshot);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    listener.onCancelled(databaseError); // Gọi lại listener nếu có lỗi
+                }
+            };
+
+            // Thêm vào danh sách listeners
+            listeners.add(groupListener);
+
+            // Tạo query cho groupId
+            databaseReference.orderByChild("groupId").equalTo(groupId).addListenerForSingleValueEvent(groupListener);
+        }
+    }
+
+
     // Cập nhat
     public void updatePost(Post post, OnCompleteListener<Void> onCompleteListener) {
         databaseReference.child(String.valueOf(post.getPostId())).setValue(post).addOnCompleteListener(onCompleteListener);

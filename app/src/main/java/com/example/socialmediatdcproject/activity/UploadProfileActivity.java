@@ -26,26 +26,37 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.socialmediatdcproject.API.DepartmentAPI;
+import com.example.socialmediatdcproject.API.MajorAPI;
 import com.example.socialmediatdcproject.R;
-import com.example.socialmediatdcproject.database.DepartmentDatabase;
-import com.example.socialmediatdcproject.database.MajorDatabase;
 import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Major;
+import com.example.socialmediatdcproject.model.Post;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class UploadProfileActivity extends AppCompatActivity {
+
+    private Spinner departmentSpinner;
+    private Spinner majorSpinner;
+    private EditText yearInput, monthInput, dayInput;
+    private List<String> optionsDepartment = new ArrayList<>();
+    private List<String> optionsMajor = new ArrayList<>();
+    private DepartmentAPI departmentAPI = new DepartmentAPI();
+    private MajorAPI majorAPI = new MajorAPI();
     public static final String TAG = UploadProfileActivity.class.getName();
     private static final int MY_REQUEST_CODE = 10;
     private static final int REQUEST_CODE_STORAGE_PERMISSION = 2 ;
@@ -92,6 +103,13 @@ public class UploadProfileActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.profile_upload_layout);
 
+        // Khởi tạo các view
+        departmentSpinner = findViewById(R.id.department_infomation);
+        majorSpinner = findViewById(R.id.major_infomation);
+        yearInput = findViewById(R.id.year_born_info);
+        monthInput = findViewById(R.id.month_born_info);
+        dayInput = findViewById(R.id.day_born_info);
+        Button buttonUploadProfile = findViewById(R.id.button_upload_profile);
         //Gọi lại hàm ánh xạ initUi ở trên
         initUi();
         //checkAndRequestPermissions();
@@ -108,41 +126,15 @@ public class UploadProfileActivity extends AppCompatActivity {
         Spinner department = findViewById(R.id.department_infomation);
         Spinner major = findViewById(R.id.major_infomation);
 
-        // Danh sách các tùy chọn
-        DepartmentDatabase departmentDatabase = new DepartmentDatabase();
-        MajorDatabase majorDatabase = new MajorDatabase();
-
-        List<String> optionsDepartment = new ArrayList<>();
-        List<String> optionsMajor = new ArrayList<>();
-
-        // Lấy danh sách tên các khoa
-        for (Department d : departmentDatabase.dataDepartments()) {
-            optionsDepartment.add(d.getDepartmentName());
-        }
-
-        // Tạo ArrayAdapter cho Khoa
-        ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, optionsDepartment);
-        departmentAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        department.setAdapter(departmentAdapter);
+        // Lấy danh sách phòng ban từ API
+        loadDepartments();
 
         // Xử lý khi người dùng chọn Khoa
-        department.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        departmentSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                String selectedKhoa = optionsDepartment.get(position);
-
-                // Làm rỗng danh sách ngành trước khi thêm mới
-                optionsMajor.clear();
-
-                for (int majorId : departmentDatabase.getDepartmentByName(selectedKhoa, departmentDatabase.dataDepartments()).getMajorId()) {
-                    Major major1 = majorDatabase.getMajorById(majorId, majorDatabase.dataMajors());
-                    optionsMajor.add(major1.getMajorName());
-                }
-
-                // Tạo ArrayAdapter cho Ngành
-                ArrayAdapter<String> majorAdapter = new ArrayAdapter<>(UploadProfileActivity.this, android.R.layout.simple_spinner_item, optionsMajor);
-                majorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                major.setAdapter(majorAdapter);
+                String selectedDepartmentName = optionsDepartment.get(position);
+                loadMajorsForDepartment(selectedDepartmentName);
             }
 
             @Override
@@ -152,8 +144,100 @@ public class UploadProfileActivity extends AppCompatActivity {
         });
 
 
-        // Xử lý chọn năm tối đa
-        EditText yearInput = findViewById(R.id.year_born_info);
+        // Xử lý chọn năm sinh
+        setupYearInput();
+
+        // Xử lý chọn tháng và ngày
+        setupDateInput();
+
+        // Xử lý chuyển trang qua trang home
+        buttonUploadProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(UploadProfileActivity.this, SharedActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    // Sử dụng trong UploadProfileActivity
+    private void loadDepartments() {
+        departmentAPI.getAllDepartments(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    for (DataSnapshot departmentSnapshot : snapshot.getChildren()) {
+                        Department department = (Department) departmentSnapshot.getValue(Department.class);
+                        if (department != null) {
+                            optionsDepartment.add(department.getDepartmentName());
+                        }
+                    }
+                    ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(UploadProfileActivity.this, android.R.layout.simple_spinner_item, optionsDepartment);
+                    departmentAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    departmentSpinner.setAdapter(departmentAdapter);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("UploadProfileActivity", "Error fetching departments: " + error.getMessage());
+            }
+        });
+    }
+
+    // Sử dụng trong UploadProfileActivity
+    private void loadMajors(int departmentId) {
+        optionsMajor.clear();
+        optionsMajor.add(0, "Chọn ngành");
+
+        majorAPI.getAllMajors(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot majorSnapshot) {
+                if (majorSnapshot.exists()) {
+                    for (DataSnapshot majorData : majorSnapshot.getChildren()) {
+                        Major major = majorData.getValue(Major.class);
+                        if (major != null && major.getDepartmentId() == departmentId) {
+                            optionsMajor.add(major.getMajorName());
+                        }
+                    }
+
+                    // Cập nhật adapter cho spinner major
+                    ArrayAdapter<String> majorAdapter = new ArrayAdapter<>(UploadProfileActivity.this, android.R.layout.simple_spinner_item, optionsMajor);
+                    majorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    majorSpinner.setAdapter(majorAdapter);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("UploadProfileActivity", "Error fetching majors: " + error.getMessage());
+            }
+        });
+    }
+
+    private void loadMajorsForDepartment(String name) {
+        optionsMajor.clear();
+        optionsMajor.add(0, "Chọn ngành"); // Thêm lựa chọn mặc định
+
+        // Lấy thông tin department theo tên
+        departmentAPI.getAllDepartments(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot departmentSnapshot : snapshot.getChildren()) {
+                    Department department = departmentSnapshot.getValue(Department.class);
+                    if (department != null && department.getDepartmentName().equals(name)) {
+                        // Nếu tên khoa trùng khớp, lấy departmentId
+                        int departmentId = department.getDepartmentId();
+                        loadMajors(departmentId); // Gọi phương thức để lấy ngành
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("UploadProfileActivity", "Error fetching departments: " + error.getMessage());
+            }
+        });
+    }
+
+    private void setupYearInput() {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
         yearInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -168,7 +252,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                         if (enteredYear > currentYear) {
                             yearInput.setText(String.valueOf(currentYear));
                             yearInput.setSelection(yearInput.getText().length());
-                            Toast.makeText(getApplicationContext(), "Năm bạn nhập vào không hợp lệ", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Năm không hợp lệ", Toast.LENGTH_SHORT).show();
                         }
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
@@ -180,11 +264,9 @@ public class UploadProfileActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
             }
         });
+    }
 
-        // Xử lý chọn tháng và ngày
-        EditText monthInput = findViewById(R.id.month_born_info);
-        EditText dayInput = findViewById(R.id.day_born_info);
-
+    private void setupDateInput() {
         monthInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -200,8 +282,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                             monthInput.setSelection(monthInput.getText().length());
                             Toast.makeText(getApplicationContext(), "Tháng không hợp lệ", Toast.LENGTH_SHORT).show();
                         } else {
-                            // Cập nhật số ngày tối đa dựa trên tháng
-                            updateMaxDay(enteredMonth, dayInput, yearInput);
+                            updateMaxDay(enteredMonth);
                         }
                     } catch (NumberFormatException e) {
                         e.printStackTrace();
@@ -224,7 +305,6 @@ public class UploadProfileActivity extends AppCompatActivity {
                 if (!s.toString().isEmpty()) {
                     try {
                         int enteredDay = Integer.parseInt(s.toString());
-                        // Kiểm tra số ngày hợp lệ
                         int maxDay = getMaxDayForMonth(Integer.parseInt(monthInput.getText().toString()), Integer.parseInt(yearInput.getText().toString()));
                         if (enteredDay < 1 || enteredDay > maxDay) {
                             dayInput.setText(String.valueOf(maxDay));
@@ -241,13 +321,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
             }
         });
-
-        // Xử lý chuyển trang qua trang home
-        Button buttonUploadProfile = findViewById(R.id.button_upload_profile);
-        buttonUploadProfile.setOnClickListener(v -> {
-            Intent intent = new Intent(UploadProfileActivity.this, SharedActivity.class);
-            startActivity(intent);
-        });
     }
 
 
@@ -256,7 +329,6 @@ public class UploadProfileActivity extends AppCompatActivity {
         return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
     }
 
-    // Hàm trả về số ngày tối đa của tháng dựa trên tháng và năm
     private int getMaxDayForMonth(int month, int year) {
         switch (month) {
             case 2:
@@ -271,8 +343,7 @@ public class UploadProfileActivity extends AppCompatActivity {
         }
     }
 
-    // Cập nhật số ngày tối đa dựa trên tháng và năm
-    private void updateMaxDay(int month, EditText dayInput, EditText yearInput) {
+    private void updateMaxDay(int month) {
         int year = Integer.parseInt(yearInput.getText().toString());
         int maxDay = getMaxDayForMonth(month, year);
         int enteredDay = Integer.parseInt(dayInput.getText().toString().isEmpty() ? "1" : dayInput.getText().toString());
@@ -280,7 +351,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             dayInput.setText(String.valueOf(maxDay));
         }
     }
-
 
     //Cấp quyền mở file ảnh trong thiết bị
     private void onClickRequestPermission() {
@@ -295,8 +365,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_REQUEST_CODE);
         }
     }
-
-
 
     //Lắng nghe người dùng cho phép hay từ chối
     @Override
@@ -320,7 +388,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
         }
     }
-
 
     //Hàm chọn ảnh từ Gallery
     private void openGallery() {
