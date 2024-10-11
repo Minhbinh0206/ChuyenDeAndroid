@@ -80,8 +80,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
     );
 
-
-
     //Hàm khởi tạo giá trị ánh xạ
     private void initUi() {
         imgFromGallery = findViewById(R.id.pfofileImages);
@@ -96,7 +94,7 @@ public class UploadProfileActivity extends AppCompatActivity {
 
         //Gọi lại hàm ánh xạ initUi ở trên
         initUi();
-        checkAndRequestPermissions();
+        //checkAndRequestPermissions();
 
         //Nhấn vào nút chọn và mở quyền
         btnSelectImage.setOnClickListener(new View.OnClickListener() {
@@ -294,7 +292,7 @@ public class UploadProfileActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             openGallery();
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_REQUEST_CODE);
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_REQUEST_CODE);
         }
     }
 
@@ -333,20 +331,21 @@ public class UploadProfileActivity extends AppCompatActivity {
 
     }
 
-    private void checkAndRequestPermissions() {
-        if (ContextCompat.checkSelfPermission(
-                this, Manifest.permission.READ_EXTERNAL_STORAGE
-        ) != PackageManager.PERMISSION_GRANTED) {
-            // Nếu chưa được cấp quyền, yêu cầu quyền
-            ActivityCompat.requestPermissions(
-                    this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    REQUEST_CODE_STORAGE_PERMISSION
-            );
-        } else {
-            // Nếu đã có quyền, mở thư viện ảnh
-            openGallery();
-        }
-    }
+    //Hàm check thử có quyền chưa
+//    private void checkAndRequestPermissions() {
+//        if (ContextCompat.checkSelfPermission(
+//                this, Manifest.permission.READ_EXTERNAL_STORAGE
+//        ) != PackageManager.PERMISSION_GRANTED) {
+//            // Nếu chưa được cấp quyền, yêu cầu quyền
+//            ActivityCompat.requestPermissions(
+//                    this,
+//                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+//                    REQUEST_CODE_STORAGE_PERMISSION
+//            );
+//        } else {
+//            // Nếu đã có quyền, mở thư viện ảnh
+//            openGallery();
+//        }
+//    }
 
 }
