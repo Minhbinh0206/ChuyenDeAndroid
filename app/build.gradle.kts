@@ -1,13 +1,14 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
-    namespace = "com.example.chuyendeandroid"
+    namespace = "com.example.socialmediatdcproject"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.chuyendeandroid"
+        applicationId = "com.example.socialmediatdcproject"
         minSdk = 28
         targetSdk = 34
         versionCode = 1
@@ -32,6 +33,13 @@ android {
 }
 
 dependencies {
+    implementation("androidx.drawerlayout:drawerlayout:1.1.1")
+    implementation("com.google.android.material:material:1.8.0")
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.auth)
 
     implementation(libs.appcompat)
     implementation(libs.material)
