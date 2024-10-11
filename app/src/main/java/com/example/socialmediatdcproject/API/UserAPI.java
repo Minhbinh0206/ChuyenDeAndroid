@@ -18,50 +18,7 @@ public class UserAPI {
 
     public UserAPI() {
         // Khởi tạo reference đến nút "users" trong Firebase
-        userDatabase = FirebaseDatabase.getInstance().getReference("users");
-    }
-
-    // Lấy thành viên trong group dựa vào khóa ngoại
-    public void getUsersByGroupId(int groupId, final UserCallback callback) {
-        List<User> userList = new ArrayList<>();
-
-        // Giả định rằng bạn lưu GroupUser trong Firebase
-        FirebaseDatabase.getInstance().getReference("GroupUser")
-                .orderByChild("groupId")
-                .equalTo(groupId)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot groupUserSnapshot : snapshot.getChildren()) {
-                            GroupUser groupUser = groupUserSnapshot.getValue(GroupUser.class);
-
-                            // Lấy User ID từ GroupUser và truy xuất thông tin User
-                            getUserById(groupUser.getUserId(), new UserCallback() {
-                                @Override
-                                public void onUserReceived(User user) {
-                                    if (user != null) {
-                                        userList.add(user);
-                                    }
-
-                                    // Khi đã thêm tất cả User, gọi callback
-                                    if (userList.size() == snapshot.getChildrenCount()) {
-                                        callback.onUsersReceived(userList);
-                                    }
-                                }
-
-                                @Override
-                                public void onUsersReceived(List<User> users) {
-                                    // Không sử dụng ở đây
-                                }
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        // Xử lý lỗi
-                    }
-                });
+        userDatabase = FirebaseDatabase.getInstance().getReference("User");
     }
 
     // Thêm một người dùng mới vào database

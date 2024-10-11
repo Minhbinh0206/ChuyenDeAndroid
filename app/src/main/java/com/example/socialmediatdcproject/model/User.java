@@ -1,6 +1,7 @@
 package com.example.socialmediatdcproject.model;
 
 public class User {
+    public static final int ID_ADMIN_BUSINES = 1;
     private int userId;
     private String email;
     private String password;
@@ -8,6 +9,9 @@ public class User {
     private String avatar;
     private String phoneNumber;
     private int roleId;
+
+    // Key đăng nhập
+    public static final int USER_KEY = -999;
 
     // Các id đặc biệt
     public static final int ID_ADMIN_PHONGDAOTAO = 0;

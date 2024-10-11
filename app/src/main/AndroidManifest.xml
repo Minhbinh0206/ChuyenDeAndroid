@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.INTERNET"/>
+
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
 
 
     <application
@@ -14,20 +21,15 @@
         android:theme="@style/Theme.SocialMediaTDCProject"
         tools:targetApi="31">
         <activity
-            android:name=".activity.LoginActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:name=".activity.ForgotPasswordActivity"
+            android:exported="false">
         </activity>
         <activity
             android:name=".activity.RegisterActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.ForgotPasswordActivity"
+            android:name=".activity.UploadProfileActivity"
             android:exported="false">
         </activity>
         <activity
@@ -35,8 +37,13 @@
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.UploadProfileActivity"
-            android:exported="false">
+            android:name=".activity.LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".activity.SharedActivity"

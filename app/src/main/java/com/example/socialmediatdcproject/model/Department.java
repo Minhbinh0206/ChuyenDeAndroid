@@ -6,7 +6,7 @@ import java.util.List;
 public class Department {
     private int departmentId;
     private String departmentName;
-    private List<Integer> majorId;
+    private String departmentInfo;
 
     public int getDepartmentId() {
         return departmentId;
@@ -24,27 +24,25 @@ public class Department {
         this.departmentName = departmentName;
     }
 
-    public List<Integer> getMajorId() {
-        return majorId;
+    public String getDepartmentInfo() {
+        return departmentInfo;
     }
 
-    public void setMajorId(int... majorIds) {
-        for (int id : majorIds) {
-            this.majorId.add(id);
-        }
+    public void setDepartmentInfo(String departmentInfo) {
+        this.departmentInfo = departmentInfo;
     }
 
     // Constructor mặc định
     public Department() {
         this.departmentId = -1;
         this.departmentName = "";
-        this.majorId = new ArrayList<>(); // Khởi tạo danh sách trong constructor
+        this.departmentInfo = "";
     }
 
     // Constructor với các tham số
-    public Department(int departmentId, String departmentName, List<Integer> majorId) {
+    public Department(int departmentId, String departmentName, String departmentInfo) {
         this.departmentId = departmentId;
         this.departmentName = departmentName;
-        this.majorId = majorId != null ? majorId : new ArrayList<>(); // Khởi tạo danh sách, nếu không có thì tạo mới
+        this.departmentInfo = departmentInfo;
     }
 }

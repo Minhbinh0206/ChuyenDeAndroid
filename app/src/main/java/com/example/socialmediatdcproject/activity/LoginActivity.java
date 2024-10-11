@@ -2,7 +2,6 @@ package com.example.socialmediatdcproject.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -29,6 +28,16 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance(); // Khởi tạo FirebaseAuth
 
+        // Kiểm tra xem người dùng đã đăng nhập hay chưa
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            // Nếu đã đăng nhập, chuyển thẳng đến SharedActivity
+            Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
+            startActivity(intent);
+            finish(); // Đóng LoginActivity để không quay lại
+            return; // Ngừng thực hiện phần còn lại của onCreate
+        }
+
         // Thiết kế giao diện
         ImageView imageView = findViewById(R.id.image_logo);
         Glide.with(this)
@@ -39,7 +48,7 @@ public class LoginActivity extends AppCompatActivity {
         // Chuyển qua trang đăng ký
         TextView textSignUp = findViewById(R.id.textSignUp);
         textSignUp.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            Intent intent = new Intent(LoginActivity.this, UploadProfileActivity.class);
             startActivity(intent);
         });
 
