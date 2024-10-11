@@ -50,7 +50,7 @@ public class BussinessFragment extends Fragment {
 
         // Khởi tạo RecyclerView
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
-        postAdapter = new PostAdapter(postsBusiness);
+        postAdapter = new PostAdapter(postsBusiness, requireContext());
         businessAdapter = new BussinessAdapter(businesses);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(postAdapter); // Mặc định hiển thị bài viết

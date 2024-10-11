@@ -9,7 +9,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.socialmediatdcproject.R;
-import com.example.socialmediatdcproject.database.UserDatabase;
 import com.example.socialmediatdcproject.model.Bussiness;
 import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Bussiness;
@@ -38,10 +37,9 @@ public class BussinessAdapter extends RecyclerView.Adapter<BussinessAdapter.Buss
     @Override
     public void onBindViewHolder(@NonNull BussinessViewHolder holder, int position) {
         Bussiness bussiness = bussinessList.get(position);
-        UserDatabase userDatabase = new UserDatabase();
         if (bussiness != null) {
             // Set dữ liệu cho các view
-            holder.bussinessName.setText(bussiness.getName());
+            holder.bussinessName.setText(bussiness.getBussinessName());
             holder.bussinessAddress.setText(bussiness.getAddress());
         } else {
             Log.e("BusinessAdapter", "Bussiness at position " + position + " is null");

@@ -8,7 +8,6 @@ public class Notify {
     private int userSendId;
     private String notifyTitle;
     private String notifyContent;
-    private List<User> userGetId;
 
     public int getNotifyId() {
         return notifyId;
@@ -42,23 +41,11 @@ public class Notify {
         this.notifyContent = notifyContent;
     }
 
-    public List<User> getUserGetId() {
-        return userGetId;
-    }
-
-    public void setUserGetId(List<User> userGetIds) {
-        if (this.userGetId == null) {
-            this.userGetId = new ArrayList<>();
-        }
-        this.userGetId.addAll(userGetIds);  // Thêm tất cả các thành viên vào danh sách
-    }
-
     public Notify(int notifyId, int userSendId, String notifyTitle, String notifyContent, List<User> userGetId) {
         this.notifyId = notifyId;
         this.userSendId = userSendId;
         this.notifyTitle = notifyTitle;
         this.notifyContent = notifyContent;
-        this.userGetId = userGetId;
     }
 
     public Notify() {
@@ -66,6 +53,5 @@ public class Notify {
         this.userSendId = -1;
         this.notifyTitle = "";
         this.notifyContent = "";
-        this.userGetId = new ArrayList<>();
     }
 }

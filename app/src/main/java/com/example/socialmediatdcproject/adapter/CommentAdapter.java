@@ -7,8 +7,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
-import com.example.socialmediatdcproject.database.UserDatabase;
 import com.example.socialmediatdcproject.model.Comment;
 import com.example.socialmediatdcproject.model.User;
 
@@ -35,15 +36,26 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     @Override
     public void onBindViewHolder(@NonNull CommentAdapter.CommentViewHolder holder, int position) {
         Comment comment = commentsList.get(position);
-        UserDatabase userDatabase = new UserDatabase();
+        UserAPI userAPI = new UserAPI();
         if (comment != null) {
             // Set dữ liệu cho các view
-            for (User u: userDatabase.dataUser()) {
-                if (u.getUserId() == comment.getUserId()){
-                    holder.commentUserId.setText(u.getFullName());
-                    break;
+            userAPI.getAllUsers(new UserAPI.UserCallback() {
+                @Override
+                public void onUserReceived(User user) {
+
                 }
-            }
+
+                @Override
+                public void onUsersReceived(List<User> users) {
+                    for (User u: users) {
+                        if (u.getUserId() == comment.getUserId()){
+                            holder.commentUserId.setText(u.getFullName());
+                            break;
+                        }
+                    }
+                }
+            });
+
             holder.commentLike.setText(comment.getCommentLike() + "");
             holder.commentContent.setText(comment.getContent());
 

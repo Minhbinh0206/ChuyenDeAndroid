@@ -120,7 +120,7 @@ public class TrainingFragment extends Fragment {
                                 }
 
                                 // Lấy dữ liệu bài viết
-                                PostAdapter postAdapter = new PostAdapter(postsTraining);
+                                PostAdapter postAdapter = new PostAdapter(postsTraining, requireContext());
 
                                 recyclerView.setAdapter(postAdapter);
 

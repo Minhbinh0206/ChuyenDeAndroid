@@ -21,21 +21,34 @@ public class UserAPI {
         userDatabase = FirebaseDatabase.getInstance().getReference("User");
     }
 
-    // Thêm một người dùng mới vào database
     public void addUser(User user) {
-        String userId = userDatabase.push().getKey(); // Tạo ID mới
-        if (userId != null) {
-            user.setUserId(Integer.parseInt(userId)); // Gán ID cho user
-            userDatabase.child(userId).setValue(user)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            // Người dùng đã được thêm thành công
-                        } else {
-                            // Xảy ra lỗi
-                        }
-                    });
-        }
+        getAllUsers(new UserCallback() {
+            @Override
+            public void onUserReceived(User user) {
+                // Không cần thực hiện ở đây
+            }
+
+            @Override
+            public void onUsersReceived(List<User> users) {
+                // Tính toán userId mới
+                int newUserId = users.size(); // Sử dụng kích thước mảng hiện tại
+
+                // Gán userId cho người dùng
+                user.setUserId(newUserId);
+
+                // Sử dụng newUserId làm khóa trong Firebase
+                userDatabase.child(String.valueOf(newUserId)).setValue(user)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                // Người dùng đã được thêm thành công
+                            } else {
+                                // Xảy ra lỗi
+                            }
+                        });
+            }
+        });
     }
+
 
     // Cập nhật thông tin người dùng
     public void updateUser(User user) {

@@ -1,30 +1,37 @@
 package com.example.socialmediatdcproject.adapter;
 
+import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.CommentPostActivity;
-import com.example.socialmediatdcproject.database.UserDatabase;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.User;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int VIEW_TYPE_TEXT = 0;  // Kiểu view cho post không có ảnh
     private static final int VIEW_TYPE_IMAGE = 1; // Kiểu view cho post có ảnh
 
     private ArrayList<Post> postList;
+    private Context context;
 
     // Constructor
-    public PostAdapter(ArrayList<Post> postList) {
+    public PostAdapter(ArrayList<Post> postList, Context context) {
         this.postList = postList;
+        this.context = context;
     }
 
     @Override
@@ -58,18 +65,33 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Post post = postList.get(position);
-        UserDatabase userDatabase = new UserDatabase();
+        UserAPI userAPI = new UserAPI();
 
         if (holder.getItemViewType() == VIEW_TYPE_IMAGE) {
             PostImageViewHolder imageViewHolder = (PostImageViewHolder) holder;
             imageViewHolder.postcontent.setText(post.getContent());
             imageViewHolder.postLike.setText(post.getPostLike() + "");
             imageViewHolder.postComment.setText(post.getPostComment() + "");
-            for (User u : userDatabase.dataUser()) {
-                if (u.getUserId() == post.getUserId()) {
-                    imageViewHolder.postAdminUserId.setText(u.getFullName());
+            userAPI.getAllUsers(new UserAPI.UserCallback() {
+                @Override
+                public void onUserReceived(User user) {
+
                 }
-            }
+
+                @Override
+                public void onUsersReceived(List<User> users) {
+                    for (User u : users) {
+                        if (u.getUserId() == post.getUserId()) {
+                            imageViewHolder.postAdminUserId.setText(u.getFullName());
+                            Glide.with(context)
+                                    .load(u.getAvatar())
+                                    .circleCrop()
+                                    .into(imageViewHolder.postAvatar);
+                        }
+                    }
+                }
+            });
+
             imageViewHolder.buttonComment.setOnClickListener(v -> {
                 Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
                 intent.putExtra("postId", post.getPostId());  // Truyền postId qua Activity mới
@@ -80,11 +102,25 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             textViewHolder.postcontent.setText(post.getContent());
             textViewHolder.postLike.setText(post.getPostLike() + "");
             textViewHolder.postComment.setText(post.getPostComment() + "");
-            for (User u : userDatabase.dataUser()) {
-                if (u.getUserId() == post.getUserId()) {
-                    textViewHolder.postAdminUserId.setText(u.getFullName());
+            userAPI.getAllUsers(new UserAPI.UserCallback() {
+                @Override
+                public void onUserReceived(User user) {
+
                 }
-            }
+
+                @Override
+                public void onUsersReceived(List<User> users) {
+                    for (User u : users) {
+                        if (u.getUserId() == post.getUserId()) {
+                            textViewHolder.postAdminUserId.setText(u.getFullName());
+                            Glide.with(context)
+                                    .load(u.getAvatar())
+                                    .circleCrop()
+                                    .into(textViewHolder.postAvatar);
+                        }
+                    }
+                }
+            });
             textViewHolder.buttonComment.setOnClickListener(v -> {
                 Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
                 intent.putExtra("postId", post.getPostId());  // Truyền postId qua Activity mới
@@ -106,6 +142,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         LinearLayout buttonComment;
         TextView postLike;
         TextView postComment;
+        ImageView postAvatar;
 
 
         public PostTextViewHolder(View itemView) {
@@ -115,6 +152,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             buttonComment = itemView.findViewById(R.id.button_comment);
             postLike = itemView.findViewById(R.id.post_like);
             postComment = itemView.findViewById(R.id.post_comment);
+            postAvatar = itemView.findViewById(R.id.post_avatar);
         }
     }
 
@@ -126,6 +164,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         LinearLayout buttonComment;
         TextView postLike;
         TextView postComment;
+        ImageView postAvatar;
 
         public PostImageViewHolder(View itemView) {
             super(itemView);
@@ -135,6 +174,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             // postImageView = itemView.findViewById(R.id.post_image);  // Gán ImageView cho ảnh bài post
             postLike = itemView.findViewById(R.id.post_like);
             postComment = itemView.findViewById(R.id.post_comment);
+            postAvatar = itemView.findViewById(R.id.post_avatar);
         }
     }
 }

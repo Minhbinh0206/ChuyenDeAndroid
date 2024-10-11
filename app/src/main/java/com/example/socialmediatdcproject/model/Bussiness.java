@@ -2,7 +2,7 @@ package com.example.socialmediatdcproject.model;
 
 public class Bussiness {
     private int bussinessId;
-    private String name;
+    private String bussinessName;
     private String address;
     private int bussinessAdminId;
 
@@ -12,14 +12,6 @@ public class Bussiness {
 
     public void setBussinessId(int bussinessId) {
         this.bussinessId = bussinessId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String bussinessName) {
-        this.name = name;
     }
 
     public String getAddress() {
@@ -38,16 +30,24 @@ public class Bussiness {
         this.bussinessAdminId = bussinessAdminId;
     }
 
+    public String getBussinessName() {
+        return bussinessName;
+    }
+
+    public void setBussinessName(String bussinessName) {
+        this.bussinessName = bussinessName;
+    }
+
     public Bussiness(int bussinessId, String bussinessName, String address, int bussinessAdminId) {
         this.bussinessId = bussinessId;
-        this.name = bussinessName;
+        this.bussinessName = bussinessName;
         this.address = address;
         this.bussinessAdminId = bussinessAdminId;
     }
 
     public Bussiness() {
         this.bussinessId = -1;
-        this.name = "";
+        this.bussinessName = "";
         this.address = "";
         this.bussinessAdminId = -1;
     }
