@@ -351,10 +351,24 @@ public class UploadProfileActivity extends AppCompatActivity {
             dayInput.setText(String.valueOf(maxDay));
         }
     }
+//
+//    //Cấp quyền mở file ảnh trong thiết bị
+//    private void onClickRequestPermission() {
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+//            openGallery();
+//            return;
+//        }
+//
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+//            openGallery();
+//        } else {
+//            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_REQUEST_CODE);
+//        }
+//    }
 
     //Cấp quyền mở file ảnh trong thiết bị
     private void onClickRequestPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CUR_DEVELOPMENT) {
             openGallery();
             return;
         }
@@ -362,7 +376,8 @@ public class UploadProfileActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             openGallery();
         } else {
-            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_REQUEST_CODE);
+            // Cấp quyền yêu cầu
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_REQUEST_CODE);
         }
     }
 
