@@ -108,16 +108,16 @@ public class Post implements Serializable {
 
     public Post(int postId, int userId, int postLike, int postComment, String title, String postImage, String content, int status, int isPublic, int groupId, String createdAt) {
         this.postId = postId;
-        this.userId = userId;
-        this.postLike = postLike;
+        this.userId = userId; //
+        this.postLike = postLike; //
         this.postComment = postComment;
         this.title = title;
         this.postImage = postImage;
-        this.content = content;
-        this.status = status;
+        this.content = content;  //
+        this.status = status; //
         this.isPublic = isPublic;
-        this.createdAt = createdAt;
-        this.groupId = groupId;
+        this.createdAt = createdAt; //
+        this.groupId = groupId; //
     }
 
     public Post() {
