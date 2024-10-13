@@ -43,14 +43,22 @@ import com.example.socialmediatdcproject.model.Major;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class UploadProfileActivity extends AppCompatActivity {
 
@@ -69,6 +77,7 @@ public class UploadProfileActivity extends AppCompatActivity {
     private Button btnSelectImage;
     private EditText studentNumberEditText;
     private EditText phoneNumber;
+    private int userId;
 
     //Hàm chạy một intent để xử lý kết quả trả về là mở Gallery để chọn hình ảnh
     private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
@@ -76,21 +85,20 @@ public class UploadProfileActivity extends AppCompatActivity {
             new ActivityResultCallback<ActivityResult>() {
                 @Override
                 public void onActivityResult(ActivityResult result) {
-                    Log.e(TAG, "onActivityResult");
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
-                        if (data == null) {
-                            return;
-                        }
-
-                        //Dữ liệu ảnh chọn từ Gallery
-                        Uri uri = data.getData();
-                        // mUri = uri;
-                        try {
+                        if (data != null) {
+                            Uri uri = data.getData();
+                            try {
+                                // Hiển thị ảnh chọn từ Gallery
                                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                                 imgFromGallery.setImageBitmap(bitmap);
+
+                                // Upload ảnh lên Firebase Storage
+                                uploadImageToFirebaseStorage(uri, userId); // Gọi hàm upload ảnh với userId
                             } catch (IOException e) {
-                                throw new RuntimeException(e);
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
@@ -109,13 +117,30 @@ public class UploadProfileActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.profile_upload_layout);
 
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            // Lấy userId từ Firebase User
+            userId = Integer.parseInt(currentUser.getUid());
+            Log.d("Find User ID " , "UserId: " + userId);
+        } else {
+            // Không tìm thấy người dùng hiện tại
+            Toast.makeText(this, "No user is logged in!", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
         Intent intent = getIntent();
 
         // Nhận dữ liệu từ Intent
         String fullName = intent.getStringExtra("fullName");
         String email = intent.getStringExtra("email");
         String password = intent.getStringExtra("password");
-        int userId = intent.getIntExtra("userId", -1);
+        userId = intent.getIntExtra("userId", userId);
+        if (userId == -1) {
+            Toast.makeText(this, "User ID not found!", Toast.LENGTH_SHORT).show();
+            // Có thể thoát khỏi Activity hoặc xử lý lỗi ở đây
+            finish();
+        }
 
         // Khởi tạo các view
         departmentSpinner = findViewById(R.id.department_infomation);
@@ -413,20 +438,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             dayInput.setText(String.valueOf(maxDay));
         }
     }
-//
-//    //Cấp quyền mở file ảnh trong thiết bị
-//    private void onClickRequestPermission() {
-//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-//            openGallery();
-//            return;
-//        }
-//
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-//            openGallery();
-//        } else {
-//            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_REQUEST_CODE);
-//        }
-//    }
 
     //Cấp quyền mở file ảnh trong thiết bị
     private void onClickRequestPermission() {
@@ -474,22 +485,45 @@ public class UploadProfileActivity extends AppCompatActivity {
         mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
 
     }
+    // Hàm upload hình ảnh lên Storage Firebase
+    private void uploadImageToFirebaseStorage(Uri filePath, int userId) {
+        if (filePath != null) {
+            // Tạo Firebase Storage reference
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference();
 
-    //Hàm check thử có quyền chưa
-//    private void checkAndRequestPermissions() {
-//        if (ContextCompat.checkSelfPermission(
-//                this, Manifest.permission.READ_EXTERNAL_STORAGE
-//        ) != PackageManager.PERMISSION_GRANTED) {
-//            // Nếu chưa được cấp quyền, yêu cầu quyền
-//            ActivityCompat.requestPermissions(
-//                    this,
-//                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-//                    REQUEST_CODE_STORAGE_PERMISSION
-//            );
-//        } else {
-//            // Nếu đã có quyền, mở thư viện ảnh
-//            openGallery();
-//        }
-//    }
+            // Tạo đường dẫn lưu trữ cho hình ảnh (ví dụ: avatars/userId.png)
+            StorageReference avatarRef = storageRef.child("avatars/" + userId + ".png");
+
+            // Upload ảnh lên Firebase Storage
+            avatarRef.putFile(filePath)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        // Khi upload thành công, lấy URL tải về từ Firebase Storage
+                        avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            // Lấy URL của ảnh và lưu vào cơ sở dữ liệu bảng User
+                            String downloadUrl = uri.toString();
+                            saveAvatarUrlToDatabase(userId, downloadUrl);
+                        });
+                    })
+                    .addOnFailureListener(exception -> {
+                        // Xử lý lỗi upload ảnh
+                        Toast.makeText(this, "Upload Failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
+
+    private void saveAvatarUrlToDatabase(int userId, String downloadUrl) {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(String.valueOf(userId));
+
+        // Lưu URL của ảnh vào trường avatar trong bảng User
+        userRef.child("avatar").setValue(downloadUrl)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(this, "Avatar updated successfully", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Failed to update avatar", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
 
 }

@@ -19,6 +19,8 @@ import com.example.socialmediatdcproject.model.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.List;
+
 public class RegisterActivity extends AppCompatActivity {
 
     private EditText editTextName, editTextEmail, editTextPassword, editTextPasswordConfirm;
@@ -84,18 +86,35 @@ public class RegisterActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Đăng ký thành công, người dùng đã được tạo
                             FirebaseUser user = mAuth.getCurrentUser();
-                            String userId = user.getUid();
+
                             Toast.makeText(RegisterActivity.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
 
                             UserAPI userAPI = new UserAPI();
-                            userAPI.addUser(userDTB);
-                            Intent intent = new Intent(RegisterActivity.this, UploadProfileActivity.class);
-                            intent.putExtra("fullName", fullName);
-                            intent.putExtra("email", email);
-                            intent.putExtra("password", password);
-                            intent.putExtra("userId", userId);
-                            startActivity(intent);
-                            finish();
+                            userAPI.getAllUsers(new UserAPI.UserCallback() {
+                                @Override
+                                public void onUserReceived(User user) {
+
+                                }
+
+                                @Override
+                                public void onUsersReceived(List<User> users) {
+                                    int count = 0;
+                                    for (User u : users) {
+                                        count++;
+                                    }
+                                    int userId = count;
+                                    Log.d("Test" , "get count" + count);
+                                    userAPI.addUser(userDTB);
+                                    Intent intent = new Intent(RegisterActivity.this, UploadProfileActivity.class);
+                                    intent.putExtra("fullName", fullName);
+                                    intent.putExtra("email", email);
+                                    intent.putExtra("password", password);
+                                    intent.putExtra("userId", userId);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            });
+
                         } else {
                             // Đăng ký thất bại
                             Toast.makeText(RegisterActivity.this, "Đăng ký thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();

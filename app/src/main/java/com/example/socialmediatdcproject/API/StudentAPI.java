@@ -22,19 +22,34 @@ public class StudentAPI {
 
     // Thêm một sinh viên mới vào database
     public void addStudent(Student student, final StudentCallback callback) {
-        // Lấy ID của người dùng từ đối tượng sinh viên
-        int userId = student.getUserId(); // Giả sử userId đã được gán khi tạo user
+        int userId = student.getUserId(); // userId phải được gán trước đó
 
-        // Sử dụng userId làm khóa trong Firebase
-        studentDatabase.child(String.valueOf(userId)).setValue(student)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        callback.onStudentReceived(student); // Gọi callback để thông báo thành công
-                    } else {
-                        callback.onError("Error adding student: " + task.getException().getMessage());
-                    }
-                });
+        // Kiểm tra xem userId đã tồn tại hay chưa
+        studentDatabase.child(String.valueOf(userId)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.exists()) {
+                    // Nếu chưa tồn tại, thêm sinh viên vào Firebase
+                    studentDatabase.child(String.valueOf(userId)).setValue(student)
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    callback.onStudentReceived(student); // Gọi callback để thông báo thành công
+                                } else {
+                                    callback.onError("Error adding student: " + task.getException().getMessage());
+                                }
+                            });
+                } else {
+                    callback.onError("Error: UserId already exists."); // Xử lý nếu userId đã tồn tại
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                callback.onError("Error checking userId: " + databaseError.getMessage());
+            }
+        });
     }
+
 
     // Cập nhật thông tin sinh viên
     public void updateStudent(Student student, final StudentCallback callback) {
