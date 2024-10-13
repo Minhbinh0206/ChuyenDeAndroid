@@ -37,6 +37,7 @@ import androidx.core.content.ContextCompat;
 import com.example.socialmediatdcproject.API.DepartmentAPI;
 import com.example.socialmediatdcproject.API.MajorAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
+import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Major;
@@ -77,7 +78,10 @@ public class UploadProfileActivity extends AppCompatActivity {
     private Button btnSelectImage;
     private EditText studentNumberEditText;
     private EditText phoneNumber;
+    String fullName = "";
     private int userId;
+    String email;
+    String password;
 
     //Hàm chạy một intent để xử lý kết quả trả về là mở Gallery để chọn hình ảnh
     private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
@@ -117,30 +121,28 @@ public class UploadProfileActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.profile_upload_layout);
 
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (currentUser != null) {
-            // Lấy userId từ Firebase User
-            userId = Integer.parseInt(currentUser.getUid());
-            Log.d("Find User ID " , "UserId: " + userId);
-        } else {
-            // Không tìm thấy người dùng hiện tại
-            Toast.makeText(this, "No user is logged in!", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-
         Intent intent = getIntent();
 
-        // Nhận dữ liệu từ Intent
-        String fullName = intent.getStringExtra("fullName");
-        String email = intent.getStringExtra("email");
-        String password = intent.getStringExtra("password");
         userId = intent.getIntExtra("userId", userId);
         if (userId == -1) {
             Toast.makeText(this, "User ID not found!", Toast.LENGTH_SHORT).show();
             // Có thể thoát khỏi Activity hoặc xử lý lỗi ở đây
             finish();
         }
+        UserAPI userAPI = new UserAPI();
+        userAPI.getUserById(userId, new UserAPI.UserCallback() {
+            @Override
+            public void onUserReceived(User user) {
+                fullName = user.getFullName();
+                email = user.getEmail();
+                password = user.getPassword();
+            }
+
+            @Override
+            public void onUsersReceived(List<User> users) {
+
+            }
+        });
 
         // Khởi tạo các view
         departmentSpinner = findViewById(R.id.department_infomation);
@@ -151,6 +153,7 @@ public class UploadProfileActivity extends AppCompatActivity {
         studentNumberEditText = findViewById(R.id.student_number_infomation);
         phoneNumber = findViewById(R.id.phone_infomation);
         Button buttonUploadProfile = findViewById(R.id.button_upload_profile);
+
         //Gọi lại hàm ánh xạ initUi ở trên
         initUi();
         //checkAndRequestPermissions();

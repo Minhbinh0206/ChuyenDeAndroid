@@ -3,7 +3,7 @@ package com.example.socialmediatdcproject.API;
 import androidx.annotation.NonNull;
 
 import com.example.socialmediatdcproject.model.Student;
-import com.example.socialmediatdcproject.model.User;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -22,34 +22,19 @@ public class StudentAPI {
 
     // Thêm một sinh viên mới vào database
     public void addStudent(Student student, final StudentCallback callback) {
-        int userId = student.getUserId(); // userId phải được gán trước đó
+        String uniqueKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        student.setUserId(student.getUserId()); // Đảm bảo userId vẫn được lưu trữ
 
-        // Kiểm tra xem userId đã tồn tại hay chưa
-        studentDatabase.child(String.valueOf(userId)).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (!dataSnapshot.exists()) {
-                    // Nếu chưa tồn tại, thêm sinh viên vào Firebase
-                    studentDatabase.child(String.valueOf(userId)).setValue(student)
-                            .addOnCompleteListener(task -> {
-                                if (task.isSuccessful()) {
-                                    callback.onStudentReceived(student); // Gọi callback để thông báo thành công
-                                } else {
-                                    callback.onError("Error adding student: " + task.getException().getMessage());
-                                }
-                            });
-                } else {
-                    callback.onError("Error: UserId already exists."); // Xử lý nếu userId đã tồn tại
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                callback.onError("Error checking userId: " + databaseError.getMessage());
-            }
-        });
+        // Thêm sinh viên vào Firebase với uniqueKey
+        studentDatabase.child(uniqueKey).setValue(student)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        callback.onStudentReceived(student);
+                    } else {
+                        callback.onError("Error adding student: " + task.getException().getMessage());
+                    }
+                });
     }
-
 
     // Cập nhật thông tin sinh viên
     public void updateStudent(Student student, final StudentCallback callback) {
@@ -84,12 +69,31 @@ public class StudentAPI {
         });
     }
 
+    public void getStudentByKey(String key, StudentCallback callback) {
+        studentDatabase.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    Student student = dataSnapshot.getValue(Student.class);
+                    callback.onStudentReceived(student);
+                } else {
+                    callback.onError("Student not found.");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                callback.onError("Error retrieving student: " + databaseError.getMessage());
+            }
+        });
+    }
+
     // Xóa sinh viên theo ID
     public void deleteStudent(int studentId, final StudentCallback callback) {
         studentDatabase.child(String.valueOf(studentId)).removeValue()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        callback.onStudentDeleted(studentId); // Bạn cần thêm phương thức này vào StudentCallback
+                        callback.onStudentDeleted(studentId);
                     } else {
                         callback.onError("Error deleting student: " + task.getException().getMessage());
                     }
@@ -123,6 +127,6 @@ public class StudentAPI {
         void onStudentReceived(Student student);
         void onStudentsReceived(List<Student> students);
         void onError(String errorMessage);
-        void onStudentDeleted(int studentId); // Thêm phương thức này
+        void onStudentDeleted(int studentId);
     }
 }

@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.NotifyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
+import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
@@ -37,6 +38,7 @@ import com.example.socialmediatdcproject.fragment.TrainingFragment;
 import com.example.socialmediatdcproject.fragment.YouthFragment;
 import com.example.socialmediatdcproject.model.Notify;
 import com.example.socialmediatdcproject.model.Post;
+import com.example.socialmediatdcproject.model.Student;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -63,12 +65,42 @@ public class SharedActivity extends AppCompatActivity {
         NavigationView navigationView = findViewById(R.id.nav_view);
         firstContentFragment = findViewById(R.id.first_content_fragment); // Khởi tạo FrameLayout
 
-        // Thiết kế giao diện cho avatar
-        ImageView imageView = findViewById(R.id.nav_avatar_user);
-        Glide.with(this)
-                .load(R.drawable.avatar_user)
-                .circleCrop()
-                .into(imageView);
+        StudentAPI studentAPI = new StudentAPI();
+        studentAPI.getStudentByKey(mAuth.getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+            @Override
+            public void onStudentReceived(Student student) {
+                if (student.getAvatar() == null) {
+                    ImageView imageView = findViewById(R.id.nav_avatar_user);
+                    Glide.with(SharedActivity.this)
+                            .load(R.drawable.avatar_macdinh)
+                            .circleCrop()
+                            .into(imageView);
+                }else {
+                    // Thiết kế giao diện cho avatar
+                    ImageView imageView = findViewById(R.id.nav_avatar_user);
+                    Glide.with(SharedActivity.this)
+                            .load(student.getAvatar())
+                            .circleCrop()
+                            .into(imageView);
+                }
+
+            }
+
+            @Override
+            public void onStudentsReceived(List<Student> students) {
+
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+
+            }
+
+            @Override
+            public void onStudentDeleted(int studentId) {
+
+            }
+        });
 
         // Xử lý sự kiện nhấn vào icon 3 gạch để mở Navigation Drawer
         ImageButton navigationButton = findViewById(R.id.icon_navigation);

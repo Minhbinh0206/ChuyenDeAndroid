@@ -39,6 +39,28 @@ public class GroupAPI {
         groupRef.child(String.valueOf(groupId)).addListenerForSingleValueEvent(listener);
     }
 
+    // Lấy một nhóm dựa trên tên
+    public void getGroupByName(String name, ValueEventListener listener) {
+        groupRef.orderByChild("name").equalTo(name).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot groupSnapshot : dataSnapshot.getChildren()) {
+                        listener.onDataChange(groupSnapshot); // Gửi lại nhóm tìm thấy
+                    }
+                } else {
+                    listener.onDataChange(dataSnapshot); // Không tìm thấy nhóm nào
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                listener.onCancelled(databaseError); // Xử lý lỗi
+            }
+        });
+    }
+
+
     // Cập nhật thông tin một nhóm
     public void updateGroup(int groupId, Group updatedGroup) {
         groupRef.child(String.valueOf(groupId)).setValue(updatedGroup);
