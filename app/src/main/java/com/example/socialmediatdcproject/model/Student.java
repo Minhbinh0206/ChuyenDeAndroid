@@ -75,4 +75,8 @@ public class Student extends User {
         this.classId = -1;
         this.description = "";
     }
+
+    public Student() {
+
+    }
 }

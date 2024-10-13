@@ -1,7 +1,6 @@
 package com.example.socialmediatdcproject.API;
 
 import androidx.annotation.NonNull;
-
 import com.example.socialmediatdcproject.model.Post;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -9,7 +8,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,29 +30,28 @@ public class PostAPI {
         databaseReference.child(postId).setValue(post).addOnCompleteListener(onCompleteListener);
     }
 
-    // Lấy toàn bộ Post
+    // Get all posts
     public void getAllPosts(ValueEventListener listener) {
         databaseReference.addListenerForSingleValueEvent(listener);
     }
 
-    // Lấy post theo id post
+    // Get post by ID
     public void getPostById(int postId, ValueEventListener listener) {
         databaseReference.orderByChild("postId").equalTo(postId).addListenerForSingleValueEvent(listener);
     }
 
-    // Lấy post theo id User
+    // Get posts by user ID
     public void getPostByUserId(int id, ValueEventListener listener) {
         databaseReference.orderByChild("userId").equalTo(id).addListenerForSingleValueEvent(listener);
     }
 
-    // Lấy post theo id Group
+    // Get posts by group ID
     public void getPostByGroupId(int id, ValueEventListener listener) {
         databaseReference.orderByChild("groupId").equalTo(id).addListenerForSingleValueEvent(listener);
     }
 
-    // Lấy post theo nhiều groupId
+    // Get posts by multiple group IDs
     public void getPostsByGroupIds(List<Integer> groupIds, ValueEventListener listener) {
-        // Tạo một Query cho từng groupId và lưu kết quả vào một List
         List<ValueEventListener> listeners = new ArrayList<>();
         List<Post> allPosts = new ArrayList<>();
 
@@ -65,34 +62,35 @@ public class PostAPI {
                     for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                         Post post = postSnapshot.getValue(Post.class);
                         if (post != null) {
-                            allPosts.add(post); // Thêm bài viết vào danh sách
+                            allPosts.add(post); // Add post to the list
                         }
                     }
-                    // Gọi lại listener đã truyền vào với kết quả
+                    // Notify the original listener with results
                     listener.onDataChange(dataSnapshot);
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-                    listener.onCancelled(databaseError); // Gọi lại listener nếu có lỗi
+                    listener.onCancelled(databaseError); // Notify listener on error
                 }
             };
 
-            // Thêm vào danh sách listeners
             listeners.add(groupListener);
-
-            // Tạo query cho groupId
             databaseReference.orderByChild("groupId").equalTo(groupId).addListenerForSingleValueEvent(groupListener);
         }
     }
 
-
-    // Cập nhat
+    // Update post
     public void updatePost(Post post, OnCompleteListener<Void> onCompleteListener) {
         databaseReference.child(String.valueOf(post.getPostId())).setValue(post).addOnCompleteListener(onCompleteListener);
     }
 
-    // Xóa
+    // Update likes count
+    public void updatePostLikes(int postId, int newLikeCount, OnCompleteListener<Void> onCompleteListener) {
+        databaseReference.child(String.valueOf(postId)).child("postLike").setValue(newLikeCount).addOnCompleteListener(onCompleteListener);
+    }
+
+    // Delete post
     public void deletePost(int postId, OnCompleteListener<Void> onCompleteListener) {
         databaseReference.orderByChild("postId").equalTo(postId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

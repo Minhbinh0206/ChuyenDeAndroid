@@ -1,7 +1,11 @@
 package com.example.socialmediatdcproject.API;
 
+import android.util.Log;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 
+import com.example.socialmediatdcproject.activity.RegisterActivity;
 import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.example.socialmediatdcproject.model.User;
 import com.google.firebase.database.DatabaseReference;
@@ -21,35 +25,6 @@ public class UserAPI {
         userDatabase = FirebaseDatabase.getInstance().getReference("User");
     }
 
-    public void addUser(User user) {
-        getAllUsers(new UserCallback() {
-            @Override
-            public void onUserReceived(User user) {
-                // Không cần thực hiện ở đây
-            }
-
-            @Override
-            public void onUsersReceived(List<User> users) {
-                // Tính toán userId mới
-                int newUserId = users.size(); // Sử dụng kích thước mảng hiện tại
-
-                // Gán userId cho người dùng
-                user.setUserId(newUserId);
-
-                // Sử dụng newUserId làm khóa trong Firebase
-                userDatabase.child(String.valueOf(newUserId)).setValue(user)
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                // Người dùng đã được thêm thành công
-                            } else {
-                                // Xảy ra lỗi
-                            }
-                        });
-            }
-        });
-    }
-
-
     // Cập nhật thông tin người dùng
     public void updateUser(User user) {
         String userId = String.valueOf(user.getUserId());
@@ -62,6 +37,22 @@ public class UserAPI {
                     }
                 });
     }
+
+    // Thêm người dùng mới vào Firebase
+    public void addUser(User user) {
+        String userId = String.valueOf(user.getUserId());
+        userDatabase.child(userId).setValue(user)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // Thêm thành công
+                        Log.d("UserAPI", "User added successfully.");
+                    } else {
+                        // Xảy ra lỗi
+                        Log.e("UserAPI", "Failed to add user.", task.getException());
+                    }
+                });
+    }
+
 
     // Lấy thông tin người dùng theo ID
     public void getUserById(int userId, final UserCallback callback) {
