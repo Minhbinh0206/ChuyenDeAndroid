@@ -87,63 +87,55 @@ public class TrainingFragment extends Fragment {
 
         // Lấy Group của phòng đào tạo
         GroupAPI groupAPI = new GroupAPI();
-        groupAPI.getGroupById(User.ID_ADMIN_PHONGDAOTAO, new ValueEventListener() {
+        groupAPI.getGroupById(User.ID_ADMIN_PHONGDAOTAO, new GroupAPI.GroupCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                // Nếu hàm get by ID thì trả về là 1 đối tượng, cụ thể ở đây là Group
-                if (snapshot.exists()) {
-                    // Tạo mới 1 thằng group để lưu giá trị của firebase trả về
-                    Group g = snapshot.getValue(Group.class);
+            public void onGroupReceived(Group group) {
+                // Set dữ liệu cho fragment
+                TextView nameTraining = getView().findViewById(R.id.name_phongdaotao);
+                ImageView avatarTraining = getView().findViewById(R.id.avatar_phongdaotao);
+                nameTraining.setText(group.getGroupName());
 
-                    // Set dữ liệu cho fragment
-                    TextView nameTraining = getView().findViewById(R.id.name_phongdaotao);
-                    ImageView avatarTraining = getView().findViewById(R.id.avatar_phongdaotao);
-                    nameTraining.setText(g.getGroupName());
+                String imageUrl = group.getAvatar();
+                Log.d("TrainingFragment", "Image URL: " + imageUrl);
+                // Sử dụng Glide để tải hình ảnh
+                Glide.with(requireContext())
+                        .load(group.getAvatar())
+                        .into(avatarTraining);
 
-                    String imageUrl = g.getAvatar();
-                    Log.d("TrainingFragment", "Image URL: " + imageUrl);
-                    // Sử dụng Glide để tải hình ảnh
-                    Glide.with(requireContext())
-                            .load(g.getAvatar())
-                            .into(avatarTraining);
+                // Mặc định vào bài viết trước
+                PostAPI postAPI = new PostAPI();
+                postAPI.getPostByGroupId(group.getGroupId(), new PostAPI.PostCallback() {
+                    @Override
+                    public void onPostReceived(Post post) {
 
-                    // Mặc định vào bài viết trước
-                    PostAPI postAPI = new PostAPI();
-                    postAPI.getPostByGroupId(g.getGroupId(), new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot postSnapshot) {
-                            if (postSnapshot.exists()) {
-                                // Duyệt qua tất cả các bài viết
-                                for (DataSnapshot post : postSnapshot.getChildren()) {
-                                    Post p = post.getValue(Post.class); // Lấy từng bài viết
-                                    postsTraining.add(p); // Thêm vào danh sách
-                                }
+                    }
 
-                                // Lấy dữ liệu bài viết
-                                PostAdapter postAdapter = new PostAdapter(postsTraining, requireContext());
-
-                                recyclerView.setAdapter(postAdapter);
-
-                                // Thiết lập LayoutManager cho RecyclerView
-                                recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                            } else {
-                                // Xử lý trường hợp không tìm thấy bài viết
+                    @Override
+                    public void onPostsReceived(List<Post> posts) {
+                        if (posts.size() > 0) {
+                            // Duyệt qua tất cả các bài viết
+                            for (Post p : posts) {
+                                postsTraining.add(p); // Thêm vào danh sách
                             }
-                        }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            // Xử lý lỗi nếu có
+                            // Lấy dữ liệu bài viết
+                            PostAdapter postAdapter = new PostAdapter(postsTraining, requireContext());
+
+                            recyclerView.setAdapter(postAdapter);
+
+                            // Thiết lập LayoutManager cho RecyclerView
+                            recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                        } else {
+                            // Xử lý trường hợp không tìm thấy bài viết
                         }
-                    });
-                } else {
-                    // Xử lý trường hợp không tìm thấy nhóm
-                }
+                    }
+                });
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                // Xử lý lỗi nếu có
+            public void onGroupsReceived(List<Group> groups) {
+
+
             }
         });
     }

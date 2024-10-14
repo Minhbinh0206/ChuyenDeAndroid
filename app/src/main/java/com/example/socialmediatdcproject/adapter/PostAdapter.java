@@ -239,12 +239,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             holder.imageButtonLike.setImageResource(isLiked ? R.drawable.icon_tym_like : R.drawable.icon_tym);
                             holder.postLike.setTextColor(isLiked ? context.getResources().getColor(R.color.white) : context.getResources().getColor(R.color.black));
                             PostAPI postAPI = new PostAPI();
-                            postAPI.updatePost(post, new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    Log.d("Post", "Successfully");
-                                }
-                            });
+                            postAPI.updatePost(post);
                         }
 
                         @Override

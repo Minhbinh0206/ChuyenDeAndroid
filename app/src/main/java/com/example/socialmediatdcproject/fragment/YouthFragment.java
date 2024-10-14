@@ -53,32 +53,27 @@ public class YouthFragment extends Fragment {
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment); // Giả sử bạn đã thêm RecyclerView này trong layout
 
         GroupAPI groupAPI = new GroupAPI();
-        groupAPI.getGroupById(User.ID_ADMIN_DOANTHANHNIEN, new ValueEventListener() {
+        groupAPI.getGroupById(User.ID_ADMIN_DOANTHANHNIEN, new GroupAPI.GroupCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    Group g = snapshot.getValue(Group.class);
-                    if (g != null) {
-                        TextView nameTraining = getView().findViewById(R.id.name_department);
-                        ImageView avatarTraining = getView().findViewById(R.id.logo_department);
-                        nameTraining.setText(g.getGroupName());
+            public void onGroupReceived(Group group) {
+                if (group != null) {
+                    TextView nameTraining = getView().findViewById(R.id.name_department);
+                    ImageView avatarTraining = getView().findViewById(R.id.logo_department);
+                    nameTraining.setText(group.getGroupName());
 
-                        Glide.with(requireContext())
-                                .load(g.getAvatar())
-                                .into(avatarTraining);
-
-
-                    }
+                    Glide.with(requireContext())
+                            .load(group.getAvatar())
+                            .into(avatarTraining);
                 }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Group", "Error: " + error.getMessage());
+            public void onGroupsReceived(List<Group> groups) {
+
             }
         });
 
-        loadPostFromFirebase(User.ID_ADMIN_DOANTHANHNIEN);
+                loadPostFromFirebase(User.ID_ADMIN_DOANTHANHNIEN);
 
         // Tìm các nút
         Button infoButton = view.findViewById(R.id.button_youth_info);
@@ -114,36 +109,32 @@ public class YouthFragment extends Fragment {
     }
 
     public void loadPostFromFirebase(int id) {
-        ArrayList<Post> posts = new ArrayList<>();
+        ArrayList<Post> postsList = new ArrayList<>();
 
         // Tạo instance của PostAPI
         PostAPI postAPI = new PostAPI();
 
         // Lấy bài viết theo groupId
-        postAPI.getPostByGroupId(id, new ValueEventListener() {
+        postAPI.getPostByGroupId(id, new PostAPI.PostCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot postSnapshot) {
-                // Kiểm tra nếu có bài viết
-                if (postSnapshot.exists()) {
-                    for (DataSnapshot post : postSnapshot.getChildren()) {
-                        Post p = post.getValue(Post.class);
-                        if (p != null) {
-                            posts.add(p); // Thêm bài viết vào danh sách
-                        }
-                    }
+            public void onPostReceived(Post post) {
 
-                    // Cập nhật RecyclerView với dữ liệu bài viết
-                    PostAdapter postAdapter = new PostAdapter(posts, requireContext());
-                    recyclerView.setAdapter(postAdapter);
-                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                } else {
-                    Log.d("Post", "No posts found for groupId: " + id);
-                }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Post", "Error: " + error.getMessage());
+            public void onPostsReceived(List<Post> posts) {
+                // Kiểm tra nếu có bài viết
+                for (Post p : posts) {
+                    if (p != null) {
+                        postsList.add(p); // Thêm bài viết vào danh sách
+                    }
+                }
+
+                // Cập nhật RecyclerView với dữ liệu bài viết
+                PostAdapter postAdapter = new PostAdapter(postsList, requireContext());
+                recyclerView.setAdapter(postAdapter);
+                recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
             }
         });
     }

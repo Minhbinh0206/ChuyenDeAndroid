@@ -1,5 +1,7 @@
 package com.example.socialmediatdcproject.API;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.example.socialmediatdcproject.model.Group;
@@ -18,56 +20,111 @@ public class GroupAPI {
 
     // Constructor để kết nối với Firebase "groups" node
     public GroupAPI() {
-        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        // Tên phải đúng từng kí tự cả hoa và thường, nếu không sẽ xuất ra dữ liệu rỗng
-        groupRef = firebaseDatabase.getReference("Group");
+        groupRef = FirebaseDatabase.getInstance().getReference("Groups");
     }
 
     // Thêm nhóm mới vào Firebase
     public void addGroup(Group group) {
         int groupId = group.getGroupId();
-        groupRef.child(String.valueOf(groupId)).setValue(group);
+        groupRef.child(String.valueOf(groupId)).setValue(group)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("GroupAPI", "Group added successfully.");
+                    } else {
+                        Log.e("GroupAPI", "Failed to add group.", task.getException());
+                    }
+                });
     }
 
     // Lấy danh sách tất cả các nhóm từ Firebase
-    public void getAllGroups(ValueEventListener listener) {
-        groupRef.addValueEventListener(listener);
+    public void getAllGroups(final GroupCallback callback) {
+        groupRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Group> groupList = new ArrayList<>();
+                for (DataSnapshot groupSnapshot : snapshot.getChildren()) {
+                    Group group = groupSnapshot.getValue(Group.class);
+                    if (group != null) {
+                        groupList.add(group);
+                    }
+                }
+                callback.onGroupsReceived(groupList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("GroupAPI", "Error getting all groups.", error.toException());
+            }
+        });
     }
 
     // Lấy một nhóm dựa trên groupId
-    public void getGroupById(int groupId, ValueEventListener listener) {
-        groupRef.child(String.valueOf(groupId)).addListenerForSingleValueEvent(listener);
+    public void getGroupById(int groupId, final GroupCallback callback) {
+        groupRef.child(String.valueOf(groupId)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Group group = snapshot.getValue(Group.class);
+                callback.onGroupReceived(group);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("GroupAPI", "Error getting group by ID.", error.toException());
+            }
+        });
     }
 
     // Lấy một nhóm dựa trên tên
-    public void getGroupByName(String name, ValueEventListener listener) {
-        groupRef.orderByChild("name").equalTo(name).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void getGroupByName(String name, final GroupCallback callback) {
+        groupRef.orderByChild("groupName").equalTo(name).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot groupSnapshot : dataSnapshot.getChildren()) {
-                        listener.onDataChange(groupSnapshot); // Gửi lại nhóm tìm thấy
+                        Group group = groupSnapshot.getValue(Group.class);
+                        callback.onGroupReceived(group);
+                        return; // Dừng vòng lặp sau khi tìm thấy nhóm
                     }
                 } else {
-                    listener.onDataChange(dataSnapshot); // Không tìm thấy nhóm nào
+                    callback.onGroupReceived(null); // Không tìm thấy nhóm
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                listener.onCancelled(databaseError); // Xử lý lỗi
+                // Xử lý lỗi
+                callback.onGroupReceived(null);
             }
         });
     }
 
-
     // Cập nhật thông tin một nhóm
     public void updateGroup(int groupId, Group updatedGroup) {
-        groupRef.child(String.valueOf(groupId)).setValue(updatedGroup);
+        groupRef.child(String.valueOf(groupId)).setValue(updatedGroup)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("GroupAPI", "Group updated successfully.");
+                    } else {
+                        Log.e("GroupAPI", "Failed to update group.", task.getException());
+                    }
+                });
     }
 
     // Xóa nhóm dựa trên groupId
     public void deleteGroup(int groupId) {
-        groupRef.child(String.valueOf(groupId)).removeValue();
+        groupRef.child(String.valueOf(groupId)).removeValue()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("GroupAPI", "Group deleted successfully.");
+                    } else {
+                        Log.e("GroupAPI", "Failed to delete group.", task.getException());
+                    }
+                });
+    }
+
+    // Định nghĩa interface GroupCallback
+    public interface GroupCallback {
+        void onGroupReceived(Group group);
+        void onGroupsReceived(List<Group> groups);
     }
 }

@@ -19,6 +19,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -76,7 +77,9 @@ public class UploadProfileActivity extends AppCompatActivity {
 
     private ImageView imgFromGallery;
     private Button btnSelectImage;
+    private TextView studentClass;
     private EditText studentNumberEditText;
+    private EditText fullNameText;
     private EditText phoneNumber;
     String fullName = "";
     private int userId;
@@ -145,6 +148,8 @@ public class UploadProfileActivity extends AppCompatActivity {
         });
 
         // Khởi tạo các view
+        fullNameText = findViewById(R.id.fullname_infomation);
+        studentClass = findViewById(R.id.class_infomation);
         departmentSpinner = findViewById(R.id.department_infomation);
         majorSpinner = findViewById(R.id.major_infomation);
         yearInput = findViewById(R.id.year_born_info);
@@ -203,9 +208,10 @@ public class UploadProfileActivity extends AppCompatActivity {
             // Lấy ID từ spinner
             int departmentId = departmentSpinner.getSelectedItemPosition(); // Thay đổi nếu bạn cần lấy ID thực sự từ đối tượng Department
             int majorId = majorSpinner.getSelectedItemPosition(); // Tương tự
-            int classId = 0; // Thay đổi nếu bạn có EditText cho lớp học
+            String classId = studentClass.getText().toString();
             String phoneNumberInfo = phoneNumber.getText().toString();
             int roleId = User.ROLE_STUDENT;
+            String fullnameStudent = fullNameText.getText().toString();
             String description = ""; // Thêm mô tả nếu cần
 
             // Kiểm tra xem người dùng đã nhập đầy đủ thông tin chưa
@@ -215,7 +221,7 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
 
             // Tạo đối tượng Student
-            Student student = new Student(userId, email, password, fullName, "", phoneNumberInfo, roleId , studentNumber, birthday, departmentId, majorId, classId, description);
+            Student student = new Student(userId, email, password, fullnameStudent, "", phoneNumberInfo, roleId , studentNumber, birthday, departmentId, majorId, classId, description);
 
             // Lưu thông tin vào Firebase hoặc cơ sở dữ liệu
             StudentAPI studentAPI = new StudentAPI();
@@ -250,25 +256,22 @@ public class UploadProfileActivity extends AppCompatActivity {
 
     // Sử dụng trong UploadProfileActivity
     private void loadDepartments() {
-        departmentAPI.getAllDepartments(new ValueEventListener() {
+        departmentAPI.getAllDepartments(new DepartmentAPI.DepartmentCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    for (DataSnapshot departmentSnapshot : snapshot.getChildren()) {
-                        Department department = (Department) departmentSnapshot.getValue(Department.class);
-                        if (department != null) {
-                            optionsDepartment.add(department.getDepartmentName());
-                        }
-                    }
-                    ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(UploadProfileActivity.this, android.R.layout.simple_spinner_item, optionsDepartment);
-                    departmentAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    departmentSpinner.setAdapter(departmentAdapter);
-                }
+            public void onDepartmentReceived(Department department) {
+
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("UploadProfileActivity", "Error fetching departments: " + error.getMessage());
+            public void onDepartmentsReceived(List<Department> departments) {
+                for (Department department : departments) {
+                    if (department != null) {
+                        optionsDepartment.add(department.getDepartmentName());
+                    }
+                }
+                ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(UploadProfileActivity.this, android.R.layout.simple_spinner_item, optionsDepartment);
+                departmentAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                departmentSpinner.setAdapter(departmentAdapter);
             }
         });
     }
@@ -278,27 +281,25 @@ public class UploadProfileActivity extends AppCompatActivity {
         optionsMajor.clear();
         optionsMajor.add(0, "Chọn ngành");
 
-        majorAPI.getAllMajors(new ValueEventListener() {
+        majorAPI.getAllMajors(new MajorAPI.MajorCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot majorSnapshot) {
-                if (majorSnapshot.exists()) {
-                    for (DataSnapshot majorData : majorSnapshot.getChildren()) {
-                        Major major = majorData.getValue(Major.class);
-                        if (major != null && major.getDepartmentId() == departmentId) {
-                            optionsMajor.add(major.getMajorName());
-                        }
-                    }
+            public void onMajorReceived(Major major) {
 
-                    // Cập nhật adapter cho spinner major
-                    ArrayAdapter<String> majorAdapter = new ArrayAdapter<>(UploadProfileActivity.this, android.R.layout.simple_spinner_item, optionsMajor);
-                    majorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    majorSpinner.setAdapter(majorAdapter);
-                }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("UploadProfileActivity", "Error fetching majors: " + error.getMessage());
+            public void onMajorsReceived(List<Major> majors) {
+                for (Major major : majors) {
+                    if (major != null && major.getDepartmentId() == departmentId) {
+                        optionsMajor.add(major.getMajorName());
+                    }
+                }
+
+                // Cập nhật adapter cho spinner major
+                ArrayAdapter<String> majorAdapter = new ArrayAdapter<>(UploadProfileActivity.this, android.R.layout.simple_spinner_item, optionsMajor);
+                majorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                majorSpinner.setAdapter(majorAdapter);
+
             }
         });
     }
@@ -308,22 +309,21 @@ public class UploadProfileActivity extends AppCompatActivity {
         optionsMajor.add(0, "Chọn ngành"); // Thêm lựa chọn mặc định
 
         // Lấy thông tin department theo tên
-        departmentAPI.getAllDepartments(new ValueEventListener() {
+        departmentAPI.getAllDepartments(new DepartmentAPI.DepartmentCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot departmentSnapshot : snapshot.getChildren()) {
-                    Department department = departmentSnapshot.getValue(Department.class);
+            public void onDepartmentReceived(Department department) {
+
+            }
+
+            @Override
+            public void onDepartmentsReceived(List<Department> departments) {
+                for (Department department : departments) {
                     if (department != null && department.getDepartmentName().equals(name)) {
                         // Nếu tên khoa trùng khớp, lấy departmentId
                         int departmentId = department.getDepartmentId();
                         loadMajors(departmentId); // Gọi phương thức để lấy ngành
                     }
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("UploadProfileActivity", "Error fetching departments: " + error.getMessage());
             }
         });
     }
