@@ -9,19 +9,16 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.socialmediatdcproject.R;
-import com.example.socialmediatdcproject.model.Bussiness;
-import com.example.socialmediatdcproject.model.Lecturer;
-import com.example.socialmediatdcproject.model.Bussiness;
-import com.example.socialmediatdcproject.model.User;
+import com.example.socialmediatdcproject.model.Business;
 
 import java.util.List;
 
 public class BussinessAdapter extends RecyclerView.Adapter<BussinessAdapter.BussinessViewHolder> {
 
-    private List<Bussiness> bussinessList;
+    private List<Business> bussinessList;
 
     // Constructor
-    public BussinessAdapter(List<Bussiness> bussinessList) {
+    public BussinessAdapter(List<Business> bussinessList) {
         this.bussinessList = bussinessList;
     }
 
@@ -36,7 +33,7 @@ public class BussinessAdapter extends RecyclerView.Adapter<BussinessAdapter.Buss
     // Bind dữ liệu vào ViewHolder
     @Override
     public void onBindViewHolder(@NonNull BussinessViewHolder holder, int position) {
-        Bussiness bussiness = bussinessList.get(position);
+        Business bussiness = bussinessList.get(position);
         if (bussiness != null) {
             // Set dữ liệu cho các view
             holder.bussinessName.setText(bussiness.getBussinessName());

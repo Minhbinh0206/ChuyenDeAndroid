@@ -22,7 +22,7 @@ public class UserAPI {
 
     public UserAPI() {
         // Khởi tạo reference đến nút "users" trong Firebase
-        userDatabase = FirebaseDatabase.getInstance().getReference("User");
+        userDatabase = FirebaseDatabase.getInstance().getReference("Users");
     }
 
     // Cập nhật thông tin người dùng

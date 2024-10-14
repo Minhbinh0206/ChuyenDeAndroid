@@ -172,31 +172,27 @@ public class SharedActivity extends AppCompatActivity {
     private void loadPostsFromFirebase() {
         PostAPI postAPI = new PostAPI();  // Sử dụng PostAPI để lấy dữ liệu từ Firebase
 
-        postAPI.getAllPosts(new ValueEventListener() {
+        postAPI.getAllPosts(new PostAPI.PostCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                ArrayList<Post> posts = new ArrayList<>();
+            public void onPostReceived(Post post) {
 
-                // Lấy dữ liệu từ Firebase
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Post post = snapshot.getValue(Post.class);
-                    posts.add(post);
+            }
+
+            @Override
+            public void onPostsReceived(List<Post> posts) {
+                ArrayList<Post> postList = new ArrayList<>();
+
+                for (Post p : posts) {
+                    postList.add(p);
                 }
-
                 // Setup RecyclerView với Adapter
                 RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-                PostAdapter postAdapter = new PostAdapter(posts, SharedActivity.this);
+                PostAdapter postAdapter = new PostAdapter(postList, SharedActivity.this);
                 recyclerView.setAdapter(postAdapter);
 
                 // Sử dụng LayoutManager cho RecyclerView
                 recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
 
-                Log.d("POST", "onDataChange: " + posts.size());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                // Xử lý lỗi khi không thể lấy dữ liệu
             }
         });
     }

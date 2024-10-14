@@ -17,7 +17,7 @@ public class StudentAPI {
     private DatabaseReference studentDatabase;
 
     public StudentAPI() {
-        studentDatabase = FirebaseDatabase.getInstance().getReference("Student");
+        studentDatabase = FirebaseDatabase.getInstance().getReference("Students");
     }
 
     // Thêm một sinh viên mới vào database

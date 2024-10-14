@@ -79,12 +79,16 @@ public class GroupFragment extends Fragment {
 
     public void loadGroups(){
         GroupAPI groupAPI = new GroupAPI();
-        groupAPI.getAllGroups(new ValueEventListener() {
+        groupAPI.getAllGroups(new GroupAPI.GroupCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                ArrayList<Group> groups = new ArrayList<>();
-                for (DataSnapshot groupSnapshot : snapshot.getChildren()) {
-                    Group group = groupSnapshot.getValue(Group.class);
+            public void onGroupReceived(Group group) {
+
+            }
+
+            @Override
+            public void onGroupsReceived(List<Group> groups) {
+                ArrayList<Group> groupsList = new ArrayList<>();
+                for (Group group : groupsList) {
                     if (group != null) {
                         groups.add(group);
                     }
@@ -92,11 +96,6 @@ public class GroupFragment extends Fragment {
                 GroupAdapter groupAdapter = new GroupAdapter(groups, requireContext());
                 recyclerView.setAdapter(groupAdapter);
                 recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
     }

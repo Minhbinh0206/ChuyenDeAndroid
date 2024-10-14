@@ -19,7 +19,7 @@ public class GroupUserAPI {
     // Constructor để kết nối với Firebase "GroupUser" node
     public GroupUserAPI() {
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        groupUserRef = firebaseDatabase.getReference("GroupUser");
+        groupUserRef = firebaseDatabase.getReference("UsersInGroup");
     }
 
     // Thêm GroupUser mới vào Firebase

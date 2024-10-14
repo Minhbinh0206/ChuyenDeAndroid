@@ -24,7 +24,7 @@ public class DepartmentAPI {
     public DepartmentAPI() {
         // FirebaseDatabase instance
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        databaseReference = database.getReference("Department"); // Reference to "department" node
+        databaseReference = database.getReference("Departments"); // Reference to "Departments" node
     }
 
     // Create (Add a new department)
@@ -34,18 +34,46 @@ public class DepartmentAPI {
         databaseReference.child(departmentId).setValue(department).addOnCompleteListener(onCompleteListener);
     }
 
-    // Get all
-    public void getAllDepartments(ValueEventListener listener) {
-        databaseReference.addListenerForSingleValueEvent(listener);
+    // Get all departments
+    public void getAllDepartments(final DepartmentCallback callback) {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Department> departmentList = new ArrayList<>();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Department department = ds.getValue(Department.class);
+                    if (department != null) {
+                        departmentList.add(department);
+                    }
+                }
+                callback.onDepartmentsReceived(departmentList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("DepartmentAPI", "Error fetching departments", error.toException());
+            }
+        });
     }
 
     // Get department by id
-    public void getDepartmentById(int departmentId, ValueEventListener listener) {
-        databaseReference.orderByChild("departmentId").equalTo(departmentId).addListenerForSingleValueEvent(listener);
-    }
+    public void getDepartmentById(int departmentId, final DepartmentCallback callback) {
+        databaseReference.orderByChild("departmentId").equalTo(departmentId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Department department = snapshot.getChildren().iterator().next().getValue(Department.class);
+                    callback.onDepartmentReceived(department);
+                } else {
+                    callback.onDepartmentReceived(null); // Handle case where department not found
+                }
+            }
 
-    public void getDepartmentByName(String departmentName, ValueEventListener listener) {
-        databaseReference.orderByChild("departmentName").equalTo(departmentName).addListenerForSingleValueEvent(listener);
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("DepartmentAPI", "Error fetching department", error.toException());
+            }
+        });
     }
 
     // Update department
@@ -65,8 +93,14 @@ public class DepartmentAPI {
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                // Handle possible errors
+                Log.e("DepartmentAPI", "Error deleting department", databaseError.toException());
             }
         });
+    }
+
+    // Callback interface for Department operations
+    public interface DepartmentCallback {
+        void onDepartmentReceived(Department department);
+        void onDepartmentsReceived(List<Department> departments);
     }
 }

@@ -16,7 +16,7 @@ public class NotifyAPI {
 
     public NotifyAPI() {
         // Khởi tạo reference đến Firebase Database
-        databaseReference = FirebaseDatabase.getInstance().getReference("Notify");
+        databaseReference = FirebaseDatabase.getInstance().getReference("Notifies");
     }
 
     public void getNotifications(final NotificationCallback callback) {
