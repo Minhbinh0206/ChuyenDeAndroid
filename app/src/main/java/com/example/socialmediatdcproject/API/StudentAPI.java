@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -22,15 +23,19 @@ public class StudentAPI {
 
     // Thêm một sinh viên mới vào database
     public void addStudent(Student student, final StudentCallback callback) {
-        int userId = student.getUserId(); // userId phải được gán trước đó
+        // Lấy uid từ Firebase Authentication
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        // Kiểm tra xem userId đã tồn tại hay chưa
-        studentDatabase.child(String.valueOf(userId)).addListenerForSingleValueEvent(new ValueEventListener() {
+        // Gán userId vào đối tượng sinh viên
+        student.setUserId(student.getUserId()); // Giả sử student đã có userId được gán từ trước
+
+        // Kiểm tra xem key với uid đã tồn tại hay chưa
+        studentDatabase.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.exists()) {
-                    // Nếu chưa tồn tại, thêm sinh viên vào Firebase
-                    studentDatabase.child(String.valueOf(userId)).setValue(student)
+                    // Nếu chưa tồn tại, thêm sinh viên vào Firebase với key là uid
+                    studentDatabase.child(uid).setValue(student)
                             .addOnCompleteListener(task -> {
                                 if (task.isSuccessful()) {
                                     callback.onStudentReceived(student); // Gọi callback để thông báo thành công
@@ -39,7 +44,7 @@ public class StudentAPI {
                                 }
                             });
                 } else {
-                    callback.onError("Error: UserId already exists."); // Xử lý nếu userId đã tồn tại
+                    callback.onError("Error: UserId already exists."); // Xử lý nếu uid đã tồn tại
                 }
             }
 

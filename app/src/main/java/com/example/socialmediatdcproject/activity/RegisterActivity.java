@@ -98,12 +98,15 @@ public class RegisterActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onUsersReceived(List<User> users) {
-                                    int count = 0;
-                                    for (User u : users) {
-                                        count++;
+                                    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+                                    if (currentUser == null) {
+                                        Log.d("Test", "No current user found.");
+                                        return; // Nếu không có người dùng hiện tại, thoát sớm
                                     }
-                                    int userId = count;
-                                    Log.d("Test" , "get count" + count);
+
+                                    String userId = currentUser.getUid(); // Lấy UID của người dùng hiện tại
+                                    Log.d("Test", "User ID: " + userId);
+
                                     userAPI.addUser(userDTB);
                                     Intent intent = new Intent(RegisterActivity.this, UploadProfileActivity.class);
                                     intent.putExtra("fullName", fullName);
