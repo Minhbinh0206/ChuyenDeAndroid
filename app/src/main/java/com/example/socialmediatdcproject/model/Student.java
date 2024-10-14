@@ -5,7 +5,7 @@ public class Student extends User {
     private String birthday;
     private int departmentId;
     private int majorId;
-    private int classId;
+    private String studentClass;
     private String description;
 
     public int getDepartmentId() {
@@ -40,12 +40,12 @@ public class Student extends User {
         this.majorId = majorId;
     }
 
-    public int getClassId() {
-        return classId;
+    public String getStudentClass() {
+        return studentClass;
     }
 
-    public void setClassId(int classId) {
-        this.classId = classId;
+    public void setStudentClass(String studentClass) {
+        this.studentClass = studentClass;
     }
 
     public String getDescription() {
@@ -56,13 +56,13 @@ public class Student extends User {
         this.description = description;
     }
 
-    public Student(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String studentNumber, String birthday, int departmentId, int majorId, int classId, String description) {
+    public Student(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String studentNumber, String birthday, int departmentId, int majorId, String studentClass, String description) {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
         this.studentNumber = studentNumber;
         this.birthday = birthday;
         this.departmentId = departmentId;
         this.majorId = majorId;
-        this.classId = classId;
+        this.studentClass = studentClass;
         this.description = description;
     }
 
@@ -72,7 +72,11 @@ public class Student extends User {
         this.birthday = "";
         this.departmentId = -1;
         this.majorId = -1;
-        this.classId = -1;
+        this.studentClass = "";
         this.description = "";
+    }
+
+    public Student() {
+
     }
 }

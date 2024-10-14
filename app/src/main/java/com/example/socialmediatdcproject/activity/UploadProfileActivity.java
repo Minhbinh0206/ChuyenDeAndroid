@@ -19,6 +19,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -37,6 +38,7 @@ import androidx.core.content.ContextCompat;
 import com.example.socialmediatdcproject.API.DepartmentAPI;
 import com.example.socialmediatdcproject.API.MajorAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
+import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Major;
@@ -75,9 +77,14 @@ public class UploadProfileActivity extends AppCompatActivity {
 
     private ImageView imgFromGallery;
     private Button btnSelectImage;
+    private TextView studentClass;
     private EditText studentNumberEditText;
+    private EditText fullNameText;
     private EditText phoneNumber;
+    String fullName = "";
     private int userId;
+    String email;
+    String password;
 
     //Hàm chạy một intent để xử lý kết quả trả về là mở Gallery để chọn hình ảnh
     private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
@@ -117,32 +124,32 @@ public class UploadProfileActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.profile_upload_layout);
 
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (currentUser != null) {
-            // Lấy userId từ Firebase User
-            userId = Integer.parseInt(currentUser.getUid());
-            Log.d("Find User ID " , "UserId: " + userId);
-        } else {
-            // Không tìm thấy người dùng hiện tại
-            Toast.makeText(this, "No user is logged in!", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-
         Intent intent = getIntent();
 
-        // Nhận dữ liệu từ Intent
-        String fullName = intent.getStringExtra("fullName");
-        String email = intent.getStringExtra("email");
-        String password = intent.getStringExtra("password");
         userId = intent.getIntExtra("userId", userId);
         if (userId == -1) {
             Toast.makeText(this, "User ID not found!", Toast.LENGTH_SHORT).show();
             // Có thể thoát khỏi Activity hoặc xử lý lỗi ở đây
             finish();
         }
+        UserAPI userAPI = new UserAPI();
+        userAPI.getUserById(userId, new UserAPI.UserCallback() {
+            @Override
+            public void onUserReceived(User user) {
+                fullName = user.getFullName();
+                email = user.getEmail();
+                password = user.getPassword();
+            }
+
+            @Override
+            public void onUsersReceived(List<User> users) {
+
+            }
+        });
 
         // Khởi tạo các view
+        fullNameText = findViewById(R.id.fullname_infomation);
+        studentClass = findViewById(R.id.class_infomation);
         departmentSpinner = findViewById(R.id.department_infomation);
         majorSpinner = findViewById(R.id.major_infomation);
         yearInput = findViewById(R.id.year_born_info);
@@ -151,6 +158,7 @@ public class UploadProfileActivity extends AppCompatActivity {
         studentNumberEditText = findViewById(R.id.student_number_infomation);
         phoneNumber = findViewById(R.id.phone_infomation);
         Button buttonUploadProfile = findViewById(R.id.button_upload_profile);
+
         //Gọi lại hàm ánh xạ initUi ở trên
         initUi();
         //checkAndRequestPermissions();
@@ -200,9 +208,10 @@ public class UploadProfileActivity extends AppCompatActivity {
             // Lấy ID từ spinner
             int departmentId = departmentSpinner.getSelectedItemPosition(); // Thay đổi nếu bạn cần lấy ID thực sự từ đối tượng Department
             int majorId = majorSpinner.getSelectedItemPosition(); // Tương tự
-            int classId = 0; // Thay đổi nếu bạn có EditText cho lớp học
+            String classId = studentClass.getText().toString();
             String phoneNumberInfo = phoneNumber.getText().toString();
             int roleId = User.ROLE_STUDENT;
+            String fullnameStudent = fullNameText.getText().toString();
             String description = ""; // Thêm mô tả nếu cần
 
             // Kiểm tra xem người dùng đã nhập đầy đủ thông tin chưa
@@ -212,7 +221,7 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
 
             // Tạo đối tượng Student
-            Student student = new Student(userId, email, password, fullName, "", phoneNumberInfo, roleId , studentNumber, birthday, departmentId, majorId, classId, description);
+            Student student = new Student(userId, email, password, fullnameStudent, "", phoneNumberInfo, roleId , studentNumber, birthday, departmentId, majorId, classId, description);
 
             // Lưu thông tin vào Firebase hoặc cơ sở dữ liệu
             StudentAPI studentAPI = new StudentAPI();
@@ -247,25 +256,22 @@ public class UploadProfileActivity extends AppCompatActivity {
 
     // Sử dụng trong UploadProfileActivity
     private void loadDepartments() {
-        departmentAPI.getAllDepartments(new ValueEventListener() {
+        departmentAPI.getAllDepartments(new DepartmentAPI.DepartmentCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    for (DataSnapshot departmentSnapshot : snapshot.getChildren()) {
-                        Department department = (Department) departmentSnapshot.getValue(Department.class);
-                        if (department != null) {
-                            optionsDepartment.add(department.getDepartmentName());
-                        }
-                    }
-                    ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(UploadProfileActivity.this, android.R.layout.simple_spinner_item, optionsDepartment);
-                    departmentAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    departmentSpinner.setAdapter(departmentAdapter);
-                }
+            public void onDepartmentReceived(Department department) {
+
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("UploadProfileActivity", "Error fetching departments: " + error.getMessage());
+            public void onDepartmentsReceived(List<Department> departments) {
+                for (Department department : departments) {
+                    if (department != null) {
+                        optionsDepartment.add(department.getDepartmentName());
+                    }
+                }
+                ArrayAdapter<String> departmentAdapter = new ArrayAdapter<>(UploadProfileActivity.this, android.R.layout.simple_spinner_item, optionsDepartment);
+                departmentAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                departmentSpinner.setAdapter(departmentAdapter);
             }
         });
     }
@@ -275,27 +281,25 @@ public class UploadProfileActivity extends AppCompatActivity {
         optionsMajor.clear();
         optionsMajor.add(0, "Chọn ngành");
 
-        majorAPI.getAllMajors(new ValueEventListener() {
+        majorAPI.getAllMajors(new MajorAPI.MajorCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot majorSnapshot) {
-                if (majorSnapshot.exists()) {
-                    for (DataSnapshot majorData : majorSnapshot.getChildren()) {
-                        Major major = majorData.getValue(Major.class);
-                        if (major != null && major.getDepartmentId() == departmentId) {
-                            optionsMajor.add(major.getMajorName());
-                        }
-                    }
+            public void onMajorReceived(Major major) {
 
-                    // Cập nhật adapter cho spinner major
-                    ArrayAdapter<String> majorAdapter = new ArrayAdapter<>(UploadProfileActivity.this, android.R.layout.simple_spinner_item, optionsMajor);
-                    majorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    majorSpinner.setAdapter(majorAdapter);
-                }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("UploadProfileActivity", "Error fetching majors: " + error.getMessage());
+            public void onMajorsReceived(List<Major> majors) {
+                for (Major major : majors) {
+                    if (major != null && major.getDepartmentId() == departmentId) {
+                        optionsMajor.add(major.getMajorName());
+                    }
+                }
+
+                // Cập nhật adapter cho spinner major
+                ArrayAdapter<String> majorAdapter = new ArrayAdapter<>(UploadProfileActivity.this, android.R.layout.simple_spinner_item, optionsMajor);
+                majorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                majorSpinner.setAdapter(majorAdapter);
+
             }
         });
     }
@@ -305,22 +309,21 @@ public class UploadProfileActivity extends AppCompatActivity {
         optionsMajor.add(0, "Chọn ngành"); // Thêm lựa chọn mặc định
 
         // Lấy thông tin department theo tên
-        departmentAPI.getAllDepartments(new ValueEventListener() {
+        departmentAPI.getAllDepartments(new DepartmentAPI.DepartmentCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot departmentSnapshot : snapshot.getChildren()) {
-                    Department department = departmentSnapshot.getValue(Department.class);
+            public void onDepartmentReceived(Department department) {
+
+            }
+
+            @Override
+            public void onDepartmentsReceived(List<Department> departments) {
+                for (Department department : departments) {
                     if (department != null && department.getDepartmentName().equals(name)) {
                         // Nếu tên khoa trùng khớp, lấy departmentId
                         int departmentId = department.getDepartmentId();
                         loadMajors(departmentId); // Gọi phương thức để lấy ngành
                     }
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("UploadProfileActivity", "Error fetching departments: " + error.getMessage());
             }
         });
     }

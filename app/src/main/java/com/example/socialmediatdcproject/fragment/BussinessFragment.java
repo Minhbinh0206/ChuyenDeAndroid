@@ -14,14 +14,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.socialmediatdcproject.API.BussinessAPI;
+import com.example.socialmediatdcproject.API.BusinessAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.BussinessAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
-import com.example.socialmediatdcproject.model.Bussiness;
+import com.example.socialmediatdcproject.model.Business;
 import com.example.socialmediatdcproject.model.Post;
-import com.example.socialmediatdcproject.model.User;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -33,7 +32,7 @@ import java.util.concurrent.CountDownLatch;
 public class BussinessFragment extends Fragment {
     private RecyclerView recyclerView; // RecyclerView để hiển thị bài viết và doanh nghiệp
     private ArrayList<Post> postsBusiness = new ArrayList<>();
-    private ArrayList<Bussiness> businesses = new ArrayList<>();
+    private ArrayList<Business> businessesList = new ArrayList<>();
     private PostAdapter postAdapter;
     private BussinessAdapter businessAdapter;
 
@@ -51,7 +50,7 @@ public class BussinessFragment extends Fragment {
         // Khởi tạo RecyclerView
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
         postAdapter = new PostAdapter(postsBusiness, requireContext());
-        businessAdapter = new BussinessAdapter(businesses);
+        businessAdapter = new BussinessAdapter(businessesList);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(postAdapter); // Mặc định hiển thị bài viết
 
@@ -77,7 +76,8 @@ public class BussinessFragment extends Fragment {
 
         // Sự kiện khi nhấn vào nút bài viết
         businessPostButton.setOnClickListener(v -> {
-            recyclerView.setAdapter(postAdapter); // Hiển thị bài viết
+            loadPostFromFirebase(list);
+            recyclerView.setAdapter(postAdapter); // Hiển thị doanh nghiệp
             postAdapter.notifyDataSetChanged();
 
             // Cập nhật màu cho các nút
@@ -96,7 +96,7 @@ public class BussinessFragment extends Fragment {
     }
 
     public void loadPostFromFirebase(List<Integer> listId) {
-        ArrayList<Post> posts = new ArrayList<>(); // Danh sách bài viết
+        ArrayList<Post> postsList = new ArrayList<>(); // Danh sách bài viết
 
         // Tạo instance của PostAPI
         PostAPI postAPI = new PostAPI();
@@ -106,27 +106,17 @@ public class BussinessFragment extends Fragment {
 
         for (int id : listId) {
             // Lấy bài viết theo groupId
-            postAPI.getPostByGroupId(id, new ValueEventListener() {
+            postAPI.getPostByGroupId(id, new PostAPI.PostCallback() {
                 @Override
-                public void onDataChange(@NonNull DataSnapshot postSnapshot) {
-                    // Kiểm tra nếu có bài viết
-                    if (postSnapshot.exists()) {
-                        for (DataSnapshot post : postSnapshot.getChildren()) {
-                            Post p = post.getValue(Post.class);
-                            if (p != null) {
-                                posts.add(p);
-                            }
-                        }
-                    } else {
-                        Log.d("Post", "No posts found for groupId: " + id);
-                    }
-                    latch.countDown(); // Giảm số lượng yêu cầu còn lại
+                public void onPostReceived(Post post) {
+                    // Không sử dụng
                 }
 
                 @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                    Log.e("Post", "Error: " + error.getMessage());
-                    latch.countDown(); // Đảm bảo rằng lệnh đếm giảm xuống ngay cả khi có lỗi
+                public void onPostsReceived(List<Post> posts) {
+                    Log.d("PostBusiness", "onPostsReceived: " + posts.size());
+                    postsList.addAll(posts); // Thêm tất cả bài viết nhận được
+                    latch.countDown(); // Đếm ngược
                 }
             });
         }
@@ -137,7 +127,7 @@ public class BussinessFragment extends Fragment {
                 latch.await(); // Chờ cho tất cả các yêu cầu hoàn tất
                 requireActivity().runOnUiThread(() -> {
                     postsBusiness.clear(); // Xóa danh sách hiện tại
-                    postsBusiness.addAll(posts); // Thêm tất cả bài viết mới vào danh sách
+                    postsBusiness.addAll(postsList); // Thêm tất cả bài viết mới vào danh sách
                     postAdapter.notifyDataSetChanged(); // Cập nhật adapter
                     Log.d("POS", "loadPostFromFirebase: " + postAdapter.getItemCount());
                 });
@@ -147,25 +137,23 @@ public class BussinessFragment extends Fragment {
         }).start();
     }
 
-
     private void loadBusinesses() {
-        BussinessAPI bussinessAPI = new BussinessAPI();
-        bussinessAPI.getAllBusinesses(new ValueEventListener() {
+        BusinessAPI bussinessAPI = new BusinessAPI();
+        bussinessAPI.getAllBusinesses(new BusinessAPI.BusinessCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                businesses.clear(); // Xóa danh sách hiện tại
-                for (DataSnapshot businessSnapshot : dataSnapshot.getChildren()) {
-                    Bussiness business = businessSnapshot.getValue(Bussiness.class);
-                    if (business != null) {
-                        businesses.add(business); // Thêm doanh nghiệp vào danh sách
-                    }
-                }
-                businessAdapter.notifyDataSetChanged(); // Cập nhật adapter
+            public void onBusinessReceived(Business business) {
+
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                // Xử lý lỗi nếu có
+            public void onBusinessesReceived(List<Business> businesses) {
+                businesses.clear(); // Xóa danh sách hiện tại
+                for (Business business: businesses) {
+                    if (business != null) {
+                        businessesList.add(business); // Thêm doanh nghiệp vào danh sách
+                    }
+                }
+                businessAdapter.notifyDataSetChanged(); // Cập nhật adapter
             }
         });
     }

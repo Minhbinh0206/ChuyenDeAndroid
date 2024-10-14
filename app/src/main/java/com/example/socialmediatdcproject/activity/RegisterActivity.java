@@ -24,7 +24,7 @@ import java.util.List;
 public class RegisterActivity extends AppCompatActivity {
 
     private EditText editTextName, editTextEmail, editTextPassword, editTextPasswordConfirm;
-    private FirebaseAuth mAuth; // Khởi tạo biến FirebaseAuth
+    private FirebaseAuth auth; // Thêm FirebaseAuth
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +33,7 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.register_layout);
 
         // Khởi tạo FirebaseAuth
-        mAuth = FirebaseAuth.getInstance();
+        auth = FirebaseAuth.getInstance();
 
         // Thiết kế giao diện
         ImageView imageView = findViewById(R.id.image_logo);
@@ -74,53 +74,44 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
-            // Tao User
-            User userDTB = new User();
-            userDTB.setEmail(email);
-            userDTB.setPassword(password);
-            userDTB.setFullName(fullName);
-
             // Đăng ký người dùng với Firebase Authentication
-            mAuth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(RegisterActivity.this, task -> {
+            auth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            // Đăng ký thành công, người dùng đã được tạo
-                            FirebaseUser user = mAuth.getCurrentUser();
+                            FirebaseUser firebaseUser = auth.getCurrentUser();
+                            if (firebaseUser != null) {
+                                UserAPI userAPI = new UserAPI();
+                                userAPI.getAllUsers(new UserAPI.UserCallback() {
+                                    @Override
+                                    public void onUserReceived(User user) {
 
-                            Toast.makeText(RegisterActivity.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
-
-                            UserAPI userAPI = new UserAPI();
-                            userAPI.getAllUsers(new UserAPI.UserCallback() {
-                                @Override
-                                public void onUserReceived(User user) {
-
-                                }
-
-                                @Override
-                                public void onUsersReceived(List<User> users) {
-                                    FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-                                    if (currentUser == null) {
-                                        Log.d("Test", "No current user found.");
-                                        return; // Nếu không có người dùng hiện tại, thoát sớm
                                     }
 
-                                    String userId = currentUser.getUid(); // Lấy UID của người dùng hiện tại
-                                    Log.d("Test", "User ID: " + userId);
+                                    @Override
+                                    public void onUsersReceived(List<User> users) {
+                                        int count = 0;
+                                        for (User u : users) {
+                                            count++;
+                                        }
+                                        int userId = count;
+                                        User userDTB = new User();
+                                        userDTB.setUserId(userId); // Gán userId từ UID
+                                        userDTB.setEmail(email);
+                                        userDTB.setPassword(password);
+                                        userDTB.setFullName(fullName);
 
-                                    userAPI.addUser(userDTB);
-                                    Intent intent = new Intent(RegisterActivity.this, UploadProfileActivity.class);
-                                    intent.putExtra("fullName", fullName);
-                                    intent.putExtra("email", email);
-                                    intent.putExtra("password", password);
-                                    intent.putExtra("userId", userId);
-                                    startActivity(intent);
-                                    finish();
-                                }
-                            });
+                                        userAPI.addUser(userDTB); // Thêm người dùng vào cơ sở dữ liệu
 
+                                        // Chuyển đến hoạt động tiếp theo
+                                        Intent intent = new Intent(RegisterActivity.this, UploadProfileActivity.class);
+                                        intent.putExtra("userId", userId);
+                                        startActivity(intent);
+                                        finish();
+                                    }
+                                });
+                            }
                         } else {
-                            // Đăng ký thất bại
-                            Toast.makeText(RegisterActivity.this, "Đăng ký thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(RegisterActivity.this, "Đăng ký không thành công: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
         });
