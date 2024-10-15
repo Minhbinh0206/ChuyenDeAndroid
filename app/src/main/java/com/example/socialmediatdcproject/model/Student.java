@@ -1,5 +1,7 @@
 package com.example.socialmediatdcproject.model;
 
+import android.net.Uri;
+
 public class Student extends User {
     private String studentNumber;
     private String birthday;
@@ -7,6 +9,20 @@ public class Student extends User {
     private int majorId;
     private String studentClass;
     private String description;
+    // Thêm trường cập nhật Avatar
+    private String avatar;
+
+    @Override
+    public String getAvatar() {
+        return avatar;
+    }
+
+    @Override
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    //------------------------------------------
 
     public int getDepartmentId() {
         return departmentId;
@@ -65,6 +81,7 @@ public class Student extends User {
         this.studentClass = studentClass;
         this.description = description;
     }
+
 
     public Student(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId) {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
