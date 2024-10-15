@@ -85,6 +85,7 @@ public class UploadProfileActivity extends AppCompatActivity {
     private int userId;
     String email;
     String password;
+    private Uri selectedImageUri; // Declare this variable to store the selected image URI
 
     //Hàm chạy một intent để xử lý kết quả trả về là mở Gallery để chọn hình ảnh
     private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
@@ -95,14 +96,14 @@ public class UploadProfileActivity extends AppCompatActivity {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
                         if (data != null) {
-                            Uri uri = data.getData();
+                            selectedImageUri = data.getData();
                             try {
                                 // Hiển thị ảnh chọn từ Gallery
-                                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
                                 imgFromGallery.setImageBitmap(bitmap);
 
                                 // Upload ảnh lên Firebase Storage
-                                uploadImageToFirebaseStorage(uri, userId); // Gọi hàm upload ảnh với userId
+                                uploadImageToFirebaseStorage(selectedImageUri, userId); // Gọi hàm upload ảnh với userId
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -213,6 +214,7 @@ public class UploadProfileActivity extends AppCompatActivity {
             int roleId = User.ROLE_STUDENT;
             String fullnameStudent = fullNameText.getText().toString();
             String description = ""; // Thêm mô tả nếu cần
+            String avatarUrl = ""; // Thêm ảnh
 
             // Kiểm tra xem người dùng đã nhập đầy đủ thông tin chưa
             if (studentNumber.isEmpty() || birthday.isEmpty()) {
@@ -221,37 +223,39 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
 
             // Tạo đối tượng Student
-            Student student = new Student(userId, email, password, fullnameStudent, "", phoneNumberInfo, roleId , studentNumber, birthday, departmentId, majorId, classId, description);
+
+            Student student = new Student(userId, email, password, fullnameStudent, avatarUrl, phoneNumberInfo, roleId , studentNumber, birthday, departmentId, majorId, classId, description);
+
+            uploadImageToFirebaseStorage(selectedImageUri, userId, student);
 
             // Lưu thông tin vào Firebase hoặc cơ sở dữ liệu
-            StudentAPI studentAPI = new StudentAPI();
-            studentAPI.addStudent(student, new StudentAPI.StudentCallback() {
-                @Override
-                public void onStudentReceived(Student student) {
-                    Toast.makeText(getApplicationContext(), "Sinh viên đã được thêm thành công!", Toast.LENGTH_SHORT).show();
-
-                    // Chuyển đến trang tiếp theo
-                    Intent i = new Intent(UploadProfileActivity.this, SharedActivity.class);
-                    startActivity(i);
-                }
-
-                @Override
-                public void onStudentsReceived(List<Student> students) {
-                    // Không cần thực hiện ở đây
-                }
-
-                @Override
-                public void onError(String errorMessage) {
-                    Toast.makeText(getApplicationContext(), "Lỗi: " + errorMessage, Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onStudentDeleted(int studentId) {
-                    // Không cần xử lý ở đây khi thêm sinh viên
-                }
-            });
+//            StudentAPI studentAPI = new StudentAPI();
+//            studentAPI.addStudent(student, new StudentAPI.StudentCallback() {
+//                @Override
+//                public void onStudentReceived(Student student) {
+//                    Toast.makeText(getApplicationContext(), "Sinh viên đã được thêm thành công!", Toast.LENGTH_SHORT).show();
+//
+//                    // Chuyển đến trang tiếp theo
+//                    Intent i = new Intent(UploadProfileActivity.this, SharedActivity.class);
+//                    startActivity(i);
+//                }
+//
+//                @Override
+//                public void onStudentsReceived(List<Student> students) {
+//                    // Không cần thực hiện ở đây
+//                }
+//
+//                @Override
+//                public void onError(String errorMessage) {
+//                    Toast.makeText(getApplicationContext(), "Lỗi: " + errorMessage, Toast.LENGTH_SHORT).show();
+//                }
+//
+//                @Override
+//                public void onStudentDeleted(int studentId) {
+//                    // Không cần xử lý ở đây khi thêm sinh viên
+//                }
+//            });
         });
-
     }
 
     // Sử dụng trong UploadProfileActivity
@@ -488,7 +492,7 @@ public class UploadProfileActivity extends AppCompatActivity {
         mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
 
     }
-    // Hàm upload hình ảnh lên Storage Firebase
+    // Hàm upload hình ảnh lên Storage Firebase ( chỉ đưa ảnh lên firebase )
     private void uploadImageToFirebaseStorage(Uri filePath, int userId) {
         if (filePath != null) {
             // Tạo Firebase Storage reference
@@ -496,7 +500,7 @@ public class UploadProfileActivity extends AppCompatActivity {
             StorageReference storageRef = storage.getReference();
 
             // Tạo đường dẫn lưu trữ cho hình ảnh (ví dụ: avatars/userId.png)
-            StorageReference avatarRef = storageRef.child("avatars/" + userId + ".png");
+            StorageReference avatarRef = storageRef.child("avatars/" + userId + ".jpg");
 
             // Upload ảnh lên Firebase Storage
             avatarRef.putFile(filePath)
@@ -516,7 +520,7 @@ public class UploadProfileActivity extends AppCompatActivity {
     }
 
     private void saveAvatarUrlToDatabase(int userId, String downloadUrl) {
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(String.valueOf(userId));
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users").child(String.valueOf(userId));
 
         // Lưu URL của ảnh vào trường avatar trong bảng User
         userRef.child("avatar").setValue(downloadUrl)
@@ -528,5 +532,53 @@ public class UploadProfileActivity extends AppCompatActivity {
                     }
                 });
     }
+    // Hàm upload hình ảnh lên Storage Firebase ( Đưa ảnh lên Storage + cập nhật thông tin Student)
+    private void uploadImageToFirebaseStorage(Uri filePath, int userId, Student student) {
+        if (filePath != null) {
 
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference();
+
+            StorageReference avatarRef = storageRef.child("avatar/" + userId + ".jpg");
+
+            avatarRef.putFile(filePath)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            String downloadUrl = uri.toString();
+                            // Save the avatar URL to the Student object
+                            student.setAvatar(downloadUrl); // Assuming you have a method in Student class
+                            saveStudentToDatabase(student); // Save the student data including avatar URL
+                        });
+                    })
+                    .addOnFailureListener(exception -> {
+                        Toast.makeText(this, "Upload Failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
+    // New method to save the Student object
+    private void saveStudentToDatabase(Student student) {
+        StudentAPI studentAPI = new StudentAPI();
+        studentAPI.addStudent(student, new StudentAPI.StudentCallback() {
+            @Override
+            public void onStudentReceived(Student student) {
+                Toast.makeText(getApplicationContext(), "Student profile uploaded successfully!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(UploadProfileActivity.this, SharedActivity.class));
+            }
+
+            @Override
+            public void onStudentsReceived(List<Student> students) {
+
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(getApplicationContext(), "Error: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onStudentDeleted(int studentId) {
+
+            }
+        });
+    }
 }
