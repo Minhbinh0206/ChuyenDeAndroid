@@ -50,7 +50,7 @@ public class BussinessFragment extends Fragment {
         // Khởi tạo RecyclerView
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
         postAdapter = new PostAdapter(postsBusiness, requireContext());
-        businessAdapter = new BussinessAdapter(businessesList);
+        businessAdapter = new BussinessAdapter(businessesList , requireContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(postAdapter); // Mặc định hiển thị bài viết
 
@@ -147,9 +147,13 @@ public class BussinessFragment extends Fragment {
 
             @Override
             public void onBusinessesReceived(List<Business> businesses) {
-                businesses.clear(); // Xóa danh sách hiện tại
                 for (Business business: businesses) {
                     if (business != null) {
+                        String shortAddress = truncateAddress(business.getAddress(), 50); // Giới hạn 50 ký tự
+                        business.setAddress(shortAddress); // Cập nhật địa chỉ ngắn gọn
+
+
+
                         businessesList.add(business); // Thêm doanh nghiệp vào danh sách
                     }
                 }
@@ -164,6 +168,11 @@ public class BussinessFragment extends Fragment {
 
         inactiveButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
         inactiveButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+    }
+
+    private String truncateAddress(String address, int maxLength) {
+        return (address != null && address.length() > maxLength) ?
+                address.substring(0, maxLength) + "..." : address;
     }
 }
 

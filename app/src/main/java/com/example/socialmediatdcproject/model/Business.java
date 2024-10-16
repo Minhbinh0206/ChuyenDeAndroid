@@ -5,6 +5,16 @@ public class Business {
     private String businessName;
     private String address;
     private int businessAdminId;
+    private String avatar;
+
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
 
     public int getBussinessId() {
         return businessId;
