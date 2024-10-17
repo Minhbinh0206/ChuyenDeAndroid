@@ -288,4 +288,10 @@ public class SharedActivity extends AppCompatActivity {
             super.onBackPressed(); // Nếu Drawer không mở thì thực hiện hành vi mặc định
         }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadPostsFromFirebase();
+    }
 }

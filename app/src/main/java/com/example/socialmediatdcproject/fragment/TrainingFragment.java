@@ -112,22 +112,19 @@ public class TrainingFragment extends Fragment {
 
                     @Override
                     public void onPostsReceived(List<Post> posts) {
-                        if (posts.size() > 0) {
-                            // Duyệt qua tất cả các bài viết
-                            for (Post p : posts) {
-                                postsTraining.add(p); // Thêm vào danh sách
-                            }
-
-                            // Lấy dữ liệu bài viết
-                            PostAdapter postAdapter = new PostAdapter(postsTraining, requireContext());
-
-                            recyclerView.setAdapter(postAdapter);
-
-                            // Thiết lập LayoutManager cho RecyclerView
-                            recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                        } else {
-                            // Xử lý trường hợp không tìm thấy bài viết
+                        // Duyệt qua tất cả các bài viết
+                        for (Post p : posts) {
+                            postsTraining.add(p); // Thêm vào danh sách
                         }
+
+                        // Lấy dữ liệu bài viết
+                        PostAdapter postAdapter = new PostAdapter(postsTraining, requireContext());
+
+                        recyclerView.setAdapter(postAdapter);
+
+                        // Thiết lập LayoutManager cho RecyclerView
+                        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
                     }
                 });
             }
