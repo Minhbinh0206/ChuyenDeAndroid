@@ -49,6 +49,7 @@
                 />
 
             <EditText
+                android:id="@+id/editTextName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
@@ -73,6 +74,7 @@
                 android:textSize="30sp" />
 
             <EditText
+                android:id="@+id/editTextMSSV"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
@@ -97,6 +99,7 @@
                 android:textSize="30sp" />
 
             <EditText
+                android:id="@+id/editTextLop"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
@@ -121,6 +124,7 @@
                 android:textSize="30sp" />
 
             <EditText
+                android:id="@+id/editTextKhoa"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
@@ -144,6 +148,7 @@
                 android:textSize="30sp" />
 
             <EditText
+                android:id="@+id/editTextMota"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

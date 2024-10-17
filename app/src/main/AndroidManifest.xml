@@ -43,10 +43,12 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
         <activity
             android:name=".activity.SharedActivity"
             android:exported="false">
+
         </activity>
         <activity
             android:name=".activity.CommentPostActivity"
