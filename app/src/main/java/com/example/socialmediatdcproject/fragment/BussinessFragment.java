@@ -151,9 +151,6 @@ public class BussinessFragment extends Fragment {
                     if (business != null) {
                         String shortAddress = truncateAddress(business.getAddress(), 50); // Giới hạn 50 ký tự
                         business.setAddress(shortAddress); // Cập nhật địa chỉ ngắn gọn
-
-
-
                         businessesList.add(business); // Thêm doanh nghiệp vào danh sách
                     }
                 }

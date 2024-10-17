@@ -107,9 +107,34 @@ public class PostAPI {
         });
     }
 
+
+    // Lấy bài viết theo user ID
+    public void getPostsByUserId(int userId, final PostCallback callback) {
+        postDatabase.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Post> postList = new ArrayList<>();
+                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                    Post post = postSnapshot.getValue(Post.class);
+                    if (post != null) {
+                        postList.add(post);
+                    }
+                }
+                callback.onPostsReceived(postList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("PostAPI", "Error fetching posts by group ID: " + error.getMessage());
+            }
+        });
+    }
+
+
     // Định nghĩa interface PostCallback
     public interface PostCallback {
         void onPostReceived(Post post);
         void onPostsReceived(List<Post> posts);
     }
+
 }

@@ -34,6 +34,7 @@ import com.example.socialmediatdcproject.fragment.DepartmentFragment;
 import com.example.socialmediatdcproject.fragment.GroupFragment;
 import com.example.socialmediatdcproject.fragment.HomeFragment;
 import com.example.socialmediatdcproject.fragment.NotifyFragment;
+import com.example.socialmediatdcproject.fragment.PersonalScreenFragment;
 import com.example.socialmediatdcproject.fragment.TrainingFragment;
 import com.example.socialmediatdcproject.fragment.YouthFragment;
 import com.example.socialmediatdcproject.model.Notify;
@@ -247,7 +248,7 @@ public class SharedActivity extends AppCompatActivity {
                         break;
                     case 6:
                         // Trang cá nhân
-                        fragment = new GroupFragment();
+                        fragment = new PersonalScreenFragment();
                         break;
                     case 7:
                         // Đăng xuất người dùng và chuyển đến LoginActivity
