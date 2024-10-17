@@ -84,7 +84,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:layout_marginVertical="10dp"
+                    android:paddingVertical="5dp"
                     android:layout_marginLeft="50dp"
+                    android:layout_marginRight="5dp"
                     android:gravity="center"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -92,19 +94,44 @@
                     app:layout_constraintTop_toBottomOf="@id/line_split_first">
 
                     <ImageView
+                        android:id="@+id/avatar_user_comment_create"
                         android:layout_width="35dp"
+                        android:layout_gravity="top"
                         android:layout_height="35dp"
+                        android:layout_weight="0.5"
                         android:src="@drawable/image_youth_avatar" />
 
-                    <EditText
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/button_custom"
-                        android:layout_marginHorizontal="5dp"
-                        android:textSize="12dp"
-                        android:paddingHorizontal="15dp"
-                        android:paddingVertical="10dp"
-                        android:hint="Enter your comment" />
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:background="@drawable/comment_custom"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="5dp"
+                            android:layout_weight="10"
+                            >
+                            <EditText
+                                android:id="@+id/content_user_comment_create"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="10"
+                                android:layout_marginHorizontal="5dp"
+                                android:background="@android:color/transparent"
+                                android:textSize="12dp"
+                                android:paddingHorizontal="15dp"
+                                android:paddingVertical="10dp"
+                                android:hint="Enter your comment" />
+
+                            <Button
+                                android:id="@+id/button_submit_comment"
+                                android:layout_width="0dp"
+                                android:gravity="center_vertical"
+                                android:layout_gravity="bottom"
+                                android:layout_height="40dp"
+                                android:layout_weight="3"
+                                android:text="Gửi"
+                                android:textSize="11dp"
+                                android:backgroundTint="@color/defaultBlue"
+                                />
+                        </LinearLayout>
                 </LinearLayout>
 
                 <!-- Content 2 -->

@@ -34,7 +34,7 @@
             android:orientation="horizontal"
             android:layout_height="wrap_content">
             <ImageButton
-                android:id="@+id/post_avatar"
+                android:id="@+id/comment_avatar"
                 android:layout_width="25dp"
                 android:layout_height="25dp"
                 android:layout_marginHorizontal="10dp"
@@ -111,14 +111,13 @@
                 android:orientation="horizontal">
 
                 <ImageButton
+                    android:id="@+id/comment_like_image"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:scaleX="0.7"
                     android:scaleY="0.7"
                     android:background="#fff"
-                    android:layout_marginHorizontal="5dp"
-                    android:src="@drawable/icon_tym" />
-
+                    android:layout_marginHorizontal="5dp" />
                 <TextView
                     android:id="@+id/comment_like"
                     android:layout_width="wrap_content"

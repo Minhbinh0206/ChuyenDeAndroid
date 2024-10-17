@@ -147,7 +147,6 @@ public class BussinessFragment extends Fragment {
 
             @Override
             public void onBusinessesReceived(List<Business> businesses) {
-                businesses.clear(); // Xóa danh sách hiện tại
                 for (Business business: businesses) {
                     if (business != null) {
                         businessesList.add(business); // Thêm doanh nghiệp vào danh sách
