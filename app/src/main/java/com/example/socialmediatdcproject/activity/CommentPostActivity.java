@@ -136,28 +136,19 @@ public class CommentPostActivity extends AppCompatActivity {
                             submitComment.setOnClickListener(v -> {
                                 if (!contentComment.getText().toString().isEmpty()) {
                                     DatabaseReference commentRef = FirebaseDatabase.getInstance().getReference("Comments");
-
-                                    // Lấy lastCommentId để tạo id tự tăng
-                                    DatabaseReference lastIdRef = FirebaseDatabase.getInstance().getReference("lastCommentId");
-                                    lastIdRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                    commentAPI.getAllComments(new CommentAPI.CommentCallback() {
                                         @Override
-                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                            final int[] lastId = {-1};
+                                        public void onCommentReceived(Comment comment) {
 
-                                            commentAPI.getAllComments(new CommentAPI.CommentCallback() {
-                                                @Override
-                                                public void onCommentReceived(Comment comment) {
+                                        }
 
-                                                }
-
-                                                @Override
-                                                public void onCommentsReceived(List<Comment> comments) {
-                                                    lastId[0] = comments.size();
-                                                }
-                                            });
+                                        @Override
+                                        public void onCommentsReceived(List<Comment> comments) {
+                                            int lastId = -1;
+                                            lastId = comments.size();
 
                                             // Tạo id tự tăng
-                                            int newCommentId = lastId[0] + 1;
+                                            int newCommentId = lastId + 1;
 
                                             // Tạo key duy nhất bằng Firebase push()
                                             // Tạo đối tượng Comment mới với id tự tăng
@@ -172,9 +163,6 @@ public class CommentPostActivity extends AppCompatActivity {
                                             // Thêm comment vào Firebase
                                             commentRef.child(String.valueOf(newCommentId)).setValue(comment);
 
-                                            // Cập nhật lại lastCommentId trong Firebase
-                                            lastIdRef.setValue(newCommentId);
-
                                             // Reset lại nội dung EditText sau khi gửi bình luận
                                             contentComment.setText("");
 
@@ -188,12 +176,8 @@ public class CommentPostActivity extends AppCompatActivity {
                                             // Cuộn đến vị trí của bình luận mới nhất
                                             recyclerViewSecond.scrollToPosition(commentList.size() - 1);
                                         }
-
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError error) {
-                                            // Xử lý lỗi nếu cần
-                                        }
                                     });
+
                                 }
                             });
                         }

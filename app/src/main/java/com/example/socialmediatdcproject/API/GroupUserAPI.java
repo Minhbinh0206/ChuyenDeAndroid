@@ -1,7 +1,7 @@
 package com.example.socialmediatdcproject.API;
 
+import android.util.Log;
 import androidx.annotation.NonNull;
-
 import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -16,42 +16,122 @@ public class GroupUserAPI {
 
     private DatabaseReference groupUserRef;
 
-    // Constructor để kết nối với Firebase "GroupUser" node
     public GroupUserAPI() {
-        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        groupUserRef = firebaseDatabase.getReference("UsersInGroup");
+        // Khởi tạo reference đến nút "UsersInGroup" trong Firebase
+        groupUserRef = FirebaseDatabase.getInstance().getReference("UsersInGroup");
     }
 
     // Thêm GroupUser mới vào Firebase
-    public void addGroupUser(GroupUser groupUser) {
-        String groupUserId = groupUserRef.push().getKey(); // Tạo ID mới
-        if (groupUserId != null) {
-            groupUserRef.child(groupUserId).setValue(groupUser);
+    public void addGroupUser(GroupUser groupUser, int id) {
+        if (id != -1) {
+            groupUserRef.child(String.valueOf(id)).setValue(groupUser)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Log.d("GroupUserAPI", "GroupUser added successfully.");
+                        } else {
+                            Log.e("GroupUserAPI", "Failed to add GroupUser.", task.getException());
+                        }
+                    });
         }
     }
 
-    // Lấy danh sách tất cả các GroupUser từ Firebase
-    public void getAllGroupUsers(ValueEventListener listener) {
-        groupUserRef.addValueEventListener(listener);
+    // Cập nhật thông tin GroupUser
+    public void updateGroupUser(String groupUserId, GroupUser updatedGroupUser) {
+        groupUserRef.child(groupUserId).setValue(updatedGroupUser)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("GroupUserAPI", "GroupUser updated successfully.");
+                    } else {
+                        Log.e("GroupUserAPI", "Failed to update GroupUser.", task.getException());
+                    }
+                });
     }
 
     // Lấy GroupUser dựa trên groupId
-    public void getGroupUserByIdGroup(int groupId, ValueEventListener listener) {
-        groupUserRef.orderByChild("groupId").equalTo(groupId).addListenerForSingleValueEvent(listener);
+    public void getGroupUserByIdGroup(int groupId, final GroupUserCallback callback) {
+        groupUserRef.orderByChild("groupId").equalTo(groupId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<GroupUser> groupUserList = new ArrayList<>();
+                        for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                            GroupUser groupUser = dataSnapshot.getValue(GroupUser.class);
+                            if (groupUser != null) {
+                                groupUserList.add(groupUser);
+                            }
+                        }
+                        callback.onGroupUsersReceived(groupUserList);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        // Xử lý lỗi
+                        Log.e("GroupUserAPI", "Failed to retrieve GroupUser by groupId.", error.toException());
+                    }
+                });
     }
 
     // Lấy GroupUser dựa trên userId
-    public void getGroupUserByIdUser(int userId, ValueEventListener listener) {
-        groupUserRef.orderByChild("userId").equalTo(userId).addListenerForSingleValueEvent(listener);
-    }
+    public void getGroupUserByIdUser(int userId, final GroupUserCallback callback) {
+        groupUserRef.orderByChild("userId").equalTo(userId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<GroupUser> groupUserList = new ArrayList<>();
+                        for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                            GroupUser groupUser = dataSnapshot.getValue(GroupUser.class);
+                            if (groupUser != null) {
+                                groupUserList.add(groupUser);
+                            }
+                        }
+                        callback.onGroupUsersReceived(groupUserList);
+                    }
 
-    // Cập nhật thông tin một GroupUser
-    public void updateGroupUser(String groupUserId, GroupUser updatedGroupUser) {
-        groupUserRef.child(groupUserId).setValue(updatedGroupUser);
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        // Xử lý lỗi
+                        Log.e("GroupUserAPI", "Failed to retrieve GroupUser by userId.", error.toException());
+                    }
+                });
     }
 
     // Xóa GroupUser dựa trên groupUserId
     public void deleteGroupUser(String groupUserId) {
-        groupUserRef.child(groupUserId).removeValue();
+        groupUserRef.child(groupUserId).removeValue()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("GroupUserAPI", "GroupUser deleted successfully.");
+                    } else {
+                        Log.e("GroupUserAPI", "Failed to delete GroupUser.", task.getException());
+                    }
+                });
+    }
+
+    // Lấy tất cả GroupUser
+    public void getAllGroupUsers(final GroupUserCallback callback) {
+        groupUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<GroupUser> groupUserList = new ArrayList<>();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    GroupUser groupUser = dataSnapshot.getValue(GroupUser.class);
+                    if (groupUser != null) {
+                        groupUserList.add(groupUser);
+                    }
+                }
+                callback.onGroupUsersReceived(groupUserList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Xử lý lỗi
+                Log.e("GroupUserAPI", "Failed to retrieve GroupUsers.", error.toException());
+            }
+        });
+    }
+
+    // Định nghĩa interface GroupUserCallback
+    public interface GroupUserCallback {
+        void onGroupUsersReceived(List<GroupUser> groupUsers);
     }
 }

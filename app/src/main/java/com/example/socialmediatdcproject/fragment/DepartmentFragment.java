@@ -206,29 +206,17 @@ public class DepartmentFragment extends Fragment {
             @Override
             public void onUsersReceived(List<User> users) {
                 GroupUserAPI groupUserAPI = new GroupUserAPI();
-                groupUserAPI.getAllGroupUsers(new ValueEventListener() {
+                groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        List<GroupUser> groupList = new ArrayList<>();
-
-                        for (DataSnapshot groupSnapshot : snapshot.getChildren()) {
-                            GroupUser groupUser = groupSnapshot.getValue(GroupUser.class);
-                            if (groupUser != null) {
-                                groupList.add(groupUser);
-                            }
-                        }
-
-                        Log.d("Group", "Total groups: " + groupList.size());
-
-                        for (GroupUser gu : groupList) {
-                            groupUserAPI.getGroupUserByIdGroup(gu.getGroupId(), new ValueEventListener() {
+                    public void onGroupUsersReceived(List<GroupUser> groupUsers) {
+                        for (GroupUser gu : groupUsers) {
+                            groupUserAPI.getGroupUserByIdGroup(gu.getGroupId(), new GroupUserAPI.GroupUserCallback() {
                                 @Override
-                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                public void onGroupUsersReceived(List<GroupUser> groupUsers) {
                                     List<GroupUser> groupUserList = new ArrayList<>();
-                                    for (DataSnapshot groupUserSnapshot : snapshot.getChildren()) {
-                                        GroupUser groupUser = groupUserSnapshot.getValue(GroupUser.class);
-                                        if (groupUser.getGroupId() == id) {
-                                            groupUserList.add(groupUser);
+                                    for (GroupUser gu : groupUsers) {
+                                        if (gu.getGroupId() == id) {
+                                            groupUserList.add(gu);
                                         }
                                     }
 
@@ -247,18 +235,8 @@ public class DepartmentFragment extends Fragment {
                                     recyclerView.setAdapter(memberAdapter);
                                     recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
                                 }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError error) {
-                                    Log.e("Group", "Error: " + error.getMessage());
-                                }
                             });
                         }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("Group", "Error: " + error.getMessage());
                     }
                 });
             }
