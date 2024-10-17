@@ -11,7 +11,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
@@ -23,15 +23,19 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.NotifyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
+import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.example.socialmediatdcproject.fragment.BussinessFragment;
 import com.example.socialmediatdcproject.fragment.DepartmentFragment;
+import com.example.socialmediatdcproject.fragment.GroupFollowedFragment;
 import com.example.socialmediatdcproject.fragment.GroupFragment;
+import com.example.socialmediatdcproject.fragment.GroupNotFollowFragment;
 import com.example.socialmediatdcproject.fragment.HomeFragment;
 import com.example.socialmediatdcproject.fragment.NotifyFragment;
 import com.example.socialmediatdcproject.fragment.TrainingFragment;
@@ -41,22 +45,23 @@ import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SharedActivity extends AppCompatActivity {
+public class GroupDetailActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     protected DrawerLayout drawerLayout;
     private FrameLayout firstContentFragment;
+    private int groupId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shared_layout);
+
+        Intent intent = getIntent();
+        groupId = intent.getIntExtra("groupId", -1);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -71,14 +76,14 @@ public class SharedActivity extends AppCompatActivity {
             public void onStudentReceived(Student student) {
                 if (student.getAvatar() == null) {
                     ImageView imageView = findViewById(R.id.nav_avatar_user);
-                    Glide.with(SharedActivity.this)
+                    Glide.with(GroupDetailActivity.this)
                             .load(R.drawable.avatar_macdinh)
                             .circleCrop()
                             .into(imageView);
-                }else {
+                } else {
                     // Thiết kế giao diện cho avatar
                     ImageView imageView = findViewById(R.id.nav_avatar_user);
-                    Glide.with(SharedActivity.this)
+                    Glide.with(GroupDetailActivity.this)
                             .load(student.getAvatar())
                             .circleCrop()
                             .into(imageView);
@@ -133,7 +138,7 @@ public class SharedActivity extends AppCompatActivity {
                     recyclerView.setAdapter(notifyAdapter);
 
                     // Sử dụng LayoutManager cho RecyclerView
-                    recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
+                    recyclerView.setLayoutManager(new LinearLayoutManager(GroupDetailActivity.this));
                 }
 
                 @Override
@@ -148,38 +153,11 @@ public class SharedActivity extends AppCompatActivity {
         // Thêm item vào NavigationView
         addNavigationItems(navigationView);
 
+
         // Thiết lập sự kiện click cho icon_back
         ImageButton backButton = navigationView.getHeaderView(0).findViewById(R.id.icon_back);
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
 
-    }
-
-    private void loadPostsFromFirebase() {
-        PostAPI postAPI = new PostAPI();  // Sử dụng PostAPI để lấy dữ liệu từ Firebase
-
-        postAPI.getAllPosts(new PostAPI.PostCallback() {
-            @Override
-            public void onPostReceived(Post post) {
-
-            }
-
-            @Override
-            public void onPostsReceived(List<Post> posts) {
-                ArrayList<Post> postList = new ArrayList<>();
-
-                for (Post p : posts) {
-                    postList.add(p);
-                }
-                // Setup RecyclerView với Adapter
-                RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-                PostAdapter postAdapter = new PostAdapter(postList, SharedActivity.this);
-                recyclerView.setAdapter(postAdapter);
-
-                // Sử dụng LayoutManager cho RecyclerView
-                recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
-
-            }
-        });
     }
 
     private void addNavigationItems(NavigationView navigationView) {
@@ -202,16 +180,14 @@ public class SharedActivity extends AppCompatActivity {
 
             // Thêm sự kiện click cho mỗi item
             final int index = i;
+            Intent intent = new Intent(GroupDetailActivity.this, SharedActivity.class);
             itemView.setOnClickListener(v -> {
                 Fragment fragment = null;
                 switch (index) {
                     case 0:
-                        // Home
-                        fragment = new HomeFragment();
-                        loadPostsFromFirebase();
+                        finish();
                         break;
                     case 1:
-                        // Phòng đào tạo
                         fragment = new TrainingFragment();
                         break;
                     case 2:
@@ -238,8 +214,8 @@ public class SharedActivity extends AppCompatActivity {
                         // Đăng xuất người dùng và chuyển đến LoginActivity
                         FirebaseAuth auth = FirebaseAuth.getInstance();
                         auth.signOut();
-                        Intent intent = new Intent(SharedActivity.this, LoginActivity.class);
-                        startActivity(intent);
+                        Intent intent2 = new Intent(GroupDetailActivity.this, LoginActivity.class);
+                        startActivity(intent2);
                         finish(); // Đóng SharedActivity
                         return;  // Thoát phương thức để không thực hiện fragmentTransaction
                     default:
@@ -274,6 +250,38 @@ public class SharedActivity extends AppCompatActivity {
         }
     }
 
+    private void loadPostsFromFirebase() {
+        PostAPI postAPI = new PostAPI();  // Sử dụng PostAPI để lấy dữ liệu từ Firebase
+
+        postAPI.getAllPosts(new PostAPI.PostCallback() {
+            @Override
+            public void onPostReceived(Post post) {
+
+            }
+
+            @Override
+            public void onPostsReceived(List<Post> posts) {
+                ArrayList<Post> postList = new ArrayList<>();
+
+                for (Post p : posts) {
+                    if (p.getGroupId() == groupId) {
+                        postList.add(p);
+                    }
+                }
+                // Setup RecyclerView với Adapter
+                RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
+                PostAdapter postAdapter = new PostAdapter(postList, GroupDetailActivity.this);
+                recyclerView.setAdapter(postAdapter);
+
+                // Sử dụng LayoutManager cho RecyclerView
+                recyclerView.setLayoutManager(new LinearLayoutManager(GroupDetailActivity.this));
+
+            }
+        });
+    }
+
+
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -281,13 +289,57 @@ public class SharedActivity extends AppCompatActivity {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        // Nạp HomeFragment vào first_content_fragment
-        fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
+        GroupUserAPI groupUserAPI = new GroupUserAPI();
+        StudentAPI studentAPI = new StudentAPI();
+
+        groupUserAPI.getGroupUserByIdGroup(groupId, new GroupUserAPI.GroupUserCallback() {
+            @Override
+            public void onGroupUsersReceived(List<GroupUser> groupUsers) {
+                String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
+                    @Override
+                    public void onStudentReceived(Student student) {
+                        boolean isJoin = false;
+
+                        for (GroupUser gu : groupUsers) {
+                            if (gu.getUserId() == student.getUserId()) {
+                                isJoin = true;
+                            }
+                        }
+
+                        if (!isJoin) {
+                            // Nạp fragment chưa tham gia vào first_content_fragment
+                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupNotFollowFragment());
+                        } else {
+                            // Nạp fragment đã tham gia vào first_content_fragment
+                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
+                        }
+
+                        fragmentTransaction.commit();
+
+                    }
+
+                    @Override
+                    public void onStudentsReceived(List<Student> students) {
+
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+
+                    }
+
+                    @Override
+                    public void onStudentDeleted(int studentId) {
+
+                    }
+                });
+
+            }
+        });
 
         // Lấy dữ lệu từ firebase
         loadPostsFromFirebase();
-
-        fragmentTransaction.commit();
-
     }
 }

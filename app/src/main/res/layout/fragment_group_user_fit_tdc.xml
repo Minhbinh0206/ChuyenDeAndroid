@@ -35,7 +35,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo_group_user_folow">
+        app:layout_constraintTop_toBottomOf="@+id/name_group_user_folow">
 
         <LinearLayout
             android:layout_width="0dp"

@@ -1,6 +1,7 @@
 package com.example.socialmediatdcproject.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,11 +9,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.GroupDetailActivity;
 import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.User;
@@ -65,6 +68,12 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
                     }
                 }
             });
+
+            holder.groupDetail.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), GroupDetailActivity.class);
+                intent.putExtra("groupId", group.getGroupId());
+                v.getContext().startActivity(intent);
+            });
         } else {
             Log.e("GroupAdapter", "Group at position " + position + " is null");
         }
@@ -81,6 +90,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
     public static class GroupViewHolder extends RecyclerView.ViewHolder {
         ImageView groupAvatar;
         TextView groupName;
+        CardView groupDetail;
         TextView groupAdminName;
 
         public GroupViewHolder(@NonNull View itemView) {
@@ -88,6 +98,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
             groupName = itemView.findViewById(R.id.group_name);
             groupAdminName = itemView.findViewById(R.id.group_admin_name);
             groupAvatar = itemView.findViewById(R.id.group_avatar);
+            groupDetail = itemView.findViewById(R.id.group_detail);
         }
     }
 }
