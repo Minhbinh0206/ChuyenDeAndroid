@@ -58,6 +58,10 @@
             android:name=".activity.GroupDetailActivity"
             android:exported="false">
         </activity>
+        <activity android:name=".activity.EditScreenActivity"
+            android:exported="false">
+
+        </activity>
     </application>
 
 </manifest>
