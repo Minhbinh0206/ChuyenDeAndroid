@@ -43,10 +43,12 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
         <activity
             android:name=".activity.SharedActivity"
             android:exported="false">
+
         </activity>
         <activity
             android:name=".activity.CommentPostActivity"
@@ -58,6 +60,8 @@
         </activity>
         <activity
             android:name=".activity.CreateNewGroupActivity"
+            android:exported="false">
+        <activity android:name=".activity.EditScreenActivity"
             android:exported="false">
         </activity>
     </application>
