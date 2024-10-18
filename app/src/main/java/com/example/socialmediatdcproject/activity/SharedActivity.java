@@ -288,6 +288,10 @@ public class SharedActivity extends AppCompatActivity {
         loadPostsFromFirebase();
 
         fragmentTransaction.commit();
+    }
 
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
     }
 }

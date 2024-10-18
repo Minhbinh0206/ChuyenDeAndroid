@@ -8,12 +8,12 @@
         android:id="@+id/logo_group_user_folow"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:src="@drawable/fit_tdc_group"
+        android:background="@drawable/avatar_group_default"
+        android:scaleType="matrix"
         app:layout_constraintBottom_toTopOf="@+id/name_group_user_folow"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 
     <TextView
         android:id="@+id/name_group_user_folow"
@@ -21,6 +21,7 @@
         android:layout_height="wrap_content"
         android:text="Fit TDC"
         android:textSize="30dp"
+        android:paddingVertical="10dp"
         android:textStyle="bold|italic"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"

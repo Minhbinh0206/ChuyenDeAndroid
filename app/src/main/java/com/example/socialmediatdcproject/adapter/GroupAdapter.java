@@ -49,10 +49,19 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
         if (group != null) {
             // Set dữ liệu cho các view
             holder.groupName.setText(group.getGroupName());
-            Glide.with(context)
-                    .load(group.getAvatar())
-                    .circleCrop()
-                    .into(holder.groupAvatar);
+            if (!group.getAvatar().isEmpty()) {
+                Glide.with(context)
+                        .load(group.getAvatar())
+                        .circleCrop()
+                        .into(holder.groupAvatar);
+            }
+            else {
+                Glide.with(context)
+                        .load(R.drawable.avatar_group_default)
+                        .circleCrop()
+                        .into(holder.groupAvatar);
+            }
+
             userAPI.getAllUsers(new UserAPI.UserCallback() {
                 @Override
                 public void onUserReceived(User user) {

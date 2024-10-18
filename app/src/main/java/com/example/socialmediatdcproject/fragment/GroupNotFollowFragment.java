@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -29,6 +30,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.List;
 
 public class GroupNotFollowFragment extends Fragment {
+    FrameLayout frameLayout;
 
     @Nullable
     @Override
@@ -40,6 +42,9 @@ public class GroupNotFollowFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+        frameLayout.setVisibility(view.GONE);
 
         ImageView avatarGroup = view.findViewById(R.id.logo_group_user_folow);
         TextView nameGroup = view.findViewById(R.id.name_group_user_folow);
@@ -57,10 +62,15 @@ public class GroupNotFollowFragment extends Fragment {
         groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
             @Override
             public void onGroupReceived(Group group) {
-                Glide.with(view)
-                        .load(group.getAvatar())
-                        .circleCrop()
-                        .into(avatarGroup);
+                if (group.getAvatar() != null) {
+                    Glide.with(view)
+                            .load(group.getAvatar())
+                            .circleCrop()
+                            .into(avatarGroup);
+                }
+                else {
+
+                }
 
                 nameGroup.setText(group.getGroupName());
             }

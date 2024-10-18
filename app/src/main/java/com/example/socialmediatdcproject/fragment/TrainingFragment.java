@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TrainingFragment extends Fragment {
+    FrameLayout frameLayout;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -43,6 +45,9 @@ public class TrainingFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+        frameLayout.setVisibility(view.GONE);
+
         // Hiển thị dữ liệu ra màn hình
         loadPostFromFirebase();
 

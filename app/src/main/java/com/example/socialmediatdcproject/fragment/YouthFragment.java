@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -37,6 +38,7 @@ import java.util.List;
 
 public class YouthFragment extends Fragment {
     private RecyclerView recyclerView; // RecyclerView để hiển thị danh sách người dùng
+    FrameLayout frameLayout;
 
     @Nullable
     @Override
@@ -50,7 +52,9 @@ public class YouthFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Khởi tạo danh sách người dùng và RecyclerView
-        recyclerView = requireActivity().findViewById(R.id.second_content_fragment); // Giả sử bạn đã thêm RecyclerView này trong layout
+        recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+        frameLayout.setVisibility(view.GONE);
 
         GroupAPI groupAPI = new GroupAPI();
         groupAPI.getGroupById(User.ID_ADMIN_DOANTHANHNIEN, new GroupAPI.GroupCallback() {
