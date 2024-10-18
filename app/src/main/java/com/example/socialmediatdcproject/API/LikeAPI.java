@@ -6,6 +6,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
 public class LikeAPI {
@@ -20,6 +21,9 @@ public class LikeAPI {
         String key = "PostLikes/" + userLikePost.getPostId() + "/" + userLikePost.getUserId();
         likeDatabase.child(key).setValue(userLikePost).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
+                // Cập nhật số lượng lượt thích cho bài viết
+                DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Posts").child(String.valueOf(userLikePost.getPostId()));
+                postRef.child("postLike").setValue(ServerValue.increment(1)); // Tăng số lượt thích
                 callback.onSuccess("Liked successfully");
             } else {
                 callback.onError("Error liking post: " + task.getException().getMessage());
@@ -32,6 +36,9 @@ public class LikeAPI {
         String key = "PostLikes/" + postId + "/" + userId;
         likeDatabase.child(key).removeValue().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
+                // Cập nhật số lượng lượt thích cho bài viết
+                DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Posts").child(String.valueOf(postId));
+                postRef.child("postLike").setValue(ServerValue.increment(-1)); // Giảm số lượt thích
                 callback.onSuccess("Unliked successfully");
             } else {
                 callback.onError("Error unliking post: " + task.getException().getMessage());
@@ -43,6 +50,8 @@ public class LikeAPI {
     public void likeComment(UserLikeComment userLikeComment, LikeCallback callback) {
         String key = "CommentLikes/" + userLikeComment.getCommentId() + "/" + userLikeComment.getUserId();
         likeDatabase.child(key).setValue(userLikeComment).addOnCompleteListener(task -> {
+            DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Comments").child(String.valueOf(userLikeComment.getCommentId()));
+            postRef.child("commentLike").setValue(ServerValue.increment(1)); // Tăng số lượt thích
             if (task.isSuccessful()) {
                 callback.onSuccess("Liked comment successfully");
             } else {
@@ -55,6 +64,8 @@ public class LikeAPI {
     public void unlikeComment(int userId, int commentId, LikeCallback callback) {
         String key = "CommentLikes/" + commentId + "/" + userId;
         likeDatabase.child(key).removeValue().addOnCompleteListener(task -> {
+            DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Comments").child(String.valueOf(commentId));
+            postRef.child("commentLike").setValue(ServerValue.increment(-1)); // Giảm số lượt thích
             if (task.isSuccessful()) {
                 callback.onSuccess("Unliked comment successfully");
             } else {
@@ -181,6 +192,44 @@ public class LikeAPI {
         });
     }
 
+    // Lắng nghe sự thay đổi trong số lượt thích
+    public void listenForLikeCountChanges(int postId, LikeCountCallback callback) {
+        DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Posts").child(String.valueOf(postId));
+        postRef.child("postLike").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    long newLikeCount = dataSnapshot.getValue(Long.class);
+                    callback.onLikeCountUpdated(newLikeCount); // Gọi callback với số lượt thích mới
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                callback.onError("Error listening for like count changes: " + databaseError.getMessage());
+            }
+        });
+    }
+
+    // Lắng nghe sự thay đổi trong số lượt thích
+    public void listenForLikeCountChangesComments(int commentId, LikeCountCallback callback) {
+        DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Comments").child(String.valueOf(commentId));
+        postRef.child("commentLike").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    long newLikeCount = dataSnapshot.getValue(Long.class);
+                    callback.onLikeCountUpdated(newLikeCount); // Gọi callback với số lượt thích mới
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                callback.onError("Error listening for like count changes: " + databaseError.getMessage());
+            }
+        });
+    }
+
     public interface LikeCallback {
         void onSuccess(String message);
         void onError(String errorMessage);
@@ -188,6 +237,11 @@ public class LikeAPI {
 
     public interface LikeStatusCallback {
         void onStatusChecked(boolean isLiked);
+        void onError(String errorMessage);
+    }
+
+    public interface LikeCountCallback {
+        void onLikeCountUpdated(long newLikeCount);
         void onError(String errorMessage);
     }
 }

@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -13,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -42,6 +44,7 @@ import java.util.List;
 
 public class DepartmentFragment extends Fragment {
     private RecyclerView recyclerView; // RecyclerView để hiển thị danh sách người dùng
+    FrameLayout frameLayout;
 
     @Nullable
     @Override
@@ -56,7 +59,10 @@ public class DepartmentFragment extends Fragment {
         GroupAPI groupAPI = new GroupAPI();
 
         // Khởi tạo danh sách người dùng và RecyclerView
-        recyclerView = requireActivity().findViewById(R.id.second_content_fragment); // Giả sử bạn đã thêm RecyclerView này trong layout
+        recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+        frameLayout.setVisibility(view.GONE);
+
         String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
         StudentAPI studentAPI = new StudentAPI();
         studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {

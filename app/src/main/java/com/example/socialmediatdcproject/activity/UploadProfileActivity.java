@@ -103,7 +103,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                                 imgFromGallery.setImageBitmap(bitmap);
 
                                 // Upload ảnh lên Firebase Storage
-//                                uploadImageToFirebaseStorage(selectedImageUri, userId); // Gọi hàm upload ảnh với userId
+                                //uploadImageToFirebaseStorage(selectedImageUri, userId); // Gọi hàm upload ảnh với userId
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -119,6 +119,8 @@ public class UploadProfileActivity extends AppCompatActivity {
         btnSelectImage = findViewById(R.id.button_upload_image);
     }
 
+
+    //Upload Profile
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -500,8 +502,7 @@ public class UploadProfileActivity extends AppCompatActivity {
             StorageReference storageRef = storage.getReference();
 
             // Tạo đường dẫn lưu trữ cho hình ảnh (ví dụ: avatars/userId.png)
-            String imageName = "avatar_" + System.currentTimeMillis() + ".jpg";
-            StorageReference avatarRef = storageRef.child("avatars/" + imageName);
+            StorageReference avatarRef = storageRef.child("avatars/" + userId + ".jpg");
 
             // Upload ảnh lên Firebase Storage
             avatarRef.putFile(filePath)
@@ -510,7 +511,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                         avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
                             // Lấy URL của ảnh và lưu vào cơ sở dữ liệu bảng User
                             String downloadUrl = uri.toString();
-//                            saveAvatarUrlToDatabase(userId, downloadUrl);
+                            saveAvatarUrlToDatabase(userId, downloadUrl);
                         });
                     })
                     .addOnFailureListener(exception -> {
@@ -540,7 +541,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
 
-            // Lưu ngẫu nhiên tên ảnh
             String imageName = "avatar_" + System.currentTimeMillis() + ".jpg";
             StorageReference avatarRef = storageRef.child("avatar/" + imageName);
 

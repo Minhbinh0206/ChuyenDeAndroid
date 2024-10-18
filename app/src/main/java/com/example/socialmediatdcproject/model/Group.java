@@ -8,6 +8,7 @@ public class Group {
     private String groupName;
     private int adminUserId;
     private String avatar;
+    private boolean isPrivate;
 
     public int getGroupId() {
         return groupId;
@@ -42,11 +43,20 @@ public class Group {
         this.avatar = imageUrl;
     }
 
-    public Group(int groupId, String groupName, int adminUserId, String avatar) {
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    public void setPrivate(boolean aPrivate) {
+        isPrivate = aPrivate;
+    }
+
+    public Group(int groupId, String groupName, int adminUserId, String avatar, boolean isPrivate) {
         this.groupId = groupId;
         this.groupName = groupName;
         this.adminUserId = adminUserId;
         this.avatar = avatar;
+        this.isPrivate = isPrivate;
     }
 
     public Group() {
@@ -54,5 +64,6 @@ public class Group {
         this.groupName = "";
         this.adminUserId = -1;
         this.avatar = "";
+        this.isPrivate = false;
     }
 }

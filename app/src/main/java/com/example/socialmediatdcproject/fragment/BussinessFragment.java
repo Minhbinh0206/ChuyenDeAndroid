@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,6 +37,7 @@ public class BussinessFragment extends Fragment {
     private ArrayList<Business> businessesList = new ArrayList<>();
     private PostAdapter postAdapter;
     private BussinessAdapter businessAdapter;
+    private FrameLayout frameLayout;
 
     @Nullable
     @Override
@@ -49,6 +52,9 @@ public class BussinessFragment extends Fragment {
 
         // Khởi tạo RecyclerView
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+        frameLayout.setVisibility(view.GONE);
+
         postAdapter = new PostAdapter(postsBusiness, requireContext());
         businessAdapter = new BussinessAdapter(businessesList , requireContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -117,6 +123,8 @@ public class BussinessFragment extends Fragment {
                     Log.d("PostBusiness", "onPostsReceived: " + posts.size());
                     postsList.addAll(posts); // Thêm tất cả bài viết nhận được
                     latch.countDown(); // Đếm ngược
+
+
                 }
             });
         }
@@ -151,6 +159,7 @@ public class BussinessFragment extends Fragment {
                     if (business != null) {
                         String shortAddress = truncateAddress(business.getAddress(), 50); // Giới hạn 50 ký tự
                         business.setAddress(shortAddress); // Cập nhật địa chỉ ngắn gọn
+
                         businessesList.add(business); // Thêm doanh nghiệp vào danh sách
                     }
                 }

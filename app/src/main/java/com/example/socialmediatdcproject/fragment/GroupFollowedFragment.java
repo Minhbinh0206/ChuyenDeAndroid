@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -31,6 +32,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.List;
 
 public class GroupFollowedFragment extends Fragment {
+    FrameLayout frameLayout;
 
     @Nullable
     @Override
@@ -42,6 +44,9 @@ public class GroupFollowedFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+        frameLayout.setVisibility(view.GONE);
 
         ImageView avatarGroup = view.findViewById(R.id.logo_group_user);
         TextView nameGroup = view.findViewById(R.id.name_group_user);
@@ -61,10 +66,19 @@ public class GroupFollowedFragment extends Fragment {
         groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
             @Override
             public void onGroupReceived(Group group) {
-                Glide.with(view)
-                        .load(group.getAvatar())
-                        .circleCrop()
-                        .into(avatarGroup);
+                if (group.getAvatar().isEmpty()) {
+                    Glide.with(view)
+                            .load(R.drawable.avatar_group_default)
+                            .circleCrop()
+                            .into(avatarGroup);
+                }
+                else {
+                    Glide.with(view)
+                            .load(group.getAvatar())
+                            .circleCrop()
+                            .into(avatarGroup);
+                }
+
 
                 nameGroup.setText(group.getGroupName());
 
