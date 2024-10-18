@@ -14,6 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -65,43 +66,6 @@ public class SharedActivity extends AppCompatActivity {
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         firstContentFragment = findViewById(R.id.first_content_fragment); // Khởi tạo FrameLayout
-
-        StudentAPI studentAPI = new StudentAPI();
-        studentAPI.getStudentByKey(mAuth.getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-            @Override
-            public void onStudentReceived(Student student) {
-                if (student.getAvatar() == null) {
-                    ImageView imageView = findViewById(R.id.nav_avatar_user);
-                    Glide.with(SharedActivity.this)
-                            .load(R.drawable.avatar_macdinh)
-                            .circleCrop()
-                            .into(imageView);
-                }else {
-                    // Thiết kế giao diện cho avatar
-                    ImageView imageView = findViewById(R.id.nav_avatar_user);
-                    Glide.with(SharedActivity.this)
-                            .load(student.getAvatar())
-                            .circleCrop()
-                            .into(imageView);
-                }
-
-            }
-
-            @Override
-            public void onStudentsReceived(List<Student> students) {
-
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
-
-            }
-        });
 
         // Xử lý sự kiện nhấn vào icon 3 gạch để mở Navigation Drawer
         ImageButton navigationButton = findViewById(R.id.icon_navigation);
@@ -278,6 +242,58 @@ public class SharedActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        //Tìm kiếm hình ảnh user
+        ImageView imageView = findViewById(R.id.nav_avatar_user);
+
+        StudentAPI studentAPI = new StudentAPI();
+        studentAPI.getStudentByKey(mAuth.getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+            @Override
+            public void onStudentReceived(Student student) {
+                if (student.getAvatar() == null) {
+                    ImageView imageView = findViewById(R.id.nav_avatar_user);
+                    Glide.with(SharedActivity.this)
+                            .load(R.drawable.avatar_macdinh)
+                            .circleCrop()
+                            .into(imageView);
+                }else {
+                    // Thiết kế giao diện cho avatar
+                    ImageView imageView = findViewById(R.id.nav_avatar_user);
+                    Glide.with(SharedActivity.this)
+                            .load(student.getAvatar())
+                            .circleCrop()
+                            .into(imageView);
+                }
+
+                // Thêm sự kiện click vào avatar chuyển sang trang cá nhân
+                imageView.setOnClickListener(v -> {
+                    // Chuyển sang màn hình PersonalScreenFragment
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                    PersonalScreenFragment personalScreenFragment = new PersonalScreenFragment();
+                    fragmentTransaction.replace(R.id.first_content_fragment, personalScreenFragment);
+
+                    fragmentTransaction.commit();
+                });
+
+            }
+
+            @Override
+            public void onStudentsReceived(List<Student> students) {
+
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+
+            }
+
+            @Override
+            public void onStudentDeleted(int studentId) {
+
+            }
+        });
+
         // Gán fragment home là mặc định
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();

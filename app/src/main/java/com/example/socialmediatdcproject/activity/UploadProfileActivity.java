@@ -103,7 +103,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                                 imgFromGallery.setImageBitmap(bitmap);
 
                                 // Upload ảnh lên Firebase Storage
-                                uploadImageToFirebaseStorage(selectedImageUri, userId); // Gọi hàm upload ảnh với userId
+                                //uploadImageToFirebaseStorage(selectedImageUri, userId); // Gọi hàm upload ảnh với userId
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -119,6 +119,8 @@ public class UploadProfileActivity extends AppCompatActivity {
         btnSelectImage = findViewById(R.id.button_upload_image);
     }
 
+
+    //Upload Profile
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -539,7 +541,8 @@ public class UploadProfileActivity extends AppCompatActivity {
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
 
-            StorageReference avatarRef = storageRef.child("avatar/" + userId + ".jpg");
+            String imageName = "avatar_" + System.currentTimeMillis() + ".jpg";
+            StorageReference avatarRef = storageRef.child("avatar/" + imageName);
 
             avatarRef.putFile(filePath)
                     .addOnSuccessListener(taskSnapshot -> {

@@ -1,5 +1,6 @@
 package com.example.socialmediatdcproject.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,6 +26,7 @@ import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.EditScreenActivity;
 import com.example.socialmediatdcproject.adapter.BussinessAdapter;
 import com.example.socialmediatdcproject.adapter.GroupAdapter;
 import com.example.socialmediatdcproject.adapter.MemberAdapter;
@@ -81,8 +83,6 @@ public class PersonalScreenFragment extends Fragment {
         //Làm sao để chuyển id người dùng mới đăng nhập vào
         List<Integer> list = new ArrayList<>();
         list.add(25);
-
-
         // Lấy dữ liệu bài viết
         // loadPostFromFirebase(list);
 
@@ -91,10 +91,11 @@ public class PersonalScreenFragment extends Fragment {
         Button personalMyGroup = view.findViewById(R.id.personal_user_mygroup);
         Button personalUpdate = view.findViewById(R.id.personal_user_update);
 
+    //Lấy ảnh người dùng truyền qua trang cá nhân
+
         //tìm ảnh
         ImageView imageUser = view.findViewById(R.id.logo_personal_user_image);
         TextView nameUser = view.findViewById(R.id.name_personnal_user);
-
 
         // Lấy thông tin người dùng và cập nhật ảnh
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid().toString(); // Lấy userId từ FirebaseAuth
@@ -128,9 +129,8 @@ public class PersonalScreenFragment extends Fragment {
 
                     }
 
+                    //Bắt sự kiện và set màu cho các nút
                     {
-
-
                         // Set màu mặc định cho nút "Bài viết"
                         personalPost.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
                         personalPost.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
@@ -146,10 +146,10 @@ public class PersonalScreenFragment extends Fragment {
 
                         // Sự kiện khi nhấn vào nút group
                         personalMyGroup.setOnClickListener(v -> {
-//            loadGroupFromFirebase(); // Gọi phương thức để lấy dữ liệu nhóm
-//            recyclerView.setAdapter(groupAdapter); // Hiển thị nhóm
-//            groupAdapter.notifyDataSetChanged();
-//            updateButtonColors(personalMyGroup, personalPost, personalUpdate);
+                        //loadGroupFromFirebase(); // Gọi phương thức để lấy dữ liệu nhóm
+                        //recyclerView.setAdapter(groupAdapter); // Hiển thị nhóm
+                        //groupAdapter.notifyDataSetChanged();
+                        //updateButtonColors(personalMyGroup, personalPost, personalUpdate);
                             // Xử lý cho hiển thị nhóm (điều chỉnh theo nhu cầu của bạn)
                             groupAdapter.notifyDataSetChanged();
                             // Cập nhật màu cho các nút
@@ -159,27 +159,25 @@ public class PersonalScreenFragment extends Fragment {
 
                         // Sự kiện khi nhấn vào nút update
                         personalUpdate.setOnClickListener(v -> {
-                            EditScreenFragment editScreenFragment = new EditScreenFragment();
-                            requireActivity().getSupportFragmentManager()
-                                    .beginTransaction()
-                                    .replace(R.id.first_content_fragment, editScreenFragment)
-                                    .addToBackStack(null)
-                                    .commit();
+                            // Chuyển sang màn hình EditScreenActivity (Activity)
+                            Intent intent = new Intent(requireContext(), EditScreenActivity.class);
+                            startActivity(intent); // Bắt đầu EditScreenActivity
+
+                            // Cập nhật màu sắc cho các nút
                             updateButtonColors(personalUpdate, personalPost, personalMyGroup);
                         });
+
 
                     }
 
 
+                    //Lấy thông tin bài viết từ firebase
                     public void loadPostFromFirebase(List<Integer> listId) {
                         ArrayList<Post> postsList = new ArrayList<>(); // Danh sách bài viết
-
                         // Tạo instance của PostAPI
                         PostAPI postAPI = new PostAPI();
-
                         // Tạo một CountDownLatch để chờ cho tất cả các yêu cầu hoàn thành
                         CountDownLatch latch = new CountDownLatch(listId.size());
-
                         for (int id : listId) {
                             // Lấy bài viết theo groupId
                             postAPI.getPostsByUserId(id, new PostAPI.PostCallback() {
@@ -187,7 +185,6 @@ public class PersonalScreenFragment extends Fragment {
                                 public void onPostReceived(Post post) {
                                     // Không sử dụng
                                 }
-
                                 @Override
                                 public void onPostsReceived(List<Post> posts) {
                                     Log.d("Personal", "onPostsReceived: " + posts.size());
@@ -196,7 +193,6 @@ public class PersonalScreenFragment extends Fragment {
                                 }
                             });
                         }
-
 
                         // Chờ cho tất cả yêu cầu hoàn thành
                         new Thread(() -> {
@@ -214,6 +210,7 @@ public class PersonalScreenFragment extends Fragment {
                         }).start();
                     }
 
+                    //Set sự kiện màu cho các nút
                     private void updateButtonColors(Button activeButton, Button inactiveButton, Button inactiveButton2) {
                         // Cập nhật nút đang hoạt động
                         activeButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
