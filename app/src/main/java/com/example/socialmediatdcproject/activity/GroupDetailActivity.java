@@ -285,10 +285,12 @@ public class GroupDetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Gán fragment home là mặc định
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
+        // Lấy groupId từ intent
+        Intent intent = getIntent();
+        int groupId = intent.getIntExtra("groupId", -1);
+
+        // Thực hiện việc lấy dữ liệu và kiểm tra người dùng có tham gia group không
         GroupUserAPI groupUserAPI = new GroupUserAPI();
         StudentAPI studentAPI = new StudentAPI();
 
@@ -300,46 +302,43 @@ public class GroupDetailActivity extends AppCompatActivity {
                 studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
                     @Override
                     public void onStudentReceived(Student student) {
-                        boolean isJoin = false;
+                        boolean isJoin = intent.getBooleanExtra("isJoin", false);
 
+                        // Kiểm tra xem user đã tham gia nhóm chưa
                         for (GroupUser gu : groupUsers) {
                             if (gu.getUserId() == student.getUserId()) {
                                 isJoin = true;
                             }
                         }
 
+                        FragmentManager fragmentManager = getSupportFragmentManager();
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                        // Nếu user chưa tham gia, hiển thị GroupNotFollowFragment
                         if (!isJoin) {
-                            // Nạp fragment chưa tham gia vào first_content_fragment
                             fragmentTransaction.replace(R.id.first_content_fragment, new GroupNotFollowFragment());
                         } else {
-                            // Nạp fragment đã tham gia vào first_content_fragment
+                            // Nếu đã tham gia, hiển thị GroupFollowedFragment
                             fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
                         }
 
                         fragmentTransaction.commit();
-
                     }
 
                     @Override
-                    public void onStudentsReceived(List<Student> students) {
-
-                    }
+                    public void onStudentsReceived(List<Student> students) {}
 
                     @Override
-                    public void onError(String errorMessage) {
-
-                    }
+                    public void onError(String errorMessage) {}
 
                     @Override
-                    public void onStudentDeleted(int studentId) {
-
-                    }
+                    public void onStudentDeleted(int studentId) {}
                 });
-
             }
         });
 
-        // Lấy dữ lệu từ firebase
+        // Lấy dữ liệu post cho groupId này từ Firebase và load vào RecyclerView
         loadPostsFromFirebase();
     }
+
 }

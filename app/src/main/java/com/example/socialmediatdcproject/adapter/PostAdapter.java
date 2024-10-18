@@ -75,9 +75,11 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (holder.getItemViewType() == VIEW_TYPE_IMAGE) {
             PostImageViewHolder imageViewHolder = (PostImageViewHolder) holder;
             setupPostView(imageViewHolder, post, userAPI);
+
         } else {
             PostTextViewHolder textViewHolder = (PostTextViewHolder) holder;
             setupPostView(textViewHolder, post, userAPI);
+
         }
     }
 
@@ -212,14 +214,28 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             public void onStudentReceived(Student student) {
                 LikeAPI likeAPI = new LikeAPI();
 
+                // Lắng nghe sự thay đổi trong số lượt thích
+                likeAPI.listenForLikeCountChanges(post.getPostId(), new LikeAPI.LikeCountCallback() {
+                    @Override
+                    public void onLikeCountUpdated(long newLikeCount) {
+                        post.setPostLike((int) newLikeCount);
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("TAG", "Error listening for like count changes: " + errorMessage);
+                    }
+                });
+
                 // Kiểm tra trạng thái thích
                 likeAPI.checkLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
                     @Override
                     public void onStatusChecked(boolean isLiked) {
+                        // Cập nhật màu sắc nút thích dựa trên trạng thái thích
+                        holder.postLike.setTextColor(isLiked ? context.getResources().getColor(R.color.white) : context.getResources().getColor(R.color.black));
                         holder.buttonLike.setBackground(isLiked ? context.getResources().getDrawable(R.drawable.button_custom_liked) : context.getResources().getDrawable(R.drawable.button_custom));
                         holder.imageButtonLike.setBackgroundColor(isLiked ? context.getResources().getColor(R.color.like) : context.getResources().getColor(R.color.white));
                         holder.imageButtonLike.setImageResource(isLiked ? R.drawable.icon_tym_like : R.drawable.icon_tym);
-                        holder.postLike.setTextColor(isLiked ? context.getResources().getColor(R.color.white) : context.getResources().getColor(R.color.black));
                     }
 
                     @Override
@@ -238,13 +254,13 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             } else {
                                 post.setPostLike(post.getPostLike() - 1); // Giảm lượt thích
                             }
+
                             holder.postLike.setText(String.valueOf(post.getPostLike()));
+                            holder.postLike.setTextColor(isLiked ? context.getResources().getColor(R.color.white) : context.getResources().getColor(R.color.black));
                             holder.buttonLike.setBackground(isLiked ? context.getResources().getDrawable(R.drawable.button_custom_liked) : context.getResources().getDrawable(R.drawable.button_custom));
                             holder.imageButtonLike.setBackgroundColor(isLiked ? context.getResources().getColor(R.color.like) : context.getResources().getColor(R.color.white));
                             holder.imageButtonLike.setImageResource(isLiked ? R.drawable.icon_tym_like : R.drawable.icon_tym);
-                            holder.postLike.setTextColor(isLiked ? context.getResources().getColor(R.color.white) : context.getResources().getColor(R.color.black));
-                            PostAPI postAPI = new PostAPI();
-                            postAPI.updatePost(post);
+
                         }
 
                         @Override
