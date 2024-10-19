@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -42,6 +43,12 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void onStudentReceived(Student student) {
                     isLoggin = true;
+                    Log.d("TAG", "User: " + student.getFullName());
+
+                    // Nếu đã đăng nhập, chuyển thẳng đến SharedActivity
+                    Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
+                    startActivity(intent);
+                    finish(); // Đóng LoginActivity để không quay lại
                 }
 
                 @Override
@@ -59,19 +66,11 @@ public class LoginActivity extends AppCompatActivity {
 
                 }
             });
-
-            if (isLoggin) {
-                // Nếu đã đăng nhập, chuyển thẳng đến SharedActivity
-                Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
-                startActivity(intent);
-                finish(); // Đóng LoginActivity để không quay lại
-            }
-            else {
-                // Nếu đã đăng nhập mà chưa cập nhật dữ liệu chuyển qua Upload
-                Intent intent = new Intent(LoginActivity.this, UploadProfileActivity.class);
-                startActivity(intent);
-                finish(); // Đóng LoginActivity để không quay lại
-            }
+        } else {
+            // Người dùng chưa đăng nhập, chuyển qua màn hình UploadProfileActivity
+            Intent intent = new Intent(LoginActivity.this, UploadProfileActivity.class);
+            startActivity(intent);
+            finish(); // Đóng LoginActivity để không quay lại
         }
 
         // Thiết kế giao diện
