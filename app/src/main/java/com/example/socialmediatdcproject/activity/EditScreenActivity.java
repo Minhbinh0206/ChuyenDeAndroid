@@ -86,6 +86,55 @@ public class EditScreenActivity extends AppCompatActivity {
                             .load(student.getAvatar())
                             .circleCrop()
                             .into(imageEditPersonalSmall);
+
+                    // Sự kiện click cập nhật thông tin
+                    buttonUpdate.setOnClickListener(v -> {
+                        String name = editTextName.getText().toString().trim();
+                        String mssv = editTextMSSV.getText().toString().trim();
+                        String className = editTextClass.getText().toString().trim();
+                        String department = editTextDepartment.getText().toString().trim();
+                        String description = editTextDescription.getText().toString().trim();
+
+                        if (name.isEmpty() || mssv.isEmpty() || className.isEmpty() || department.isEmpty()) {
+                            Toast.makeText(EditScreenActivity.this, "Vui lòng điền đầy đủ thông tin.", Toast.LENGTH_SHORT).show();
+                        } else {
+                            student.setFullName(name);
+                            student.setDepartmentId(Integer.parseInt(department));
+                            student.setDescription(description);
+                            student.setStudentNumber(mssv);
+                            student.setStudentClass(className);
+
+                            studentAPI.updateStudent(student, new StudentAPI.StudentCallback() {
+                                @Override
+                                public void onStudentReceived(Student student) {
+                                    // Khoong lam gi
+                                }
+
+                                @Override
+                                public void onStudentsReceived(List<Student> students) {
+
+                                }
+
+                                @Override
+                                public void onError(String errorMessage) {
+
+                                }
+
+                                @Override
+                                public void onStudentDeleted(int studentId) {
+
+                                }
+                            });
+
+                            // Nếu người dùng đã chọn ảnh mới
+                            if (selectedImageUri != null) {
+                                uploadImageToFirebaseStorage(selectedImageUri, student);
+                            } else {
+                                // Cập nhật thông tin người dùng mà không cần đổi ảnh
+                                saveStudentDataToDatabase(student);
+                            }
+                        }
+                    });
                 }
             }
 
@@ -102,38 +151,6 @@ public class EditScreenActivity extends AppCompatActivity {
         // Sự kiện click chọn ảnh từ thư viện
         imageEditPersonalSmall.setOnClickListener(v -> onClickRequestPermission());
 
-        // Sự kiện click cập nhật thông tin
-        buttonUpdate.setOnClickListener(v -> {
-            String name = editTextName.getText().toString().trim();
-            String mssv = editTextMSSV.getText().toString().trim();
-            String className = editTextClass.getText().toString().trim();
-            String department = editTextDepartment.getText().toString().trim();
-            String description = editTextDescription.getText().toString().trim();
-
-            if (name.isEmpty() || mssv.isEmpty() || className.isEmpty() || department.isEmpty()) {
-                Toast.makeText(EditScreenActivity.this, "Vui lòng điền đầy đủ thông tin.", Toast.LENGTH_SHORT).show();
-            } else {
-                updateStudentInfo(name, mssv, className, department, description);
-            }
-        });
-    }
-
-    private void updateStudentInfo(String name, String mssv, String className, String department, String description) {
-        // Tạo đối tượng Student
-        Student student = new Student();
-        student.setFullName(name);
-        student.setStudentNumber(mssv);
-        student.setStudentClass(className);
-        student.setDepartmentId(Integer.parseInt(department));
-        student.setDescription(description);
-
-        // Nếu người dùng đã chọn ảnh mới
-        if (selectedImageUri != null) {
-            uploadImageToFirebaseStorage(selectedImageUri, student);
-        } else {
-            // Cập nhật thông tin người dùng mà không cần đổi ảnh
-            saveStudentDataToDatabase(student);
-        }
     }
 
     private void uploadImageToFirebaseStorage(Uri filePath, Student student) {
@@ -141,19 +158,35 @@ public class EditScreenActivity extends AppCompatActivity {
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
 
-            String imageName = "avatar_" + System.currentTimeMillis() + ".jpg";
-            StorageReference avatarRef = storageRef.child("avatars/" + imageName);
+            String imageName = "avatar_" + student.getStudentNumber() + ".jpg";
+            StorageReference avatarRef = storageRef.child("avatar/" + imageName);
 
-            avatarRef.putFile(filePath)
-                    .addOnSuccessListener(taskSnapshot -> {
-                        avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                            student.setAvatar(uri.toString());  // Lưu URL ảnh vào student object
-                            saveStudentDataToDatabase(student);
+            // Xóa ảnh cũ nếu tồn tại trước khi upload ảnh mới
+            avatarRef.delete().addOnSuccessListener(aVoid -> {
+                // Sau khi ảnh cũ đã bị xóa, tải ảnh mới lên
+                avatarRef.putFile(filePath)
+                        .addOnSuccessListener(taskSnapshot -> {
+                            avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                student.setAvatar(uri.toString());  // Cập nhật URL ảnh mới vào student object
+                                saveStudentDataToDatabase(student);
+                            });
+                        })
+                        .addOnFailureListener(exception -> {
+                            Toast.makeText(EditScreenActivity.this, "Upload Failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
                         });
-                    })
-                    .addOnFailureListener(exception -> {
-                        Toast.makeText(EditScreenActivity.this, "Upload Failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
+            }).addOnFailureListener(exception -> {
+                // Nếu không có ảnh cũ hoặc xóa ảnh cũ thất bại, tiến hành upload ảnh mới luôn
+                avatarRef.putFile(filePath)
+                        .addOnSuccessListener(taskSnapshot -> {
+                            avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                student.setAvatar(uri.toString());  // Cập nhật URL ảnh mới vào student object
+                                saveStudentDataToDatabase(student);
+                            });
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(EditScreenActivity.this, "Upload Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
+            });
         }
     }
 

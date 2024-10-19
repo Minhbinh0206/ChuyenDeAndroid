@@ -201,16 +201,16 @@ public class DepartmentFragment extends Fragment {
 
 
     private void loadUsersByGroupId(int id) {
-        ArrayList<User> memberGroup = new ArrayList<>();
-        UserAPI userAPI = new UserAPI();
-        userAPI.getAllUsers(new UserAPI.UserCallback() {
+        ArrayList<Student> memberGroup = new ArrayList<>();
+        StudentAPI studentAPI = new StudentAPI();
+        studentAPI.getAllStudents(new StudentAPI.StudentCallback() {
             @Override
-            public void onUserReceived(User user) {
-                // Không cần làm gì ở đây nếu không sử dụng
+            public void onStudentReceived(Student student) {
+
             }
 
             @Override
-            public void onUsersReceived(List<User> users) {
+            public void onStudentsReceived(List<Student> students) {
                 GroupUserAPI groupUserAPI = new GroupUserAPI();
                 groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
                     @Override
@@ -228,7 +228,7 @@ public class DepartmentFragment extends Fragment {
 
                                     // Chỉ thêm vào memberGroup nếu chưa có
                                     for (GroupUser gus : groupUserList) {
-                                        for (User u : users) {
+                                        for (Student u : students) {
                                             if (u.getUserId() == gus.getUserId() && !memberGroup.contains(u)) {
                                                 memberGroup.add(u);
                                             }
@@ -236,7 +236,7 @@ public class DepartmentFragment extends Fragment {
                                     }
 
                                     // Cập nhật RecyclerView sau khi thêm tất cả member
-                                    MemberAdapter memberAdapter = new MemberAdapter(memberGroup);
+                                    MemberAdapter memberAdapter = new MemberAdapter(memberGroup, requireContext());
                                     recyclerView.removeAllViews();
                                     recyclerView.setAdapter(memberAdapter);
                                     recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -245,6 +245,16 @@ public class DepartmentFragment extends Fragment {
                         }
                     }
                 });
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+
+            }
+
+            @Override
+            public void onStudentDeleted(int studentId) {
+
             }
         });
     }
