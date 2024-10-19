@@ -10,14 +10,20 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import java.util.List;
 
 
 public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
+    boolean isLoggin = false;
+    private ImageView avatar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,20 +35,51 @@ public class LoginActivity extends AppCompatActivity {
 
         // Kiểm tra xem người dùng đã đăng nhập hay chưa
         FirebaseUser currentUser = mAuth.getCurrentUser();
+        StudentAPI studentAPI = new StudentAPI();
+
         if (currentUser != null) {
-            // Nếu đã đăng nhập, chuyển thẳng đến SharedActivity
-            Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
-            startActivity(intent);
-            finish(); // Đóng LoginActivity để không quay lại
-            return; // Ngừng thực hiện phần còn lại của onCreate
+            studentAPI.getStudentByKey(currentUser.getUid(), new StudentAPI.StudentCallback() {
+                @Override
+                public void onStudentReceived(Student student) {
+                    isLoggin = true;
+                }
+
+                @Override
+                public void onStudentsReceived(List<Student> students) {
+
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+
+                }
+
+                @Override
+                public void onStudentDeleted(int studentId) {
+
+                }
+            });
+
+            if (isLoggin) {
+                // Nếu đã đăng nhập, chuyển thẳng đến SharedActivity
+                Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
+                startActivity(intent);
+                finish(); // Đóng LoginActivity để không quay lại
+            }
+            else {
+                // Nếu đã đăng nhập mà chưa cập nhật dữ liệu chuyển qua Upload
+                Intent intent = new Intent(LoginActivity.this, UploadProfileActivity.class);
+                startActivity(intent);
+                finish(); // Đóng LoginActivity để không quay lại
+            }
         }
 
         // Thiết kế giao diện
-        ImageView imageView = findViewById(R.id.image_logo);
+        avatar = findViewById(R.id.image_logo);
         Glide.with(this)
                 .load(R.drawable.image_logo_login)
                 .circleCrop()
-                .into(imageView);
+                .into(avatar);
 
         // Chuyển qua trang đăng ký
         TextView textSignUp = findViewById(R.id.textSignUp);

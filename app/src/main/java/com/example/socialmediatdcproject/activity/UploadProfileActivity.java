@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -230,33 +231,6 @@ public class UploadProfileActivity extends AppCompatActivity {
 
             uploadImageToFirebaseStorage(selectedImageUri, userId, student);
 
-            // Lưu thông tin vào Firebase hoặc cơ sở dữ liệu
-//            StudentAPI studentAPI = new StudentAPI();
-//            studentAPI.addStudent(student, new StudentAPI.StudentCallback() {
-//                @Override
-//                public void onStudentReceived(Student student) {
-//                    Toast.makeText(getApplicationContext(), "Sinh viên đã được thêm thành công!", Toast.LENGTH_SHORT).show();
-//
-//                    // Chuyển đến trang tiếp theo
-//                    Intent i = new Intent(UploadProfileActivity.this, SharedActivity.class);
-//                    startActivity(i);
-//                }
-//
-//                @Override
-//                public void onStudentsReceived(List<Student> students) {
-//                    // Không cần thực hiện ở đây
-//                }
-//
-//                @Override
-//                public void onError(String errorMessage) {
-//                    Toast.makeText(getApplicationContext(), "Lỗi: " + errorMessage, Toast.LENGTH_SHORT).show();
-//                }
-//
-//                @Override
-//                public void onStudentDeleted(int studentId) {
-//                    // Không cần xử lý ở đây khi thêm sinh viên
-//                }
-//            });
         });
     }
 
@@ -536,28 +510,38 @@ public class UploadProfileActivity extends AppCompatActivity {
     }
     // Hàm upload hình ảnh lên Storage Firebase ( Đưa ảnh lên Storage + cập nhật thông tin Student)
     private void uploadImageToFirebaseStorage(Uri filePath, int userId, Student student) {
-        if (filePath != null) {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference();
 
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference storageRef = storage.getReference();
+        // Kiểm tra nếu không chọn ảnh (filePath = null) thì gán ảnh mặc định từ drawable
+        if (filePath == null) {
+            // Lấy ảnh mặc định từ drawable
+            int defaultImageResId = R.drawable.avatar_macdinh;
+            Uri defaultImageUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE +
+                    "://" + getResources().getResourcePackageName(defaultImageResId) +
+                    '/' + getResources().getResourceTypeName(defaultImageResId) +
+                    '/' + getResources().getResourceEntryName(defaultImageResId));
 
-            String imageName = "avatar_" + System.currentTimeMillis() + ".jpg";
-            StorageReference avatarRef = storageRef.child("avatar/" + imageName);
-
-            avatarRef.putFile(filePath)
-                    .addOnSuccessListener(taskSnapshot -> {
-                        avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                            String downloadUrl = uri.toString();
-                            // Save the avatar URL to the Student object
-                            student.setAvatar(downloadUrl); // Assuming you have a method in Student class
-                            saveStudentToDatabase(student); // Save the student data including avatar URL
-                        });
-                    })
-                    .addOnFailureListener(exception -> {
-                        Toast.makeText(this, "Upload Failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
+            filePath = defaultImageUri; // Gán ảnh mặc định vào filePath
         }
+
+        String imageName = "avatar_" + System.currentTimeMillis() + ".jpg";
+        StorageReference avatarRef = storageRef.child("avatar/" + imageName);
+
+        avatarRef.putFile(filePath)
+                .addOnSuccessListener(taskSnapshot -> {
+                    avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        String downloadUrl = uri.toString();
+                        // Save the avatar URL to the Student object
+                        student.setAvatar(downloadUrl); // Assuming you have a method in Student class
+                        saveStudentToDatabase(student); // Save the student data including avatar URL
+                    });
+                })
+                .addOnFailureListener(exception -> {
+                    Toast.makeText(this, "Upload Failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
+
     // New method to save the Student object
     private void saveStudentToDatabase(Student student) {
         StudentAPI studentAPI = new StudentAPI();
