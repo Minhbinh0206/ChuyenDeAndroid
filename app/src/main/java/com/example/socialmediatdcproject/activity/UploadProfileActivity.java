@@ -541,8 +541,11 @@ public class UploadProfileActivity extends AppCompatActivity {
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
 
+            /*
             String imageName = "avatar_" + System.currentTimeMillis() + ".jpg";
             StorageReference avatarRef = storageRef.child("avatar/" + imageName);
+            */
+            StorageReference avatarRef = storageRef.child("avatarUser/" + userId + ",jpg");
 
             avatarRef.putFile(filePath)
                     .addOnSuccessListener(taskSnapshot -> {
