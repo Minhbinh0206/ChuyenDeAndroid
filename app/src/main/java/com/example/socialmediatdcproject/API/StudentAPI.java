@@ -38,8 +38,13 @@ public class StudentAPI {
 
     // Cập nhật thông tin sinh viên
     public void updateStudent(Student student, final StudentCallback callback) {
-        String studentId = String.valueOf(student.getUserId());
-        studentDatabase.child(studentId).setValue(student)
+        String uniqueKey = FirebaseAuth.getInstance().getCurrentUser().getUid(); // Lấy uniqueKey của sinh viên hiện tại
+
+        // Đảm bảo userId vẫn được lưu trữ trong đối tượng Student
+        student.setUserId(student.getUserId());
+
+        // Cập nhật thông tin sinh viên trong Firebase với uniqueKey
+        studentDatabase.child(uniqueKey).setValue(student)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         callback.onStudentReceived(student);
@@ -48,6 +53,7 @@ public class StudentAPI {
                     }
                 });
     }
+
 
     // Lấy thông tin sinh viên theo ID
     public void getStudentById(int studentId, final StudentCallback callback) {

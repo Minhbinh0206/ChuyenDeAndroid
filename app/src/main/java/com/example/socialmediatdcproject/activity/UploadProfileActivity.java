@@ -37,11 +37,15 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.socialmediatdcproject.API.DepartmentAPI;
+import com.example.socialmediatdcproject.API.GroupAPI;
+import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.MajorAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.example.socialmediatdcproject.model.Department;
+import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Major;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
@@ -228,6 +232,44 @@ public class UploadProfileActivity extends AppCompatActivity {
             // Tạo đối tượng Student
 
             Student student = new Student(userId, email, password, fullnameStudent, avatarUrl, phoneNumberInfo, roleId , studentNumber, birthday, departmentId, majorId, classId, description);
+
+            GroupUserAPI groupUserAPI = new GroupUserAPI();
+            groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
+                @Override
+                public void onGroupUsersReceived(List<GroupUser> groupUsers) {
+                    int lastId = groupUsers.size();
+                    departmentAPI.getDepartmentById(departmentId, new DepartmentAPI.DepartmentCallback() {
+                        @Override
+                        public void onDepartmentReceived(Department department) {
+                            GroupAPI groupAPI = new GroupAPI();
+                            String name = "Khoa "+ department.getDepartmentName();
+                            groupAPI.getGroupByName(name, new GroupAPI.GroupCallback() {
+                                @Override
+                                public void onGroupReceived(Group group) {
+                                    GroupUser groupUser = new GroupUser(group.getGroupId(), userId);
+                                    GroupUser groupUser1 = new GroupUser(User.ID_ADMIN_PHONGDAOTAO, userId);
+                                    GroupUser groupUser2 = new GroupUser(User.ID_ADMIN_DOANTHANHNIEN, userId);
+
+                                    groupUserAPI.addGroupUser(groupUser);
+                                    groupUserAPI.addGroupUser(groupUser2);
+                                    groupUserAPI.addGroupUser(groupUser1);
+                                }
+
+                                @Override
+                                public void onGroupsReceived(List<Group> groups) {
+
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onDepartmentsReceived(List<Department> departments) {
+
+                        }
+                    });
+
+                }
+            });
 
             uploadImageToFirebaseStorage(selectedImageUri, userId, student);
 
@@ -525,7 +567,8 @@ public class UploadProfileActivity extends AppCompatActivity {
             filePath = defaultImageUri; // Gán ảnh mặc định vào filePath
         }
 
-        String imageName = "avatar_" + System.currentTimeMillis() + ".jpg";
+        String imageName = "avatar_" + student.getStudentNumber() + ".jpg";
+
         StorageReference avatarRef = storageRef.child("avatar/" + imageName);
 
         avatarRef.putFile(filePath)

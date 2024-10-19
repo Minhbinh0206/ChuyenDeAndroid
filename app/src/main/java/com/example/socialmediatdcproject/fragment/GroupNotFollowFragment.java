@@ -87,28 +87,18 @@ public class GroupNotFollowFragment extends Fragment {
             public void onStudentReceived(Student student) {
                 button.setOnClickListener(v -> {
                     GroupUserAPI groupUserAPI = new GroupUserAPI();
+                    GroupUser groupUser = new GroupUser();
+                    groupUser.setGroupId(groupId);
+                    groupUser.setUserId(student.getUserId());
 
-                    groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
-                        @Override
-                        public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                            int lastId = -1;
+                    groupUserAPI.addGroupUser(groupUser);
 
-                            lastId = groupUsers.size();
-
-                            GroupUser groupUser = new GroupUser();
-                            groupUser.setGroupId(groupId);
-                            groupUser.setUserId(student.getUserId());
-
-                            groupUserAPI.addGroupUser(groupUser, lastId);
-
-                            // Chuyển sang GroupFollowedFragment sau khi thêm thành công
-                            Fragment followedFragment = new GroupFollowedFragment();
-                            FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
-                            fragmentTransaction.replace(R.id.first_content_fragment, followedFragment);
-                            fragmentTransaction.addToBackStack(null);
-                            fragmentTransaction.commit();
-                        }
-                    });
+                    // Chuyển sang GroupFollowedFragment sau khi thêm thành công
+                    Fragment followedFragment = new GroupFollowedFragment();
+                    FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.first_content_fragment, followedFragment);
+                    fragmentTransaction.addToBackStack(null);
+                    fragmentTransaction.commit();
                 });
             }
 
