@@ -195,7 +195,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
         });
 
-
         // Xử lý chọn năm sinh
         setupYearInput();
 
