@@ -96,4 +96,7 @@ public class Student extends User {
     public Student() {
 
     }
+    public Student(String avatar){
+        this.avatar = avatar;
+    }
 }
