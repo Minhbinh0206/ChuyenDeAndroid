@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -92,7 +93,60 @@ public class UploadProfileActivity extends AppCompatActivity {
     String password;
     private Uri selectedImageUri; // Declare this variable to store the selected image URI
 
+    private static final int MY_CAMERA_REQUEST_CODE = 100;
+
+    //Kiểm tra quyền camera
+    private void onClickRequestCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            openCamera();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
+        }
+    }
+    //hảm mở cam
+    private void openCamera() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        mActivityResultLauncher.launch(cameraIntent);
+    }
+    // Hàm hiển thị hộp thoại để chọn nguồn hình ảnh
+    private void showImageSourceDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Select Image Source")
+                .setItems(new String[]{"Gallery", "Camera"}, (dialog, which) -> {
+                    if (which == 0) {
+                        onClickRequestPermission(); // Gọi hàm chọn ảnh từ thư viện
+                    } else {
+                        onClickRequestCameraPermission(); // Gọi hàm mở camera
+                    }
+                })
+                .show();
+    }
+
+
     //Hàm chạy một intent để xử lý kết quả trả về là mở Gallery để chọn hình ảnh
+//    private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
+//            new ActivityResultContracts.StartActivityForResult(),
+//            new ActivityResultCallback<ActivityResult>() {
+//                @Override
+//                public void onActivityResult(ActivityResult result) {
+//                    if (result.getResultCode() == Activity.RESULT_OK) {
+//                        Intent data = result.getData();
+//                        if (data != null) {
+//                            selectedImageUri = data.getData();
+//                            try {
+//                                // Hiển thị ảnh chọn từ Gallery
+//                                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+//                                imgFromGallery.setImageBitmap(bitmap);
+//
+//                            } catch (IOException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//    );
+    // Hàm xử lý kết quả từ camera hoặc gallery
     private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
@@ -101,22 +155,32 @@ public class UploadProfileActivity extends AppCompatActivity {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
                         if (data != null) {
-                            selectedImageUri = data.getData();
-                            try {
-                                // Hiển thị ảnh chọn từ Gallery
-                                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
-                                imgFromGallery.setImageBitmap(bitmap);
-
-                                // Upload ảnh lên Firebase Storage
-                                //uploadImageToFirebaseStorage(selectedImageUri, userId); // Gọi hàm upload ảnh với userId
-                            } catch (IOException e) {
-                                e.printStackTrace();
+                            // Kiểm tra nếu ảnh đến từ camera
+                            if (data.hasExtra("data")) {
+                                // Nhận ảnh từ camera
+                                Bundle extras = data.getExtras();
+                                Bitmap imageBitmap = (Bitmap) extras.get("data");
+                                imgFromGallery.setImageBitmap(imageBitmap);
+                                // Upload ảnh lên Firebase Storage (nếu cần)
+                            } else {
+                                // Nhận ảnh từ gallery
+                                selectedImageUri = data.getData();
+                                try {
+                                    // Hiển thị ảnh chọn từ Gallery
+                                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+                                    imgFromGallery.setImageBitmap(bitmap);
+                                    // Upload ảnh lên Firebase Storage
+                                    //uploadImageToFirebaseStorage(selectedImageUri, userId); // Gọi hàm upload ảnh với userId
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                     }
                 }
             }
     );
+
 
     //Hàm khởi tạo giá trị ánh xạ
     private void initUi() {
@@ -175,9 +239,10 @@ public class UploadProfileActivity extends AppCompatActivity {
         btnSelectImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClickRequestPermission();
+                showImageSourceDialog();
             }
         });
+
 
         // Xử lý spinner các ngành và khoa
         Spinner department = findViewById(R.id.department_infomation);
@@ -199,7 +264,6 @@ public class UploadProfileActivity extends AppCompatActivity {
                 optionsMajor.clear();
             }
         });
-
 
         // Xử lý chọn năm sinh
         setupYearInput();
@@ -467,7 +531,7 @@ public class UploadProfileActivity extends AppCompatActivity {
     //Cấp quyền mở file ảnh trong thiết bị
     private void onClickRequestPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CUR_DEVELOPMENT) {
-            openGallery();
+            showPermissionDialog();
             return;
         }
 
@@ -478,6 +542,33 @@ public class UploadProfileActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_REQUEST_CODE);
         }
     }
+
+    // Hàm hiển thị bảng thông báo
+    private void showPermissionDialog() {
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(R.layout.dialog_permission)
+                .setCancelable(false) // Không cho phép đóng bằng cách chạm ra ngoài
+                .create();
+
+        dialog.show();
+
+        Button btnAllow = dialog.findViewById(R.id.btn_allow);
+        Button btnDeny = dialog.findViewById(R.id.btn_deny);
+
+        btnAllow.setOnClickListener(v -> {
+            // Nếu người dùng chọn cho phép, mở thư viện ảnh
+            openGallery();
+            dialog.dismiss();
+        });
+
+        btnDeny.setOnClickListener(v -> {
+            // Nếu người dùng chọn không cho phép, hiển thị thông báo
+            Toast.makeText(this, "Permission not granted. You cannot access the gallery.", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        });
+
+    }
+
 
     //Lắng nghe người dùng cho phép hay từ chối
     @Override
