@@ -95,9 +95,6 @@ public class UploadProfileActivity extends AppCompatActivity {
     String password;
     private Uri selectedImageUri; // Declare this variable to store the selected image URI
     private Student student;
-//    private Uri imageUri;
-
-    private static final int MY_CAMERA_REQUEST_CODE = 100;
 
     //Kiểm tra quyền camera
     private void onClickRequestCameraPermission() {
@@ -106,11 +103,6 @@ public class UploadProfileActivity extends AppCompatActivity {
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
         }
-    }
-    //hảm mở cam
-    private void openCamera() {
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        mActivityResultLauncher.launch(cameraIntent);
     }
     // Hàm hiển thị hộp thoại để chọn nguồn hình ảnh
     private void showImageSourceDialog() {
@@ -125,31 +117,6 @@ public class UploadProfileActivity extends AppCompatActivity {
                 })
                 .show();
     }
-
-
-    //Hàm chạy một intent để xử lý kết quả trả về là mở Gallery để chọn hình ảnh
-//    private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
-//            new ActivityResultContracts.StartActivityForResult(),
-//            new ActivityResultCallback<ActivityResult>() {
-//                @Override
-//                public void onActivityResult(ActivityResult result) {
-//                    if (result.getResultCode() == Activity.RESULT_OK) {
-//                        Intent data = result.getData();
-//                        if (data != null) {
-//                            selectedImageUri = data.getData();
-//                            try {
-//                                // Hiển thị ảnh chọn từ Gallery
-//                                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
-//                                imgFromGallery.setImageBitmap(bitmap);
-//
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//    );
     // Hàm xử lý kết quả từ camera hoặc gallery
     private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -565,33 +532,6 @@ public class UploadProfileActivity extends AppCompatActivity {
                     MY_REQUEST_CODE);
         }
     }
-
-    private void onClickRequestCameraPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            openCamera();
-            return;
-        }
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            openCamera();
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
-        }
-    }
-    // Hiển thị dialog để chọn giữa Gallery và Camera
-    private void showImageSourceDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Image Source")
-                .setItems(new String[]{"Gallery", "Camera"}, (dialog, which) -> {
-                    if (which == 0) {
-                        openGallery();
-                    } else {
-                        onClickRequestCameraPermission();
-                    }
-                })
-                .show();
-    }
-
     // Lắng nghe người dùng cho phép hay từ chối
 
     @Override
