@@ -102,16 +102,9 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                     // Thêm nhóm vào cơ sở dữ liệu
                     groupAPI.addGroup(g);
 
-                    groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
-                        @Override
-                        public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                            int lastIdGU = groupUsers.size();
-
-                            groupUser.setUserId(adminUserId);
-                            groupUser.setGroupId(g.getGroupId());
-                            groupUserAPI.addGroupUser(groupUser, lastIdGU);
-                        }
-                    });
+                    groupUser.setUserId(adminUserId);
+                    groupUser.setGroupId(g.getGroupId());
+                    groupUserAPI.addGroupUser(groupUser);
 
                     boolean isJoin = true;
 

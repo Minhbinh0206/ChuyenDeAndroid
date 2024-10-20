@@ -1,5 +1,6 @@
 package com.example.socialmediatdcproject.adapter;
 
+import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +9,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Student;
@@ -17,11 +20,13 @@ import java.util.List;
 
 public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberViewHolder> {
 
-    private List<User> memberList;
+    private List<Student> memberList;
+    private Context context;
 
     // Constructor
-    public MemberAdapter(List<User> memberList) {
+    public MemberAdapter(List<Student> memberList, Context context) {
         this.memberList = memberList;
+        this.context = context;
     }
 
     // Tạo ViewHolder
@@ -35,13 +40,17 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
     // Bind dữ liệu vào ViewHolder
     @Override
     public void onBindViewHolder(@NonNull MemberViewHolder holder, int position) {
-        User user = memberList.get(position);
+        Student student = memberList.get(position);
 
-        if (user != null) {
+        if (student != null) {
             // Set dữ liệu cho các view
-            holder.memberName.setText(user.getFullName());
-            holder.memberPositionJob.setText("Chức vụ: " + getPositionJob(user));
-            holder.memberEmail.setText(user.getEmail());
+            holder.memberName.setText(student.getFullName());
+            holder.memberPositionJob.setText("Chức vụ: " + getPositionJob(student));
+            holder.memberEmail.setText(student.getEmail());
+            Glide.with(context)
+                    .load(student.getAvatar())
+                    .circleCrop()
+                    .into(holder.memberAvatar);
         } else {
             Log.e("MemberAdapter", "User at position " + position + " is null");
         }
@@ -54,16 +63,11 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
     }
 
     // Hàm lấy chức vụ
-    public String getPositionJob(User user) {
-        if (user instanceof Lecturer) {
-            Lecturer lecturer = (Lecturer) user;
-            if (lecturer != null && lecturer.getDescription() != null) {
-                return lecturer.getDescription();
-            } else {
-                return "No description available";  // Trả về một chuỗi mặc định nếu không có mô tả
-            }
-        } else if (user instanceof Student) {
+    public String getPositionJob(Student student) {
+        if (student.getRoleId() == 0) {
             return "Học sinh";
+        } else if (student.getRoleId() == 1){
+            return "Giảng viên";
         }
         return "Unknown position";  // Xử lý trường hợp không phải Lecturer hoặc Student
     }

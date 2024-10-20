@@ -59,6 +59,7 @@ public class SharedActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.shared_layout);
+        NotifyAPI notifyAPI = new NotifyAPI();
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -77,6 +78,7 @@ public class SharedActivity extends AppCompatActivity {
             }
         });
 
+
         // Xử lý sự kiện nhấn vào icon thông báo
         ImageButton notifyButton = findViewById(R.id.icon_notify);
         notifyButton.setOnClickListener(v -> {
@@ -87,7 +89,6 @@ public class SharedActivity extends AppCompatActivity {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.first_content_fragment, fragment);
 
-            NotifyAPI notifyAPI = new NotifyAPI();
             notifyAPI.getNotifications(new NotifyAPI.NotificationCallback() {
                 @Override
                 public void onNotificationsReceived(List<Notify> notifications) {
@@ -231,17 +232,23 @@ public class SharedActivity extends AppCompatActivity {
     // Xử lý khi người dùng nhấn nút Back
     @Override
     public void onBackPressed() {
-        // Kiểm tra nếu Navigation Drawer đang mở thì đóng lại
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        // Lấy danh sách các fragment trong back stack
+        if (fragmentManager.getBackStackEntryCount() > 0) {
+            fragmentManager.popBackStack(); // Quay lại fragment trước đó
         } else {
-            super.onBackPressed(); // Nếu Drawer không mở thì thực hiện hành vi mặc định
+            super.onBackPressed(); // Nếu không còn fragment nào trong back stack, thực hiện hành vi mặc định
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        NotifyAPI notifyAPI = new NotifyAPI();
+
+        Intent intent = getIntent();
+        int key = intent.getIntExtra("keyFragment", -1);
+
         //Tìm kiếm hình ảnh user
         ImageView imageView = findViewById(R.id.nav_avatar_user);
 
@@ -294,21 +301,78 @@ public class SharedActivity extends AppCompatActivity {
             }
         });
 
-        // Gán fragment home là mặc định
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        Log.d("TAG", "onResume: " + key);
 
-        // Nạp HomeFragment vào first_content_fragment
-        fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
+        if (key != -1) {
+            switch (key){
+                case 999:
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+                    Fragment fragment = new NotifyFragment();
 
-        // Lấy dữ lệu từ firebase
-        loadPostsFromFirebase();
+                    // Thay thế nội dung của FrameLayout bằng Fragment tương ứng
+                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                    fragmentTransaction.replace(R.id.first_content_fragment, fragment);
 
-        fragmentTransaction.commit();
-    }
+                    notifyAPI.getNotifications(new NotifyAPI.NotificationCallback() {
+                        @Override
+                        public void onNotificationsReceived(List<Notify> notifications) {
+                            // Xử lý danh sách thông báo
+                            // Setup RecyclerView với Adapter
+                            RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
+                            NotifyAdapter notifyAdapter = new NotifyAdapter(notifications);
+                            recyclerView.setAdapter(notifyAdapter);
 
-    @Override
-    protected void onResumeFragments() {
-        super.onResumeFragments();
+                            // Sử dụng LayoutManager cho RecyclerView
+                            recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            // Xử lý lỗi
+                            System.err.println("Error: " + errorMessage);
+                        }
+                    });
+                    fragmentTransaction.commit();
+                    break;
+                default:
+                    // Gán fragment home là mặc định
+                    fragmentManager = getSupportFragmentManager();
+                    fragmentTransaction = fragmentManager.beginTransaction();
+
+                    // Nạp HomeFragment vào first_content_fragment
+                    fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
+
+                    // Lấy dữ lệu từ firebase
+                    loadPostsFromFirebase();
+
+                    fragmentTransaction.commit();
+                    break;
+            }
+        }else {
+            // Gán fragment home là mặc định
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+            // Nạp HomeFragment vào first_content_fragment
+            fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
+
+            // Lấy dữ lệu từ firebase
+            loadPostsFromFirebase();
+
+            fragmentTransaction.commit();
+        }
+
+        notifyAPI.getNotificationsByReadStatus(0, new NotifyAPI.NotificationCallback() {
+            @Override
+            public void onNotificationsReceived(List<Notify> notifications) {
+                TextView countNotify = findViewById(R.id.count_notify);
+                countNotify.setText(notifications.size() + "");
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+
+            }
+        });
     }
 }
