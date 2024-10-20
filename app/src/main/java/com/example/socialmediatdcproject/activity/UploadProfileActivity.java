@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -36,11 +37,15 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.socialmediatdcproject.API.DepartmentAPI;
+import com.example.socialmediatdcproject.API.GroupAPI;
+import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.MajorAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.example.socialmediatdcproject.model.Department;
+import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Major;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
@@ -228,35 +233,46 @@ public class UploadProfileActivity extends AppCompatActivity {
 
             Student student = new Student(userId, email, password, fullnameStudent, avatarUrl, phoneNumberInfo, roleId , studentNumber, birthday, departmentId, majorId, classId, description);
 
+            GroupUserAPI groupUserAPI = new GroupUserAPI();
+            groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
+                @Override
+                public void onGroupUsersReceived(List<GroupUser> groupUsers) {
+                    int lastId = groupUsers.size();
+                    departmentAPI.getDepartmentById(departmentId, new DepartmentAPI.DepartmentCallback() {
+                        @Override
+                        public void onDepartmentReceived(Department department) {
+                            GroupAPI groupAPI = new GroupAPI();
+                            String name = "Khoa "+ department.getDepartmentName();
+                            groupAPI.getGroupByName(name, new GroupAPI.GroupCallback() {
+                                @Override
+                                public void onGroupReceived(Group group) {
+                                    GroupUser groupUser = new GroupUser(group.getGroupId(), userId);
+                                    GroupUser groupUser1 = new GroupUser(User.ID_ADMIN_PHONGDAOTAO, userId);
+                                    GroupUser groupUser2 = new GroupUser(User.ID_ADMIN_DOANTHANHNIEN, userId);
+
+                                    groupUserAPI.addGroupUser(groupUser);
+                                    groupUserAPI.addGroupUser(groupUser2);
+                                    groupUserAPI.addGroupUser(groupUser1);
+                                }
+
+                                @Override
+                                public void onGroupsReceived(List<Group> groups) {
+
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onDepartmentsReceived(List<Department> departments) {
+
+                        }
+                    });
+
+                }
+            });
+
             uploadImageToFirebaseStorage(selectedImageUri, userId, student);
 
-            // Lưu thông tin vào Firebase hoặc cơ sở dữ liệu
-//            StudentAPI studentAPI = new StudentAPI();
-//            studentAPI.addStudent(student, new StudentAPI.StudentCallback() {
-//                @Override
-//                public void onStudentReceived(Student student) {
-//                    Toast.makeText(getApplicationContext(), "Sinh viên đã được thêm thành công!", Toast.LENGTH_SHORT).show();
-//
-//                    // Chuyển đến trang tiếp theo
-//                    Intent i = new Intent(UploadProfileActivity.this, SharedActivity.class);
-//                    startActivity(i);
-//                }
-//
-//                @Override
-//                public void onStudentsReceived(List<Student> students) {
-//                    // Không cần thực hiện ở đây
-//                }
-//
-//                @Override
-//                public void onError(String errorMessage) {
-//                    Toast.makeText(getApplicationContext(), "Lỗi: " + errorMessage, Toast.LENGTH_SHORT).show();
-//                }
-//
-//                @Override
-//                public void onStudentDeleted(int studentId) {
-//                    // Không cần xử lý ở đây khi thêm sinh viên
-//                }
-//            });
         });
     }
 
@@ -536,11 +552,19 @@ public class UploadProfileActivity extends AppCompatActivity {
     }
     // Hàm upload hình ảnh lên Storage Firebase ( Đưa ảnh lên Storage + cập nhật thông tin Student)
     private void uploadImageToFirebaseStorage(Uri filePath, int userId, Student student) {
-        if (filePath != null) {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference();
 
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference storageRef = storage.getReference();
+        // Kiểm tra nếu không chọn ảnh (filePath = null) thì gán ảnh mặc định từ drawable
+        if (filePath == null) {
+            // Lấy ảnh mặc định từ drawable
+            int defaultImageResId = R.drawable.avatar_macdinh;
+            Uri defaultImageUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE +
+                    "://" + getResources().getResourcePackageName(defaultImageResId) +
+                    '/' + getResources().getResourceTypeName(defaultImageResId) +
+                    '/' + getResources().getResourceEntryName(defaultImageResId));
 
+<<<<<<< HEAD
             /*
             String imageName = "avatar_" + System.currentTimeMillis() + ".jpg";
             StorageReference avatarRef = storageRef.child("avatar/" + imageName);
@@ -559,8 +583,29 @@ public class UploadProfileActivity extends AppCompatActivity {
                     .addOnFailureListener(exception -> {
                         Toast.makeText(this, "Upload Failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
                     });
+=======
+            filePath = defaultImageUri; // Gán ảnh mặc định vào filePath
+>>>>>>> 047a0ca387c948cb355d00322a840f7f7b138e73
         }
+
+        String imageName = "avatar_" + student.getStudentNumber() + ".jpg";
+
+        StorageReference avatarRef = storageRef.child("avatar/" + imageName);
+
+        avatarRef.putFile(filePath)
+                .addOnSuccessListener(taskSnapshot -> {
+                    avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        String downloadUrl = uri.toString();
+                        // Save the avatar URL to the Student object
+                        student.setAvatar(downloadUrl); // Assuming you have a method in Student class
+                        saveStudentToDatabase(student); // Save the student data including avatar URL
+                    });
+                })
+                .addOnFailureListener(exception -> {
+                    Toast.makeText(this, "Upload Failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
+
     // New method to save the Student object
     private void saveStudentToDatabase(Student student) {
         StudentAPI studentAPI = new StudentAPI();

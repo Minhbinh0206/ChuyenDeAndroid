@@ -8,6 +8,7 @@ public class    Notify {
     private int userSendId;
     private String notifyTitle;
     private String notifyContent;
+    private int isRead;
 
     public int getNotifyId() {
         return notifyId;
@@ -41,11 +42,20 @@ public class    Notify {
         this.notifyContent = notifyContent;
     }
 
-    public Notify(int notifyId, int userSendId, String notifyTitle, String notifyContent, List<User> userGetId) {
+    public int getIsRead() {
+        return isRead;
+    }
+
+    public void setIsRead(int isRead) {
+        this.isRead = isRead;
+    }
+
+    public Notify(int notifyId, int userSendId, String notifyTitle, String notifyContent, int isRead) {
         this.notifyId = notifyId;
         this.userSendId = userSendId;
         this.notifyTitle = notifyTitle;
         this.notifyContent = notifyContent;
+        this.isRead = isRead;
     }
 
     public Notify() {
@@ -53,5 +63,6 @@ public class    Notify {
         this.userSendId = -1;
         this.notifyTitle = "";
         this.notifyContent = "";
+        this.isRead = 0;
     }
 }

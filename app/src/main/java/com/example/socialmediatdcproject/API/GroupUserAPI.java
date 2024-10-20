@@ -21,17 +21,21 @@ public class GroupUserAPI {
         groupUserRef = FirebaseDatabase.getInstance().getReference("UsersInGroup");
     }
 
-    // Thêm GroupUser mới vào Firebase
-    public void addGroupUser(GroupUser groupUser, int id) {
-        if (id != -1) {
-            groupUserRef.child(String.valueOf(id)).setValue(groupUser)
+    public void addGroupUser(GroupUser groupUser) {
+        // Sử dụng push() để tạo ra một ID duy nhất cho mỗi GroupUser
+        String uniqueId = groupUserRef.push().getKey();
+
+        if (uniqueId != null) {
+            groupUserRef.child(uniqueId).setValue(groupUser)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            Log.d("GroupUserAPI", "GroupUser added successfully.");
+                            Log.d("GroupUserAPI", "GroupUser added successfully with ID: " + uniqueId);
                         } else {
                             Log.e("GroupUserAPI", "Failed to add GroupUser.", task.getException());
                         }
                     });
+        } else {
+            Log.e("GroupUserAPI", "Failed to generate a unique ID for GroupUser.");
         }
     }
 
