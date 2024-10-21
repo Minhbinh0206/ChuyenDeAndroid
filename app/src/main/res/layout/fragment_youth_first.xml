@@ -2,128 +2,133 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:background="@drawable/nen_background"
+    android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/logo_department"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:src="@drawable/image_youth_avatar"
-        app:layout_constraintBottom_toTopOf="@+id/name_department"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/name_department"
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:text="Đoàn thanh niên"
-        android:textSize="30dp"
+        android:layout_marginVertical="10dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="8dp"
+        android:singleLine="false"
+        android:text=""
+        android:textSize="25dp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintBottom_toBottomOf="@+id/logo_department"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo_department" />
+        app:layout_constraintStart_toEndOf="@+id/logo_department"
+        app:layout_constraintTop_toTopOf="@+id/logo_department" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:layout_marginVertical="10dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/name_department">
+        app:layout_constraintTop_toBottomOf="@+id/logo_department">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="0dp"
-            android:layout_marginVertical="5dp"
+        <androidx.cardview.widget.CardView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:elevation="15dp"
+            app:cardCornerRadius="20dp"
+            app:cardUseCompatPadding="true"
+            app:cardBackgroundColor="@android:color/transparent"
             android:layout_weight="1">
-
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="5dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_first_style"
-                android:paddingHorizontal="5dp">
-
-                <Button
-                    android:id="@+id/button_youth_info"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:backgroundTint="@color/white"
-                    android:text="Thông tin"
-                    android:textColor="@color/defaultBlue"
-                    android:textSize="14sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="5dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_first_style"
-                android:paddingHorizontal="5dp">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
 
                 <Button
                     android:id="@+id/button_youth_post"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:backgroundTint="@color/white"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="0dp"
+                    android:background="@drawable/button_19_background"
+                    android:gravity="center"
+                    android:letterSpacing="0.08"
+                    android:padding="13dp"
                     android:text="Bài viết"
-                    android:textColor="@color/defaultBlue"
-                    android:textSize="14sp" />
-            </LinearLayout>
-        </LinearLayout>
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="horizontal"
-            android:layout_height="0dp"
-            android:layout_marginVertical="5dp"
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:elevation="15dp"
+            app:cardCornerRadius="20dp"
+            app:cardUseCompatPadding="true"
+            app:cardBackgroundColor="@android:color/transparent"
             android:layout_weight="1">
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="5dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_first_style"
-                android:paddingHorizontal="5dp">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
 
                 <Button
                     android:id="@+id/button_youth_group"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-
-                    android:backgroundTint="@color/white"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="0dp"
+                    android:background="@drawable/button_19_background"
+                    android:gravity="center"
+                    android:letterSpacing="0.08"
+                    android:padding="13dp"
                     android:text="Nhóm"
-                    android:textColor="@color/defaultBlue"
-                    android:textSize="13sp" />
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
             </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
+        <androidx.cardview.widget.CardView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:elevation="15dp"
+            app:cardCornerRadius="20dp"
+            app:cardUseCompatPadding="true"
+            app:cardBackgroundColor="@android:color/transparent"
+            android:layout_weight="1">
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="5dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_first_style"
-                android:paddingHorizontal="5dp">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
 
                 <Button
                     android:id="@+id/button_youth_member"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-
-                    android:backgroundTint="@color/white"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="0dp"
+                    android:background="@drawable/button_19_background"
+                    android:gravity="center"
+                    android:letterSpacing="0.08"
+                    android:padding="13dp"
                     android:text="Thành viên"
-                    android:textColor="@color/defaultBlue"
-                    android:textSize="13sp" />
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
             </LinearLayout>
-        </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
     </LinearLayout>
 

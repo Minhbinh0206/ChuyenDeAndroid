@@ -82,14 +82,14 @@ public class YouthFragment extends Fragment {
                 loadPostFromFirebase(User.ID_ADMIN_DOANTHANHNIEN);
 
         // Tìm các nút
-        Button infoButton = view.findViewById(R.id.button_youth_info);
         Button postButton = view.findViewById(R.id.button_youth_post);
         Button memberButton = view.findViewById(R.id.button_youth_member);
         Button groupButton = view.findViewById(R.id.button_youth_group);
 
         // Set màu mặc định cho nút "Bài viết"
-        postButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-        postButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        changeColorButtonActive(postButton);
+        changeColorButtonNormal(memberButton);
+        changeColorButtonNormal(groupButton);
 
         // Sự kiện khi nhấn vào nút memberButton
         memberButton.setOnClickListener(v -> {
@@ -97,7 +97,6 @@ public class YouthFragment extends Fragment {
 
             // Cập nhật màu cho các nút
             changeColorButtonActive(memberButton);
-            changeColorButtonNormal(infoButton);
             changeColorButtonNormal(postButton);
             changeColorButtonNormal(groupButton);
         });
@@ -108,7 +107,6 @@ public class YouthFragment extends Fragment {
 
             // Cập nhật màu cho các nút
             changeColorButtonActive(postButton);
-            changeColorButtonNormal(infoButton);
             changeColorButtonNormal(memberButton);
             changeColorButtonNormal(groupButton);
         });

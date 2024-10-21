@@ -55,25 +55,31 @@ public class StudentAPI {
     }
 
 
-    // Lấy thông tin sinh viên theo ID
     public void getStudentById(int studentId, final StudentCallback callback) {
-        studentDatabase.child(String.valueOf(studentId)).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Student student = snapshot.getValue(Student.class);
-                if (student != null) {
-                    callback.onStudentReceived(student);
-                } else {
-                    callback.onError("Student not found.");
-                }
-            }
+        studentDatabase.orderByChild("userId").equalTo(studentId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            for (DataSnapshot studentSnapshot : snapshot.getChildren()) {
+                                Student student = studentSnapshot.getValue(Student.class);
+                                if (student != null) {
+                                    callback.onStudentReceived(student);
+                                    return; // Nếu tìm thấy một sinh viên, trả về ngay
+                                }
+                            }
+                        } else {
+                            callback.onError("Student not found.");
+                        }
+                    }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                callback.onError("Error retrieving student: " + error.getMessage());
-            }
-        });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        callback.onError("Error retrieving student: " + error.getMessage());
+                    }
+                });
     }
+
 
     public void getStudentByKey(String key, StudentCallback callback) {
         studentDatabase.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
