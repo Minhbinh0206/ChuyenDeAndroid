@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.StudentAPI;
@@ -16,6 +17,16 @@ import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import java.util.List;
 
@@ -121,16 +132,65 @@ public class LoginActivity extends AppCompatActivity {
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(LoginActivity.this, task -> {
                         if (task.isSuccessful()) {
-                            // Đăng nhập thành công, chuyển đến SharedActivity
                             FirebaseUser user = mAuth.getCurrentUser();
                             if (user != null) {
-                                Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
-                                startActivity(intent);
-                                finish();
+                                // Truy vấn để tìm userId và roleId từ bảng Users
+                                DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
+                                usersRef.orderByChild("email").equalTo(email)
+                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                if (snapshot.exists()) {
+                                                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                                                        // Lấy userId và roleId từ dữ liệu của người dùng
+                                                        int userId = userSnapshot.child("userId").getValue(Integer.class);
+                                                        int roleId = userSnapshot.child("roleId").getValue(Integer.class);
+
+                                                        // Truy vấn để lấy tên role từ bảng Roles
+                                                        DatabaseReference rolesRef = FirebaseDatabase.getInstance().getReference("Roles");
+                                                        rolesRef.child(String.valueOf(roleId)).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                            @Override
+                                                            public void onDataChange(@NonNull DataSnapshot roleSnapshot) {
+                                                                String roleName = roleSnapshot.child("roleName").getValue(String.class);
+                                                                // Mã kiểm tra vai trò admin
+                                                                Set<Integer> adminRoleIds = new HashSet<>(Arrays.asList(2, 3, 4, 5));
+                                                                boolean isAdmin = adminRoleIds.contains(roleId);
+
+                                                                for (int id : adminRoleIds) {
+                                                                    if (roleId == id) {
+                                                                        isAdmin = true ;
+                                                                        break;
+                                                                    }
+                                                                }
+
+                                                                if (isAdmin) {
+                                                                    Intent intent = new Intent(LoginActivity.this, AdminActivity.class);
+                                                                    startActivity(intent);
+                                                                } else {
+                                                                    Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
+                                                                    startActivity(intent);
+                                                                }
+                                                                finish();
+                                                            }
+
+                                                            @Override
+                                                            public void onCancelled(@NonNull DatabaseError error) {
+                                                                Toast.makeText(LoginActivity.this, "Lỗi: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        });
+                                                    }
+                                                } else {
+                                                    Toast.makeText(LoginActivity.this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError error) {
+                                                Toast.makeText(LoginActivity.this, "Lỗi: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                             }
                         } else {
-                            // Hiển thị thông báo lỗi đăng nhập
                             Toast.makeText(LoginActivity.this, "Đăng nhập thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
