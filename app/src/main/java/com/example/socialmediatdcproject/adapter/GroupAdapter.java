@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.GroupDetaiActivity;
 import com.example.socialmediatdcproject.activity.SharedActivity;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.User;
@@ -78,7 +79,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
             });
 
             holder.groupDetail.setOnClickListener(v -> {
-                Intent intent = new Intent(v.getContext(), SharedActivity.class);
+                Intent intent = new Intent(v.getContext(), GroupDetaiActivity.class);
                 intent.putExtra("groupId", group.getGroupId());
                 v.getContext().startActivity(intent);
             });

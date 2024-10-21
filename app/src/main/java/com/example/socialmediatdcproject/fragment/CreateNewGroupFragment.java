@@ -9,6 +9,7 @@ import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.socialmediatdcproject.R;
@@ -27,11 +28,19 @@ public class CreateNewGroupFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Button button = view.findViewById(R.id.button_group_create_new);
+        Button button = view.findViewById(R.id.button_group_user_create_new);
+
+        changeColorButtonActive(button);
 
         button.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), CreateNewGroupActivity.class);
             startActivity(intent);
         });
     }
+
+    public void changeColorButtonActive(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+    }
 }
+
