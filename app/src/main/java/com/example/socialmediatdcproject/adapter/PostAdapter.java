@@ -156,12 +156,24 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         studentAPI.getStudentByKey(userKey, new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
-
                 LikeAPI likeAPI = new LikeAPI();
 
-                // Kiểm tra trạng thái thích
+                // Lắng nghe sự thay đổi trong số lượt thích theo thời gian thực
+                likeAPI.listenForLikeCountChanges(post.getPostId(), new LikeAPI.LikeCountCallback() {
+                    @Override
+                    public void onLikeCountUpdated(long newLikeCount) {
+                        post.setPostLike((int) newLikeCount);  // Cập nhật số lượt thích
+                        holder.postLike.setText(String.valueOf(post.getPostLike()));  // Cập nhật TextView hiển thị số lượt thích
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("TAG", "Error listening for like count changes: " + errorMessage);
+                    }
+                });
+
+                // Kiểm tra trạng thái thích của người dùng hiện tại
                 likeAPI.checkLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
-                    @SuppressLint("ResourceAsColor")
                     @Override
                     public void onStatusChecked(boolean isLiked) {
                         holder.buttonLike.setBackgroundColor(isLiked ? context.getResources().getColor(R.color.like) : context.getResources().getColor(R.color.white));
@@ -173,10 +185,12 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     }
                 });
 
+                // Toggle like status khi người dùng bấm vào nút Like
                 holder.buttonLike.setOnClickListener(v -> {
                     likeAPI.toggleLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
                         @Override
                         public void onStatusChecked(boolean isLiked) {
+                            // Cập nhật trạng thái nút Like
                             holder.buttonLike.setBackgroundColor(isLiked ? context.getResources().getColor(R.color.like) : context.getResources().getColor(R.color.white));
                         }
 
@@ -189,22 +203,16 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
 
             @Override
-            public void onStudentsReceived(List<Student> students) {
-
-            }
+            public void onStudentsReceived(List<Student> students) {}
 
             @Override
-            public void onError(String errorMessage) {
-
-            }
+            public void onError(String errorMessage) {}
 
             @Override
-            public void onStudentDeleted(int studentId) {
-
-            }
+            public void onStudentDeleted(int studentId) {}
         });
-
     }
+
 
     private void setupLikeButton(PostImageViewHolder holder, Post post) {
         String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -214,11 +222,12 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             public void onStudentReceived(Student student) {
                 LikeAPI likeAPI = new LikeAPI();
 
-                // Lắng nghe sự thay đổi trong số lượt thích
+                // Lắng nghe sự thay đổi của số lượt thích theo thời gian thực
                 likeAPI.listenForLikeCountChanges(post.getPostId(), new LikeAPI.LikeCountCallback() {
                     @Override
                     public void onLikeCountUpdated(long newLikeCount) {
-                        post.setPostLike((int) newLikeCount);
+                        post.setPostLike((int) newLikeCount);  // Cập nhật số lượt thích trong model
+                        holder.postLike.setText(String.valueOf(post.getPostLike()));  // Cập nhật TextView hiển thị số lượt thích
                     }
 
                     @Override
@@ -227,11 +236,11 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     }
                 });
 
-                // Kiểm tra trạng thái thích
+                // Kiểm tra trạng thái thích của người dùng hiện tại
                 likeAPI.checkLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
                     @Override
                     public void onStatusChecked(boolean isLiked) {
-                        // Cập nhật màu sắc nút thích dựa trên trạng thái thích
+                        // Cập nhật giao diện nút Like
                         holder.postLike.setTextColor(isLiked ? context.getResources().getColor(R.color.white) : context.getResources().getColor(R.color.black));
                         holder.buttonLike.setBackground(isLiked ? context.getResources().getDrawable(R.drawable.button_custom_liked) : context.getResources().getDrawable(R.drawable.button_custom));
                         holder.imageButtonLike.setBackgroundColor(isLiked ? context.getResources().getColor(R.color.like) : context.getResources().getColor(R.color.white));
@@ -244,23 +253,23 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     }
                 });
 
+                // Toggle trạng thái thích khi nhấn nút Like
                 holder.buttonLike.setOnClickListener(v -> {
                     likeAPI.toggleLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
                         @Override
                         public void onStatusChecked(boolean isLiked) {
-                            // Cập nhật giao diện
+                            // Cập nhật giao diện nút Like và TextView
                             if (isLiked) {
-                                post.setPostLike(post.getPostLike() + 1); // Tăng lượt thích
+                                post.setPostLike(post.getPostLike() + 1);  // Tăng số lượt thích
                             } else {
-                                post.setPostLike(post.getPostLike() - 1); // Giảm lượt thích
+                                post.setPostLike(post.getPostLike() - 1);  // Giảm số lượt thích
                             }
 
-                            holder.postLike.setText(String.valueOf(post.getPostLike()));
+                            holder.postLike.setText(String.valueOf(post.getPostLike()));  // Cập nhật số lượt thích hiển thị
                             holder.postLike.setTextColor(isLiked ? context.getResources().getColor(R.color.white) : context.getResources().getColor(R.color.black));
                             holder.buttonLike.setBackground(isLiked ? context.getResources().getDrawable(R.drawable.button_custom_liked) : context.getResources().getDrawable(R.drawable.button_custom));
                             holder.imageButtonLike.setBackgroundColor(isLiked ? context.getResources().getColor(R.color.like) : context.getResources().getColor(R.color.white));
                             holder.imageButtonLike.setImageResource(isLiked ? R.drawable.icon_tym_like : R.drawable.icon_tym);
-
                         }
 
                         @Override

@@ -99,6 +99,20 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             public void onStudentReceived(Student student) {
                 LikeAPI likeAPI = new LikeAPI();
 
+                // Lắng nghe thay đổi số lượt thích theo thời gian thực
+                likeAPI.listenForLikeCountChangesComment(comment.getId(), new LikeAPI.LikeCountCallback() {
+                    @Override
+                    public void onLikeCountUpdated(long newLikeCount) {
+                        comment.setCommentLike((int) newLikeCount);  // Cập nhật số lượt thích
+                        holder.commentLike.setText(String.valueOf(comment.getCommentLike()));  // Cập nhật giao diện TextView hiển thị số lượt thích
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("CommentAdapter", "Error listening for like count changes: " + errorMessage);
+                    }
+                });
+
                 // Kiểm tra trạng thái like cho comment hiện tại
                 likeAPI.checkLikeComment(student.getUserId(), comment.getId(), new LikeAPI.LikeStatusCallback() {
                     @Override
@@ -107,7 +121,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                         holder.commentLikeImage.setBackground(isLiked
                                 ? context.getResources().getDrawable(R.drawable.icon_tym_red)
                                 : context.getResources().getDrawable(R.drawable.icon_tym));
-                        holder.commentLike.setText(String.valueOf(comment.getCommentLike()));
                     }
 
                     @Override
@@ -175,5 +188,8 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             avatar = itemView.findViewById(R.id.comment_avatar);
             commentLikeImage = itemView.findViewById(R.id.comment_like_image);
         }
+
     }
+
+
 }
