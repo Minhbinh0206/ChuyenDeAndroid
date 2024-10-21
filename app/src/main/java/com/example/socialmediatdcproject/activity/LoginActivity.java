@@ -56,10 +56,18 @@ public class LoginActivity extends AppCompatActivity {
                     isLoggin = true;
                     Log.d("TAG", "User: " + student.getFullName());
 
-                    // Nếu đã đăng nhập, chuyển thẳng đến SharedActivity
-                    Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
-                    startActivity(intent);
-                    finish(); // Đóng LoginActivity để không quay lại
+                    if (student.getUserId() != -1) {
+                        // Nếu đã đăng nhập, chuyển thẳng đến SharedActivity
+                        Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
+                        startActivity(intent);
+                        finish(); // Đóng LoginActivity để không quay lại
+                    }
+                    else {
+                        // Người dùng chưa đăng nhập, chuyển qua màn hình UploadProfileActivity
+                        Intent intent = new Intent(LoginActivity.this, UploadProfileActivity.class);
+                        startActivity(intent);
+                        finish(); // Đóng LoginActivity để không quay lại
+                    }
                 }
 
                 @Override
@@ -77,11 +85,9 @@ public class LoginActivity extends AppCompatActivity {
 
                 }
             });
-        } else {
-            // Người dùng chưa đăng nhập, chuyển qua màn hình UploadProfileActivity
 
-
-        }
+        } 
+        
 
         // Thiết kế giao diện
         avatar = findViewById(R.id.image_logo);

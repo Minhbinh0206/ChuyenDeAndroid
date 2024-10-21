@@ -58,10 +58,6 @@
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.GroupDetailActivity"
-            android:exported="false">
-        </activity>
-        <activity
             android:name=".activity.CreateNewGroupActivity"
             android:exported="false">
         </activity>
@@ -69,6 +65,9 @@
             android:exported="false">
         </activity>
         <activity android:name=".activity.NotifyDetailActivity"
+            android:exported="false">
+        </activity>
+        <activity android:name=".activity.SearchFriendActivity"
             android:exported="false">
         </activity>
     </application>
