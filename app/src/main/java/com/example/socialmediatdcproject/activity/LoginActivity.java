@@ -79,9 +79,7 @@ public class LoginActivity extends AppCompatActivity {
             });
         } else {
             // Người dùng chưa đăng nhập, chuyển qua màn hình UploadProfileActivity
-            Intent intent = new Intent(LoginActivity.this, UploadProfileActivity.class);
-            startActivity(intent);
-            finish(); // Đóng LoginActivity để không quay lại
+            //Toast.makeText(LoginActivity.this, "Vui lòng Login", Toast.LENGTH_SHORT).show();
         }
 
         // Thiết kế giao diện
