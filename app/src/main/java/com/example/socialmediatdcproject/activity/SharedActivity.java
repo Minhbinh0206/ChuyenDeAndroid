@@ -24,15 +24,20 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.NotifyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
+import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.example.socialmediatdcproject.fragment.BussinessFragment;
 import com.example.socialmediatdcproject.fragment.DepartmentFragment;
+import com.example.socialmediatdcproject.fragment.FriendsScreenFragment;
+import com.example.socialmediatdcproject.fragment.GroupFollowedFragment;
 import com.example.socialmediatdcproject.fragment.GroupFragment;
+import com.example.socialmediatdcproject.fragment.GroupNotFollowFragment;
 import com.example.socialmediatdcproject.fragment.HomeFragment;
 import com.example.socialmediatdcproject.fragment.NotifyFragment;
 import com.example.socialmediatdcproject.fragment.PersonalScreenFragment;
@@ -77,7 +82,6 @@ public class SharedActivity extends AppCompatActivity {
                 drawerLayout.closeDrawer(GravityCompat.START);
             }
         });
-
 
         // Xử lý sự kiện nhấn vào icon thông báo
         ImageButton notifyButton = findViewById(R.id.icon_notify);
@@ -248,6 +252,8 @@ public class SharedActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         int key = intent.getIntExtra("keyFragment", -1);
+        int studentId = intent.getIntExtra("studentId", -1);
+        int groupId = intent.getIntExtra("groupId", -1);
 
         //Tìm kiếm hình ảnh user
         ImageView imageView = findViewById(R.id.nav_avatar_user);
@@ -349,17 +355,78 @@ public class SharedActivity extends AppCompatActivity {
                     break;
             }
         }else {
-            // Gán fragment home là mặc định
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            if (studentId != -1) {
+                // Gán fragment home là mặc định
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-            // Nạp HomeFragment vào first_content_fragment
-            fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
+                // Nạp HomeFragment vào first_content_fragment
+                fragmentTransaction.replace(R.id.first_content_fragment, new FriendsScreenFragment());
 
-            // Lấy dữ lệu từ firebase
-            loadPostsFromFirebase();
+                fragmentTransaction.commit();
+            }
+            else {
+                if (groupId != -1) {
+                    // Thực hiện việc lấy dữ liệu và kiểm tra người dùng có tham gia group không
+                    GroupUserAPI groupUserAPI = new GroupUserAPI();
 
-            fragmentTransaction.commit();
+                    groupUserAPI.getGroupUserByIdGroup(groupId, new GroupUserAPI.GroupUserCallback() {
+                        @Override
+                        public void onGroupUsersReceived(List<GroupUser> groupUsers) {
+                            String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                            studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
+                                @Override
+                                public void onStudentReceived(Student student) {
+                                    boolean isJoin = intent.getBooleanExtra("isJoin", false);
+
+                                    // Kiểm tra xem user đã tham gia nhóm chưa
+                                    for (GroupUser gu : groupUsers) {
+                                        if (gu.getUserId() == student.getUserId()) {
+                                            isJoin = true;
+                                        }
+                                    }
+
+                                    FragmentManager fragmentManager = getSupportFragmentManager();
+                                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                                    // Nếu user chưa tham gia, hiển thị GroupNotFollowFragment
+                                    if (!isJoin) {
+                                        fragmentTransaction.replace(R.id.first_content_fragment, new GroupNotFollowFragment());
+                                    } else {
+                                        // Nếu đã tham gia, hiển thị GroupFollowedFragment
+                                        fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
+                                    }
+
+                                    fragmentTransaction.commit();
+                                }
+
+                                @Override
+                                public void onStudentsReceived(List<Student> students) {}
+
+                                @Override
+                                public void onError(String errorMessage) {}
+
+                                @Override
+                                public void onStudentDeleted(int studentId) {}
+                            });
+                        }
+                    });
+                }
+                else {
+                    // Gán fragment home là mặc định
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                    // Nạp HomeFragment vào first_content_fragment
+                    fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
+
+                    // Lấy dữ lệu từ firebase
+                    loadPostsFromFirebase();
+
+                    fragmentTransaction.commit();
+                }
+            }
         }
 
         notifyAPI.getNotificationsByReadStatus(0, new NotifyAPI.NotificationCallback() {

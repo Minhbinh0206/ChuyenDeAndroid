@@ -64,6 +64,8 @@ public class GroupFragment extends Fragment {
         // Set màu mặc định cho nút "Bài viết"
         groupAvailable.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
         groupAvailable.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        groupCreateNew.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        groupCreateNew.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
 
         // Sự kiện khi nhấn vào nút postButton
         groupAvailable.setOnClickListener(v -> {

@@ -58,6 +58,8 @@ public class TrainingFragment extends Fragment {
         // Set màu mặc định cho nút "Bài viết"
         postButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
         postButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        infoButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        infoButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
 
         // Sự kiện khi nhấn vào nút postButton
         postButton.setOnClickListener(v -> {

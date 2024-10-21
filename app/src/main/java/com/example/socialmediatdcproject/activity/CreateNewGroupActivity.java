@@ -109,7 +109,7 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                     boolean isJoin = true;
 
                     // Chuyển sang GroupDetailActivity với groupId
-                    Intent intent = new Intent(CreateNewGroupActivity.this, GroupDetailActivity.class);
+                    Intent intent = new Intent(CreateNewGroupActivity.this, SharedActivity.class);
                     intent.putExtra("groupId", g.getGroupId());
                     intent.putExtra("isJoin", isJoin);
                     startActivity(intent);

@@ -104,8 +104,9 @@ public class DepartmentFragment extends Fragment {
                                 Button memberButton = view.findViewById(R.id.button_department_member);
 
                                 // Set màu mặc định cho nút "Bài viết"
-                                postButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-                                postButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+                                changeColorButtonActive(postButton);
+                                changeColorButtonNormal(infoButton);
+                                changeColorButtonNormal(memberButton);
 
                                 // Sự kiện khi nhấn vào nút memberButton
                                 int finalGroupId = groupId;

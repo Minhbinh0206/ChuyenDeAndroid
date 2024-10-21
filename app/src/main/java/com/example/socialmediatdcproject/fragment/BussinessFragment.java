@@ -79,6 +79,8 @@ public class BussinessFragment extends Fragment {
         // Set màu mặc định cho nút "Bài viết"
         businessPostButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
         businessPostButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        businessListButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        businessListButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
 
         // Sự kiện khi nhấn vào nút bài viết
         businessPostButton.setOnClickListener(v -> {
