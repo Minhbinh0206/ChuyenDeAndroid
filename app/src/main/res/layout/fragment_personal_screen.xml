@@ -49,14 +49,6 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-
-                android:backgroundTint="@color/white"
-                android:text="Bạn bè"
-                android:textColor="@color/defaultBlue"
-                android:textSize="13sp" />
-        </LinearLayout>
-        <LinearLayout
-
                 android:layout_weight="1">
 
                 <Button
@@ -74,9 +66,7 @@
                     android:textStyle="bold" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-
         <androidx.cardview.widget.CardView
-
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"

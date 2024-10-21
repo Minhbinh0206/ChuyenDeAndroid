@@ -200,7 +200,6 @@ public class EditScreenActivity extends AppCompatActivity {
                 .show();
     }
 
-
 //Xử lí ảnh từ thư viện
     private void uploadImageToFirebaseStorage(Uri filePath, Student student) {
         if (filePath != null) {

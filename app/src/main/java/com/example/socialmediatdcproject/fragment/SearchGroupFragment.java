@@ -1,14 +1,13 @@
 package com.example.socialmediatdcproject.fragment;
 
 import android.os.Bundle;
-import android.util.Log;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,70 +25,69 @@ import java.util.List;
 
 public class SearchGroupFragment extends Fragment {
 
+    private GroupAdapter adapter;
+    private List<Group> groupList;
     private EditText editTextSearch;
-    private ImageButton btnSearch;
-    private RecyclerView recyclerView;
+    private ImageButton iconSearchGroup;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_find_group, container, false);
+
+        // Ánh xạ các view từ layout
         editTextSearch = view.findViewById(R.id.edit_text_search);
-        btnSearch = view.findViewById(R.id.search_group);
-        recyclerView = view.findViewById(R.id.recyclerView); // Thay đổi ID nếu cần
+        iconSearchGroup = view.findViewById(R.id.icon_search_group);
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerView_find_group);
 
-        // Thiết lập RecyclerView
+        // Khởi tạo danh sách nhóm và adapter
+        groupList = new ArrayList<>();
+        adapter = new GroupAdapter(groupList, requireContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        recyclerView.setAdapter(adapter);
 
-        // Thiết lập sự kiện nhấn
-        btnSearch.setOnClickListener(v -> searchGroups());
+        // Sự kiện khi nhấn vào nút tìm kiếm
+        iconSearchGroup.setOnClickListener(v -> searchGroupByName(editTextSearch.getText().toString()));
+
+        // TextWatcher để theo dõi và lọc danh sách nhóm khi thay đổi text trong EditText
+        editTextSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Tìm kiếm khi người dùng nhập text
+                searchGroupByName(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
 
         return view;
     }
 
-    //Hàm tìm kiếm group
-    private void searchGroups() {
-        String searchQuery = editTextSearch.getText().toString().trim();
-        if (!searchQuery.isEmpty()) {
-
-            String normalizedQuery = searchQuery.toLowerCase();
-            Log.d("SearchGroupFragment", "Searching for group: " + normalizedQuery);
-
-            GroupAPI groupAPI = new GroupAPI();
-            groupAPI.getGroupByName(normalizedQuery, new GroupAPI.GroupCallback() {
-                @Override
-                public void onGroupReceived(Group group) {
-                    if (group != null) {
-                        Log.d("SearchGroupFragment", "Group found: " + group.getGroupName());
-                        List<Group> groups = new ArrayList<>();
-                        groups.add(group);
-                        updateRecyclerView(groups);
-                    } else {
-                        Log.d("SearchGroupFragment", "No group found");
-                        Toast.makeText(requireContext(), "Không tìm thấy nhóm nào!", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onGroupsReceived(List<Group> groups) {
-                    if (groups != null && !groups.isEmpty()) {
-                        Log.d("SearchGroupFragment", "Groups received: " + groups.size());
-                        updateRecyclerView(groups);
-                    } else {
-                        Log.d("SearchGroupFragment", "No groups found");
-                    }
-                }
-            });
-        } else {
-            Toast.makeText(requireContext(), "Vui lòng nhập tên nhóm để tìm kiếm!", Toast.LENGTH_SHORT).show();
+    // Hàm để tìm kiếm nhóm dựa trên văn bản nhập
+    private void searchGroupByName(String query) {
+        if (query.isEmpty()) {
+            groupList.clear();
+            adapter.notifyDataSetChanged();
+            return;
         }
-    }
 
+        GroupAPI groupAPI = new GroupAPI();
+        groupAPI.getGroupByName(query, new GroupAPI.GroupCallback() {
+            @Override
+            public void onGroupsReceived(List<Group> groups) {
+                groupList.clear();
+                groupList.addAll(groups);
+                adapter.notifyDataSetChanged();
+            }
 
-
-    //Tạo lại danh sách nhóm vừa mới tiềm kiếm
-    private void updateRecyclerView(List<Group> groups) {
-        GroupAdapter groupAdapter = new GroupAdapter(groups, requireContext());
-        recyclerView.setAdapter(groupAdapter);
+            @Override
+            public void onGroupReceived(Group group) {
+                // Không sử dụng trong tìm kiếm
+            }
+        });
     }
 }
