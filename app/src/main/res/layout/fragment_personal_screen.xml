@@ -51,7 +51,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:backgroundTint="@color/white"
-                android:text="Bài viết"
+                android:text="Bạn bè"
                 android:textColor="@color/defaultBlue"
                 android:textSize="13sp" />
         </LinearLayout>
