@@ -5,16 +5,54 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Thêm FrameLayout và giao diện vào đây -->
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/navigationBar"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:layout_gravity="end"
+                android:background="@color/defaultBlue"
+                android:gravity="start"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/icon_back"
+                    android:layout_width="40dp"
+                    android:layout_height="35dp"
+                    android:layout_gravity="center"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="@android:color/transparent"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/icon_arrow_back" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"></LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
 
     <ImageView
         android:id="@+id/image_edit_personal"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="100dp"
         android:src="@drawable/avatar_user"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/image_edit_personal_small"
@@ -140,38 +178,38 @@
                 android:src="@drawable/ph_pen" />
 
         </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:orientation="horizontal">
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_margin="10dp"-->
+<!--            android:orientation="horizontal">-->
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mô tả: "
-                android:textSize="20sp"
-                android:layout_marginRight="5dp"/>
+<!--            <TextView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Mô tả: "-->
+<!--                android:textSize="20sp"-->
+<!--                android:layout_marginRight="5dp"/>-->
 
-            <EditText
-                android:id="@+id/editTextMota"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:padding="16dp"
-                android:textSize="16sp"
-                android:gravity="top|start"
-                android:inputType="textMultiLine"
-                android:minLines="1"
-                android:maxLines="7"
-                android:scrollbars="vertical"
-               />
+<!--            <EditText-->
+<!--                android:id="@+id/editTextMota"-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:padding="16dp"-->
+<!--                android:textSize="16sp"-->
+<!--                android:gravity="top|start"-->
+<!--                android:inputType="textMultiLine"-->
+<!--                android:minLines="1"-->
+<!--                android:maxLines="7"-->
+<!--                android:scrollbars="vertical"-->
+<!--               />-->
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ph_pen" />
-        </LinearLayout>
+<!--            <ImageView-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:src="@drawable/ph_pen" />-->
+<!--        </LinearLayout>-->
 
 
         <Button

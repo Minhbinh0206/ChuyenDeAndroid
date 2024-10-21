@@ -85,7 +85,9 @@ public class LoginActivity extends AppCompatActivity {
 
                 }
             });
-        }
+
+        } 
+        
 
         // Thiết kế giao diện
         avatar = findViewById(R.id.image_logo);

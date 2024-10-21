@@ -119,6 +119,7 @@ public class GroupFragment extends Fragment {
         fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
         fragmentTransaction.commit();
 
+
         GroupAPI groupAPI = new GroupAPI();
         groupAPI.getAllGroups(new GroupAPI.GroupCallback() {
             @Override

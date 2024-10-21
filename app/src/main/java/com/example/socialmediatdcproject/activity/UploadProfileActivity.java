@@ -81,7 +81,7 @@ public class UploadProfileActivity extends AppCompatActivity {
     private MajorAPI majorAPI = new MajorAPI();
     public static final String TAG = UploadProfileActivity.class.getName();
     private static final int MY_REQUEST_CODE = 10;
-    private static final int REQUEST_CODE_STORAGE_PERMISSION = 2 ;
+    private static final int REQUEST_CODE_STORAGE_PERMISSION = 2;
     private static final int MY_CAMERA_REQUEST_CODE = 100;
     private ImageView imgFromGallery;
     private Button btnSelectImage;
@@ -130,7 +130,6 @@ public class UploadProfileActivity extends AppCompatActivity {
 
                                     // Chuyển Bitmap thành Uri
                                     selectedImageUri = getImageUriFromBitmap(UploadProfileActivity.this, imageBitmap);
-
                                     // Upload ảnh lên Firebase Storage
 //                                    uploadImageToFirebaseStorage(imageUri, userId, student); // Gọi hàm upload ảnh với userId và student
                                 }
@@ -253,7 +252,7 @@ public class UploadProfileActivity extends AppCompatActivity {
 
             // Tạo đối tượng Student
 
-            student = new Student(userId, email, password, fullnameStudent, avatarUrl, phoneNumberInfo, roleId , studentNumber, birthday, departmentId, majorId, classId, description);
+            student = new Student(userId, email, password, fullnameStudent, avatarUrl, phoneNumberInfo, roleId, studentNumber, birthday, departmentId, majorId, classId, description);
 
             GroupUserAPI groupUserAPI = new GroupUserAPI();
             groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
@@ -264,7 +263,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                         @Override
                         public void onDepartmentReceived(Department department) {
                             GroupAPI groupAPI = new GroupAPI();
-                            String name = "Khoa "+ department.getDepartmentName();
+                            String name = "Khoa " + department.getDepartmentName();
                             groupAPI.getGroupByName(name, new GroupAPI.GroupCallback() {
                                 @Override
                                 public void onGroupReceived(Group group) {
@@ -494,6 +493,7 @@ public class UploadProfileActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
         }
     }
+
     // Hàm hiển thị hộp thoại để chọn nguồn hình ảnh
     private void showImageSourceDialog() {
         new AlertDialog.Builder(this)
@@ -507,6 +507,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                 })
                 .show();
     }
+
     // Cấp quyền mở file ảnh trong thiết bị và camera
     private void onClickRequestPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CUR_DEVELOPMENT) {
@@ -572,6 +573,7 @@ public class UploadProfileActivity extends AppCompatActivity {
         String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, "Title", null);
         return Uri.parse(path);
     }
+
     // Hàm upload hình ảnh lên Storage Firebase ( Đưa ảnh lên Storage + cập nhật thông tin Student)
     private void uploadImageToFirebaseStorage(Uri filePath, int userId, Student student) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -603,7 +605,6 @@ public class UploadProfileActivity extends AppCompatActivity {
                     .addOnFailureListener(exception -> {
                         Toast.makeText(this, "Upload Failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
                     });
-
             filePath = defaultImageUri; // Gán ảnh mặc định vào filePath
         }
 

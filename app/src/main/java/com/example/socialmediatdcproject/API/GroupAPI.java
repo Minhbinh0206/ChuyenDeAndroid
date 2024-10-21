@@ -66,7 +66,6 @@ public class GroupAPI {
                 Group group = snapshot.getValue(Group.class);
                 callback.onGroupReceived(group);
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e("GroupAPI", "Error getting group by ID.", error.toException());
@@ -76,15 +75,18 @@ public class GroupAPI {
 
     // Lấy một nhóm dựa trên tên
     public void getGroupByName(String name, final GroupCallback callback) {
-        groupRef.orderByChild("groupName").equalTo(name).addListenerForSingleValueEvent(new ValueEventListener() {
+        groupRef.orderByChild("groupName").startAt(name).endAt(name + "\uf8ff").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    for (DataSnapshot groupSnapshot : dataSnapshot.getChildren()) {
-                        Group group = groupSnapshot.getValue(Group.class);
-                        callback.onGroupReceived(group);
-                        return; // Dừng vòng lặp sau khi tìm thấy nhóm
+                List<Group> groups = new ArrayList<>();
+                for (DataSnapshot groupSnapshot : dataSnapshot.getChildren()) {
+                    Group group = groupSnapshot.getValue(Group.class);
+                    if (group != null) {
+                        groups.add(group);
                     }
+                }
+                if (!groups.isEmpty()) {
+                    callback.onGroupsReceived(groups); // Gọi callback với danh sách nhóm tìm thấy
                 } else {
                     callback.onGroupReceived(null); // Không tìm thấy nhóm
                 }
@@ -97,6 +99,9 @@ public class GroupAPI {
             }
         });
     }
+
+    //
+
 
     // Cập nhật thông tin một nhóm
     public void updateGroup(int groupId, Group updatedGroup) {
