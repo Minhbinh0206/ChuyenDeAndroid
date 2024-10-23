@@ -7,6 +7,7 @@ public class Department {
     private int departmentId;
     private String departmentName;
     private String departmentInfo;
+    private int groupId ;
 
     public int getDepartmentId() {
         return departmentId;
@@ -32,17 +33,27 @@ public class Department {
         this.departmentInfo = departmentInfo;
     }
 
+    public int getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
+    }
+
     // Constructor mặc định
     public Department() {
         this.departmentId = -1;
         this.departmentName = "";
         this.departmentInfo = "";
+        this.groupId = -1;
     }
 
     // Constructor với các tham số
-    public Department(int departmentId, String departmentName, String departmentInfo) {
+    public Department(int departmentId, String departmentName, String departmentInfo, int groupId) {
         this.departmentId = departmentId;
         this.departmentName = departmentName;
         this.departmentInfo = departmentInfo;
+        this.groupId = groupId;
     }
 }

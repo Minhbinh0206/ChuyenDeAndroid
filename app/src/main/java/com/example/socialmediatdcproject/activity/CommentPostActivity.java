@@ -148,6 +148,7 @@ public class CommentPostActivity extends AppCompatActivity {
 
                         @Override
                         public void onCommentsReceived(List<Comment> comments) {
+                            commentList.clear();  // Xóa danh sách hiện tại trước khi cập nhật
                             commentList.addAll(comments);
                             RecyclerView recyclerViewSecond = findViewById(R.id.second_content_comment_post);
 

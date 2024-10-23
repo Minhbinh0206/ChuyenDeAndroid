@@ -75,9 +75,10 @@ public class GroupAPI {
 
     // Lấy một nhóm dựa trên tên
     public void getGroupByName(String name, final GroupCallback callback) {
-        groupRef.orderByChild("groupName").startAt(name).endAt(name + "\uf8ff").addListenerForSingleValueEvent(new ValueEventListener() {
+        groupRef.orderByChild("groupName").equalTo(name).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.d("GroupAPI", "DataSnapshot: " + dataSnapshot.toString()); // In ra kết quả để kiểm tra
                 List<Group> groups = new ArrayList<>();
                 for (DataSnapshot groupSnapshot : dataSnapshot.getChildren()) {
                     Group group = groupSnapshot.getValue(Group.class);
@@ -94,14 +95,10 @@ public class GroupAPI {
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                // Xử lý lỗi
                 callback.onGroupReceived(null);
             }
         });
     }
-
-    //
-
 
     // Cập nhật thông tin một nhóm
     public void updateGroup(int groupId, Group updatedGroup) {

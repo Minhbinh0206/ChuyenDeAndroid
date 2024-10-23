@@ -98,6 +98,20 @@ public class LikeAPI {
         });
     }
 
+    public void checkStatusPost(int postId, LikeStatusCallback callback) {
+        likeDatabase.child(String.valueOf(postId)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                callback.onStatusChecked(dataSnapshot.exists());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                callback.onError("Error checking like status: " + databaseError.getMessage());
+            }
+        });
+    }
+
     public void toggleLikeStatus(int userId, int postId, LikeStatusCallback callback) {
         String key = "PostLikes/" + postId + "/" + userId;
         likeDatabase.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
