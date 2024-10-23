@@ -7,20 +7,28 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.LikeAPI;
+import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.CommentPostActivity;
+import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
+import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
@@ -34,7 +42,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int VIEW_TYPE_TEXT = 0;  // Kiểu view cho post không có ảnh
     private static final int VIEW_TYPE_IMAGE = 1; // Kiểu view cho post có ảnh
 
@@ -42,7 +50,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context context;
 
     // Constructor
-    public PostAdapter(ArrayList<Post> postList, Context context) {
+    public PostApproveAdapter(ArrayList<Post> postList, Context context) {
         this.postList = postList;
         this.context = context;
     }
@@ -56,15 +64,10 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == VIEW_TYPE_IMAGE) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_post_image, parent, false);
-            return new PostImageViewHolder(view);
-        } else {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_post, parent, false);
-            return new PostTextViewHolder(view);
-        }
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_waiting_approve_layout, parent, false);
+        return new PostImageViewHolder(view);
+
     }
 
     @Override
@@ -194,11 +197,71 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
         });
 
-        setupLikeButton(holder, post);
-        holder.buttonComment.setOnClickListener(v -> {
-            Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
-            intent.putExtra("postId", post.getPostId());
-            v.getContext().startActivity(intent);
+        holder.buttonApprove.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.defaultBlue));
+        holder.buttonApprove.setTextColor(ContextCompat.getColorStateList(context, R.color.white));
+
+        holder.buttonApprove.setOnClickListener(v -> {
+            post.setStatus(1);
+
+            PostAPI postAPI = new PostAPI();
+            postAPI.updatePost(post);
+
+            NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+            NotifyQuickly notifyQuickly = new NotifyQuickly();
+            notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
+                @Override
+                public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                    GroupAPI groupAPI = new GroupAPI();
+                    groupAPI.getGroupById(post.getGroupId(), new GroupAPI.GroupCallback() {
+                        @Override
+                        public void onGroupReceived(Group group) {
+                            notifyQuickly.setNotifyId(notifications.size());
+                            notifyQuickly.setUserGetId(post.getUserId());
+                            notifyQuickly.setUserSendId(group.getAdminUserId());
+                            notifyQuickly.setContent("Bài đăng trong " + group.getGroupName() + " của bạn đã được duyệt, vào xem ngay!");
+                        }
+
+                        @Override
+                        public void onGroupsReceived(List<Group> groups) {
+
+                        }
+                    });
+                }
+            });
+
+            Toast.makeText(context, "Đã duyệt bài viết", Toast.LENGTH_SHORT).show();
+        });
+
+        holder.buttonClose.setOnClickListener(v -> {
+            post.setStatus(2);
+
+            PostAPI postAPI = new PostAPI();
+            postAPI.updatePost(post);
+
+            NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+            NotifyQuickly notifyQuickly = new NotifyQuickly();
+            notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
+                @Override
+                public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                    GroupAPI groupAPI = new GroupAPI();
+                    groupAPI.getGroupById(post.getGroupId(), new GroupAPI.GroupCallback() {
+                        @Override
+                        public void onGroupReceived(Group group) {
+                            notifyQuickly.setNotifyId(notifications.size());
+                            notifyQuickly.setUserGetId(post.getUserId());
+                            notifyQuickly.setUserSendId(group.getAdminUserId());
+                            notifyQuickly.setContent("Bài viết của bạn trong nhóm " + group.getGroupName() + " không được duyệt, vui lòng xem lại!");
+                        }
+
+                        @Override
+                        public void onGroupsReceived(List<Group> groups) {
+
+                        }
+                    });
+                }
+            });
+
+            Toast.makeText(context, "Bài viết đã được gỡ", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -377,6 +440,8 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ImageView postAvatar;
         LinearLayout buttonLike;
         ImageButton imageButtonLike;
+        ImageButton buttonClose;
+        Button buttonApprove;
 
         public PostImageViewHolder(View itemView) {
             super(itemView);
@@ -387,6 +452,8 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             postLike = itemView.findViewById(R.id.post_like);
             postAvatar = itemView.findViewById(R.id.post_avatar);
             imageButtonLike = itemView.findViewById(R.id.like_button_image);
+            buttonClose = itemView.findViewById(R.id.close_post);
+            buttonApprove = itemView.findViewById(R.id.button_approve_create_post);
         }
     }
 }

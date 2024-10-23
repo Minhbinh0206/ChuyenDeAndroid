@@ -130,7 +130,8 @@ public class ListFriendFragment extends Fragment {
                                             Log.d("FR", "onStudentReceived: " + listFriends.size());
 
                                             FriendPersonalAdapter friendPersonalAdapter = new FriendPersonalAdapter(listFriends, requireContext());
-                                            recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                                            LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false);
+                                            recyclerView.setLayoutManager(linearLayoutManager);
                                             recyclerView.setAdapter(friendPersonalAdapter);
                                             friendPersonalAdapter.notifyDataSetChanged();
                                         }

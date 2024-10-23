@@ -24,9 +24,9 @@ public class PostAPI {
 
     // Thêm bài viết mới vào Firebase
     public void addPost(Post post) {
-        String postId = postDatabase.push().getKey(); // Tạo ID duy nhất
-        post.setPostId(postId.hashCode()); // Gán ID cho bài viết
-        postDatabase.child(postId).setValue(post).addOnCompleteListener(task -> {
+        int postId = post.getPostId();
+        post.setPostId(postId);
+        postDatabase.child(String.valueOf(postId)).setValue(post).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Log.d("PostAPI", "Post added successfully.");
             } else {
@@ -37,8 +37,8 @@ public class PostAPI {
 
     // Cập nhật bài viết
     public void updatePost(Post post) {
-        String postId = String.valueOf(post.getPostId());
-        postDatabase.child(postId).setValue(post).addOnCompleteListener(task -> {
+        int postId = post.getPostId();
+        postDatabase.child(String.valueOf(postId)).setValue(post).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Log.d("PostAPI", "Post updated successfully.");
             } else {

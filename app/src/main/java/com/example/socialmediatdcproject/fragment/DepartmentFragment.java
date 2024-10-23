@@ -73,12 +73,7 @@ public class DepartmentFragment extends Fragment {
                 departmentAPI.getDepartmentById(student.getDepartmentId(), new DepartmentAPI.DepartmentCallback() {
                     @Override
                     public void onDepartmentReceived(Department department) {
-                        Log.d("Fragment", "Department Name" + department.getDepartmentName());
-
-                        String nameGroup = "Khoa " + department.getDepartmentName();
-
-                        Log.d("Fragment", "onDepartmentReceived: " + nameGroup);
-                        groupAPI.getGroupByName(nameGroup, new GroupAPI.GroupCallback() {
+                        groupAPI.getGroupById(department.getGroupId(), new GroupAPI.GroupCallback() {
                             @Override
                             public void onGroupReceived(Group group) {
                                 int groupId = -1;
@@ -87,8 +82,8 @@ public class DepartmentFragment extends Fragment {
 
                                 Log.d("DepartmentFragment", "onGroupReceived: " + groupId);
 
-                                TextView nameTraining = getView().findViewById(R.id.name_department);
-                                ImageView avatarTraining = getView().findViewById(R.id.logo_department);
+                                TextView nameTraining = view.findViewById(R.id.name_department_student);
+                                ImageView avatarTraining = view.findViewById(R.id.logo_department_student);
                                 nameTraining.setText(group.getGroupName());
 
                                 Glide.with(requireContext())
@@ -99,9 +94,9 @@ public class DepartmentFragment extends Fragment {
                                 loadPostFromFirebase(groupId);
 
                                 // Tìm các nút
-                                Button infoButton = view.findViewById(R.id.button_department_info);
-                                Button postButton = view.findViewById(R.id.button_department_post);
-                                Button memberButton = view.findViewById(R.id.button_department_member);
+                                Button infoButton = view.findViewById(R.id.button_department_myself_student);
+                                Button postButton = view.findViewById(R.id.button_department_post_student);
+                                Button memberButton = view.findViewById(R.id.button_department_member_student);
 
                                 // Set màu mặc định cho nút "Bài viết"
                                 changeColorButtonActive(postButton);

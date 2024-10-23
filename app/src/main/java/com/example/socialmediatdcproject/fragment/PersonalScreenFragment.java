@@ -100,14 +100,13 @@ public class PersonalScreenFragment extends Fragment {
         studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
-                if (student != null && student.getAvatar() != null) {
+                if (isAdded() && student != null && student.getAvatar() != null) {
                     String name = student.getFullName();
                     nameUser.setText(name);
                     Glide.with(requireContext())
                             .load(student.getAvatar())
                             .circleCrop()
                             .into(imageUser);
-
                 }
             }
 
@@ -203,7 +202,7 @@ public class PersonalScreenFragment extends Fragment {
                                 requireActivity().runOnUiThread(() -> {
                                     groupAdapter = new GroupAdapter(groupList, requireContext());
                                     recyclerView.setAdapter(groupAdapter);
-                                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
+                                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false);
                                     recyclerView.setLayoutManager(linearLayoutManager);
                                     groupAdapter.notifyDataSetChanged();
                                 });
