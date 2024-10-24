@@ -70,6 +70,9 @@
         <activity android:name=".activity.SearchFriendActivity"
             android:exported="false">
         </activity>
+        <activity android:name=".activity.GroupDetaiActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>

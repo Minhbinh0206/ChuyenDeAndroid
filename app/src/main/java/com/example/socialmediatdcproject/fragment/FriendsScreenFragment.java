@@ -2,7 +2,9 @@ package com.example.socialmediatdcproject.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +12,8 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,13 +29,18 @@ import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.FriendAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
+import com.example.socialmediatdcproject.API.NotifyAPI;
+import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.SharedActivity;
 import com.example.socialmediatdcproject.adapter.FriendPersonalAdapter;
 import com.example.socialmediatdcproject.adapter.GroupAdapter;
 import com.example.socialmediatdcproject.dataModels.Friends;
 import com.example.socialmediatdcproject.dataModels.GroupUser;
+import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
 import com.example.socialmediatdcproject.model.Group;
+import com.example.socialmediatdcproject.model.Notify;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -43,13 +52,13 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+//
+//import okhttp3.ResponseBody;
+//import retrofit2.Call;
+//import retrofit2.Callback;
+//import retrofit2.Response;
+//import retrofit2.Retrofit;
+//import retrofit2.converter.gson.GsonConverterFactory;
 
 public class FriendsScreenFragment extends Fragment {
 
@@ -113,7 +122,6 @@ public class FriendsScreenFragment extends Fragment {
         });
 
         updateButtonColorsNormal(personalMyGroup);
-
         displayFriends(studentId);
         // Lấy thông tin sinh viên
         studentAPI.getStudentById(studentId, new StudentAPI.StudentCallback() {
@@ -157,16 +165,10 @@ public class FriendsScreenFragment extends Fragment {
             updateButtonColorsNormal(personalFriends);
         });
 
-        // Lắng nghe thay đổi trạng thái bạn bè
         studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
-                friendAPI.listenForFriendStatusChanges(key, new FriendAPI.FriendStatusCallback() {
-                    @Override
-                    public void onStatusReceived(int status) {
-                        updateFriendButton(student, studentId, personalFriends, friendAPI);
-                    }
-                });
+                listenForFriendStatusChanges(student, student.getUserId() +"", studentId, personalFriends);
             }
 
             @Override
@@ -185,6 +187,49 @@ public class FriendsScreenFragment extends Fragment {
             }
         });
 
+    }
+
+    // Hàm lắng nghe trạng thái bạn bè
+    private void listenForFriendStatusChanges(Student student, String myUserId, int studentId, Button personalFriends) {
+        FirebaseDatabase.getInstance().getReference("Friends")
+                .child(myUserId + "_" + studentId)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            Integer status = snapshot.child("status").getValue(Integer.class);
+                            if (status != null) {
+                                // Cần thêm tham số student và friendAPI vào đây
+                                updateFriendButton(student, studentId, personalFriends, friendAPI);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("FirebaseError", error.getMessage());
+                    }
+                });
+
+        FirebaseDatabase.getInstance().getReference("Friends")
+                .child(studentId + "_" + myUserId)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            Integer status = snapshot.child("status").getValue(Integer.class);
+                            if (status != null) {
+                                // Cần thêm tham số student và friendAPI vào đây
+                                updateFriendButton(student, studentId, personalFriends, friendAPI);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("FirebaseError", error.getMessage());
+                    }
+                });
     }
 
     private void updateFriendButton(Student student, int studentId, Button personalFriends, FriendAPI friendAPI) {
@@ -230,6 +275,23 @@ public class FriendsScreenFragment extends Fragment {
             friendAPI.updateFriendStatus(friends1);
 
             Toast.makeText(requireContext(), "Đã gửi lời mời kết bạn", Toast.LENGTH_SHORT).show();
+
+            NotifyQuickly notifyQuickly = new NotifyQuickly();
+            NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+
+            // Lấy tất cả thông báo hiện có
+            notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
+                @Override
+                public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                    notifyQuickly.setNotifyId(notifications.size());
+                    notifyQuickly.setUserSendId(currentUserId); // ID của người gửi
+                    notifyQuickly.setUserGetId(friendUserId); // ID của người nhận
+                    notifyQuickly.setContent(student.getFullName() + " vừa gửi cho bạn lời mời kết bạn mới.");
+
+                    notifyQuicklyAPI.addNotification(notifyQuickly);
+                }
+            });
+
             updateFriendButton(student, studentId, button, friendAPI);
         });
     }
@@ -246,6 +308,23 @@ public class FriendsScreenFragment extends Fragment {
             friendAPI.updateFriendStatus(friends1);
 
             Toast.makeText(requireContext(), "Hủy gửi lời mời thành công", Toast.LENGTH_SHORT).show();
+
+            NotifyQuickly notifyQuickly = new NotifyQuickly();
+            NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+
+            // Lấy tất cả thông báo hiện có
+            notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
+                @Override
+                public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                    notifyQuickly.setNotifyId(notifications.size());
+                    notifyQuickly.setUserSendId(currentUserId); // ID của người gửi
+                    notifyQuickly.setUserGetId(friendUserId); // ID của người nhận
+                    notifyQuickly.setContent(student.getFullName() + " đã thu hồi lại lời mời kết bạn.");
+
+                    notifyQuicklyAPI.addNotification(notifyQuickly);
+                }
+            });
+
             updateFriendButton(student, studentId, button, friendAPI);
         });
     }
@@ -259,6 +338,50 @@ public class FriendsScreenFragment extends Fragment {
             friendAPI.updateFriendStatus(friend1);
 
             Toast.makeText(requireContext(), "Giờ hai bạn đã là bạn bè!", Toast.LENGTH_SHORT).show();
+
+            NotifyQuickly notifyQuickly = new NotifyQuickly();
+            NotifyQuickly notifyQuickly2 = new NotifyQuickly();
+            NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+
+            // Lấy tất cả thông báo hiện có
+            notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
+                @Override
+                public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                    studentAPI.getStudentById(studentId, new StudentAPI.StudentCallback() {
+                        @Override
+                        public void onStudentReceived(Student studentSecond) {
+                            notifyQuickly.setNotifyId(notifications.size());
+                            notifyQuickly.setUserSendId(student.getUserId()); // ID của người gửi
+                            notifyQuickly.setUserGetId(studentId); // ID của người nhận
+                            notifyQuickly.setContent("Chúc mừng " + student.getFullName() + " và " + studentSecond.getFullName() + " đã trở thành bạn bè.");
+
+                            notifyQuickly2.setNotifyId(notifications.size());
+                            notifyQuickly2.setUserSendId(studentId); // ID của người gửi
+                            notifyQuickly2.setUserGetId(student.getUserId()); // ID của người nhận
+                            notifyQuickly2.setContent("Chúc mừng " + studentSecond.getFullName() + " và " + student.getFullName() + " đã trở thành bạn bè.");
+
+                            notifyQuicklyAPI.addNotification(notifyQuickly);
+                            notifyQuicklyAPI.addNotification(notifyQuickly2);
+                        }
+
+                        @Override
+                        public void onStudentsReceived(List<Student> students) {
+
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+
+                        }
+
+                        @Override
+                        public void onStudentDeleted(int studentId) {
+
+                        }
+                    });
+                }
+            });
+
             updateFriendButton(student, studentId, button, friendAPI);
         });
     }

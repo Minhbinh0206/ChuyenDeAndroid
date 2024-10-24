@@ -22,20 +22,19 @@ public class CommentAPI {
         commentDatabase = FirebaseDatabase.getInstance().getReference("Comments");
     }
 
-    // Thêm bình luận mới vào Firebase
+    // Thêm bình luận mới vào Firebase với id là khóa
     public void addComment(Comment comment) {
-        String commentId = String.valueOf(comment.getId());
-        commentDatabase.child(commentId).setValue(comment)
+        String uniqueKey = String.valueOf(comment.getId()); // Sử dụng id của comment làm khóa
+        commentDatabase.child(uniqueKey).setValue(comment)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // Thêm thành công
                         Log.d("CommentAPI", "Comment added successfully.");
                     } else {
-                        // Xảy ra lỗi
                         Log.e("CommentAPI", "Failed to add comment.", task.getException());
                     }
                 });
     }
+
     // Lấy tất cả bình luận từ Firebase (không lọc theo postId)
     public void getAllComments(final CommentCallback callback) {
         commentDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -60,36 +59,33 @@ public class CommentAPI {
 
     // Cập nhật thông tin bình luận
     public void updateComment(Comment comment) {
-        String commentId = String.valueOf(comment.getId());
-        commentDatabase.child(commentId).setValue(comment)
+        commentDatabase.child(String.valueOf(comment.getId())).setValue(comment)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // Cập nhật thành công
                         Log.d("CommentAPI", "Comment updated successfully.");
                     } else {
-                        // Xảy ra lỗi
                         Log.e("CommentAPI", "Failed to update comment.", task.getException());
                     }
                 });
     }
 
-    // Xóa bình luận theo ID
+    // Xóa bình luận theo khóa duy nhất
     public void deleteComment(int commentId) {
-        commentDatabase.child(String.valueOf(commentId)).removeValue()
+        String uniqueKey = String.valueOf(commentId); // Sử dụng id của comment làm khóa
+        commentDatabase.child(uniqueKey).removeValue()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // Xóa thành công
                         Log.d("CommentAPI", "Comment deleted successfully.");
                     } else {
-                        // Xảy ra lỗi
                         Log.e("CommentAPI", "Failed to delete comment.", task.getException());
                     }
                 });
     }
 
-    // Lấy thông tin bình luận theo ID
+    // Lấy thông tin bình luận theo id
     public void getCommentById(int commentId, final CommentCallback callback) {
-        commentDatabase.child(String.valueOf(commentId)).addListenerForSingleValueEvent(new ValueEventListener() {
+        String uniqueKey = String.valueOf(commentId); // Sử dụng id của comment làm khóa
+        commentDatabase.child(uniqueKey).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Comment comment = snapshot.getValue(Comment.class);
@@ -98,7 +94,6 @@ public class CommentAPI {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Xử lý lỗi
                 Log.e("CommentAPI", "Failed to retrieve comment.", error.toException());
             }
         });
@@ -121,7 +116,6 @@ public class CommentAPI {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Xử lý lỗi
                 Log.e("CommentAPI", "Failed to retrieve comments.", error.toException());
             }
         });

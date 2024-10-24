@@ -81,7 +81,7 @@ public class UploadProfileActivity extends AppCompatActivity {
     private MajorAPI majorAPI = new MajorAPI();
     public static final String TAG = UploadProfileActivity.class.getName();
     private static final int MY_REQUEST_CODE = 10;
-    private static final int REQUEST_CODE_STORAGE_PERMISSION = 2;
+    private static final int REQUEST_CODE_STORAGE_PERMISSION = 2 ;
     private static final int MY_CAMERA_REQUEST_CODE = 100;
     private ImageView imgFromGallery;
     private Button btnSelectImage;
@@ -96,7 +96,27 @@ public class UploadProfileActivity extends AppCompatActivity {
     private Uri selectedImageUri; // Declare this variable to store the selected image URI
     private Student student;
 
-
+    //Kiểm tra quyền camera
+    private void onClickRequestCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            openCamera();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
+        }
+    }
+    // Hàm hiển thị hộp thoại để chọn nguồn hình ảnh
+    private void showImageSourceDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Select Image Source")
+                .setItems(new String[]{"Gallery", "Camera"}, (dialog, which) -> {
+                    if (which == 0) {
+                        onClickRequestPermission(); // Gọi hàm chọn ảnh từ thư viện
+                    } else {
+                        onClickRequestCameraPermission(); // Gọi hàm mở camera
+                    }
+                })
+                .show();
+    }
     // Hàm xử lý kết quả từ camera hoặc gallery
     private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -105,6 +125,8 @@ public class UploadProfileActivity extends AppCompatActivity {
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
+
+
                         // Nếu chọn ảnh từ Gallery
                         if (data != null && data.getData() != null) {
                             selectedImageUri = data.getData();
@@ -130,6 +152,7 @@ public class UploadProfileActivity extends AppCompatActivity {
 
                                     // Chuyển Bitmap thành Uri
                                     selectedImageUri = getImageUriFromBitmap(UploadProfileActivity.this, imageBitmap);
+
                                     // Upload ảnh lên Firebase Storage
 //                                    uploadImageToFirebaseStorage(imageUri, userId, student); // Gọi hàm upload ảnh với userId và student
                                 }
@@ -160,6 +183,8 @@ public class UploadProfileActivity extends AppCompatActivity {
         userId = intent.getIntExtra("userId", userId);
         if (userId == -1) {
             Toast.makeText(this, "User ID not found!", Toast.LENGTH_SHORT).show();
+            // Có thể thoát khỏi Activity hoặc xử lý lỗi ở đây
+            finish();
         }
         UserAPI userAPI = new UserAPI();
         userAPI.getUserById(userId, new UserAPI.UserCallback() {
@@ -252,7 +277,7 @@ public class UploadProfileActivity extends AppCompatActivity {
 
             // Tạo đối tượng Student
 
-            student = new Student(userId, email, password, fullnameStudent, avatarUrl, phoneNumberInfo, roleId, studentNumber, birthday, departmentId, majorId, classId, description);
+            student = new Student(userId, email, password, fullnameStudent, avatarUrl, phoneNumberInfo, roleId , studentNumber, birthday, departmentId, majorId, classId, description);
 
             GroupUserAPI groupUserAPI = new GroupUserAPI();
             groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
@@ -263,7 +288,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                         @Override
                         public void onDepartmentReceived(Department department) {
                             GroupAPI groupAPI = new GroupAPI();
-                            String name = "Khoa " + department.getDepartmentName();
+                            String name = "Khoa "+ department.getDepartmentName();
                             groupAPI.getGroupByName(name, new GroupAPI.GroupCallback() {
                                 @Override
                                 public void onGroupReceived(Group group) {
@@ -485,33 +510,12 @@ public class UploadProfileActivity extends AppCompatActivity {
         }
     }
 
-    //Kiểm tra quyền camera
-    private void onClickRequestCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            openCamera();
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
-        }
-    }
-
-    // Hàm hiển thị hộp thoại để chọn nguồn hình ảnh
-    private void showImageSourceDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Select Image Source")
-                .setItems(new String[]{"Gallery", "Camera"}, (dialog, which) -> {
-                    if (which == 0) {
-                        openGallery(); // Gọi hàm chọn ảnh từ thư viện
-                    } else {
-                        onClickRequestCameraPermission(); // Gọi hàm mở camera
-                    }
-                })
-                .show();
-    }
-
     // Cấp quyền mở file ảnh trong thiết bị và camera
     private void onClickRequestPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CUR_DEVELOPMENT) {
+
             showImageSourceDialog();
+
             return;
         }
 
@@ -528,6 +532,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                     MY_REQUEST_CODE);
         }
     }
+    // Lắng nghe người dùng cho phép hay từ chối
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -574,6 +579,7 @@ public class UploadProfileActivity extends AppCompatActivity {
         return Uri.parse(path);
     }
 
+
     // Hàm upload hình ảnh lên Storage Firebase ( Đưa ảnh lên Storage + cập nhật thông tin Student)
     private void uploadImageToFirebaseStorage(Uri filePath, int userId, Student student) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -591,7 +597,7 @@ public class UploadProfileActivity extends AppCompatActivity {
             String imageName = "avatar_" + System.currentTimeMillis() + ".jpg";
             StorageReference avatarRef = storageRef.child("avatar/" + imageName);
             */
-            StorageReference avatarRef = storageRef.child("avatarUser/" + userId + ".jpg");
+            StorageReference avatarRef = storageRef.child("avatarUser/" + userId + ",jpg");
 
             avatarRef.putFile(filePath)
                     .addOnSuccessListener(taskSnapshot -> {
@@ -605,6 +611,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                     .addOnFailureListener(exception -> {
                         Toast.makeText(this, "Upload Failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
                     });
+
             filePath = defaultImageUri; // Gán ảnh mặc định vào filePath
         }
 

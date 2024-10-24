@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -24,14 +26,19 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.DepartmentAPI;
+import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.NotifyAPI;
+import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
+import com.example.socialmediatdcproject.adapter.NotifyQuicklyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
 import com.example.socialmediatdcproject.dataModels.GroupUser;
+import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
 import com.example.socialmediatdcproject.fragment.BussinessFragment;
 import com.example.socialmediatdcproject.fragment.DepartmentFragment;
 import com.example.socialmediatdcproject.fragment.FriendsScreenFragment;
@@ -43,10 +50,13 @@ import com.example.socialmediatdcproject.fragment.NotifyFragment;
 import com.example.socialmediatdcproject.fragment.PersonalScreenFragment;
 import com.example.socialmediatdcproject.fragment.TrainingFragment;
 import com.example.socialmediatdcproject.fragment.YouthFragment;
+import com.example.socialmediatdcproject.model.Department;
+import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Notify;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -59,6 +69,7 @@ public class SharedActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     protected DrawerLayout drawerLayout;
     private FrameLayout firstContentFragment;
+    private int currentNotifyIndex = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -245,10 +256,98 @@ public class SharedActivity extends AppCompatActivity {
         }
     }
 
+    private void showNotifyQuicklyPopup(int id ,List<NotifyQuickly> notifications) {
+        if (notifications == null || notifications.isEmpty()) {
+            return;  // Nếu không có thông báo thì không làm gì
+        }
+
+        // Tạo View từ layout của PopupWindow
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.notify_quickly_popup, null);
+
+        // Tạo PopupWindow
+        final PopupWindow popupWindow = new PopupWindow(popupView,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                true); // Thiết lập true để cho phép tắt PopupWindow khi nhấn bên ngoài
+
+        // Thiết lập RecyclerView bên trong PopupWindow
+        RecyclerView recyclerView = popupView.findViewById(R.id.recycler_notify_quickly);
+        NotifyQuicklyAdapter notifyQuicklyAdapter = new NotifyQuicklyAdapter(new ArrayList<>());
+        recyclerView.setAdapter(notifyQuicklyAdapter);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(SharedActivity.this);
+        recyclerView.setLayoutManager(linearLayoutManager);
+
+        // Hiển thị PopupWindow ở vị trí mong muốn
+        View notifyButton = findViewById(R.id.icon_notify);
+        popupWindow.showAsDropDown(notifyButton, 0, 0);
+
+        // Handler để hiển thị từng thông báo tuần tự
+        final Handler handler = new Handler();
+        final int[] currentIndex = {0}; // Chỉ mục hiện tại của thông báo
+
+        // Hàm để cập nhật thông báo hiện tại
+        Runnable updateNotification = new Runnable() {
+            @Override
+            public void run() {
+                if (currentIndex[0] < notifications.size()) {
+                    // Cập nhật danh sách thông báo với thông báo hiện tại
+                    NotifyQuickly currentNotification = notifications.get(currentIndex[0]);
+                    notifyQuicklyAdapter.clearNotifications(); // Xóa thông báo cũ
+                    notifyQuicklyAdapter.addNotification(currentNotification); // Thêm thông báo mới
+                    notifyQuicklyAdapter.notifyDataSetChanged();
+
+                    // Gọi API để xóa thông báo khỏi Firebase
+                    NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+                    notifyQuicklyAPI.deleteNotification(id ,currentNotification.getNotifyId()); // Gọi phương thức xóa với ID của thông báo
+
+                    // Tăng chỉ mục lên cho thông báo tiếp theo
+                    currentIndex[0]++;
+
+                    // Gọi lại runnable sau 5 giây để hiển thị thông báo tiếp theo
+                    handler.postDelayed(this, 5000); // Điều chỉnh thời gian nếu cần
+                } else {
+                    // Đã hiển thị hết thông báo, đóng PopupWindow
+                    popupWindow.dismiss();
+                }
+            }
+        };
+
+        // Bắt đầu hiển thị thông báo đầu tiên sau khi popup được mở
+        handler.post(updateNotification);
+    }
+
+
     @Override
     protected void onResume() {
         super.onResume();
         NotifyAPI notifyAPI = new NotifyAPI();
+
+        StudentAPI studentAPI = new StudentAPI();
+        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+            @Override
+            public void onStudentReceived(Student student) {
+                NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+
+                // Thiết lập listener để theo dõi thông báo cho người dùng hiện tại
+                notifyQuicklyAPI.setNotificationListener(student.getUserId(), new NotifyQuicklyAPI.NotificationCallback() {
+                    @Override
+                    public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                        // Hiển thị thông báo nhanh qua PopupWindow
+                        showNotifyQuicklyPopup(student.getUserId(), notifications);
+                    }
+                });
+            }
+
+            @Override
+            public void onStudentsReceived(List<Student> students) {}
+
+            @Override
+            public void onError(String errorMessage) {}
+
+            @Override
+            public void onStudentDeleted(int studentId) {}
+        });
 
         Intent intent = getIntent();
         int key = intent.getIntExtra("keyFragment", -1);
@@ -258,7 +357,6 @@ public class SharedActivity extends AppCompatActivity {
         //Tìm kiếm hình ảnh user
         ImageView imageView = findViewById(R.id.nav_avatar_user);
 
-        StudentAPI studentAPI = new StudentAPI();
         studentAPI.getStudentByKey(mAuth.getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
@@ -340,6 +438,16 @@ public class SharedActivity extends AppCompatActivity {
                     });
                     fragmentTransaction.commit();
                     break;
+                case 9999:
+                    fragment = new GroupFragment();
+                    fragmentManager = getSupportFragmentManager();
+                    // Thay thế nội dung của FrameLayout bằng Fragment tương ứng nếu fragment không null
+                    if (fragment != null) {
+                        fragmentTransaction = fragmentManager.beginTransaction();
+                        fragmentTransaction.replace(R.id.first_content_fragment, fragment);
+                        fragmentTransaction.commit();
+                    }
+                    break;
                 default:
                     // Gán fragment home là mặc định
                     fragmentManager = getSupportFragmentManager();
@@ -366,54 +474,6 @@ public class SharedActivity extends AppCompatActivity {
                 fragmentTransaction.commit();
             }
             else {
-                if (groupId != -1) {
-                    // Thực hiện việc lấy dữ liệu và kiểm tra người dùng có tham gia group không
-                    GroupUserAPI groupUserAPI = new GroupUserAPI();
-
-                    groupUserAPI.getGroupUserByIdGroup(groupId, new GroupUserAPI.GroupUserCallback() {
-                        @Override
-                        public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                            String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-                            studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
-                                @Override
-                                public void onStudentReceived(Student student) {
-                                    boolean isJoin = intent.getBooleanExtra("isJoin", false);
-
-                                    // Kiểm tra xem user đã tham gia nhóm chưa
-                                    for (GroupUser gu : groupUsers) {
-                                        if (gu.getUserId() == student.getUserId()) {
-                                            isJoin = true;
-                                        }
-                                    }
-
-                                    FragmentManager fragmentManager = getSupportFragmentManager();
-                                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-                                    // Nếu user chưa tham gia, hiển thị GroupNotFollowFragment
-                                    if (!isJoin) {
-                                        fragmentTransaction.replace(R.id.first_content_fragment, new GroupNotFollowFragment());
-                                    } else {
-                                        // Nếu đã tham gia, hiển thị GroupFollowedFragment
-                                        fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
-                                    }
-
-                                    fragmentTransaction.commit();
-                                }
-
-                                @Override
-                                public void onStudentsReceived(List<Student> students) {}
-
-                                @Override
-                                public void onError(String errorMessage) {}
-
-                                @Override
-                                public void onStudentDeleted(int studentId) {}
-                            });
-                        }
-                    });
-                }
-                else {
                     // Gán fragment home là mặc định
                     FragmentManager fragmentManager = getSupportFragmentManager();
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -425,7 +485,7 @@ public class SharedActivity extends AppCompatActivity {
                     loadPostsFromFirebase();
 
                     fragmentTransaction.commit();
-                }
+
             }
         }
 
@@ -442,4 +502,5 @@ public class SharedActivity extends AppCompatActivity {
             }
         });
     }
+
 }

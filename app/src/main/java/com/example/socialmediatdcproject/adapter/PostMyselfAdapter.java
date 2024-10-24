@@ -3,24 +3,33 @@ package com.example.socialmediatdcproject.adapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.LikeAPI;
+import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.CommentPostActivity;
+import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
+import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
@@ -34,7 +43,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int VIEW_TYPE_TEXT = 0;  // Kiểu view cho post không có ảnh
     private static final int VIEW_TYPE_IMAGE = 1; // Kiểu view cho post có ảnh
 
@@ -42,7 +51,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context context;
 
     // Constructor
-    public PostAdapter(ArrayList<Post> postList, Context context) {
+    public PostMyselfAdapter(ArrayList<Post> postList, Context context) {
         this.postList = postList;
         this.context = context;
     }
@@ -56,15 +65,10 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == VIEW_TYPE_IMAGE) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_post_image, parent, false);
-            return new PostImageViewHolder(view);
-        } else {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_post, parent, false);
-            return new PostTextViewHolder(view);
-        }
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_post_mysefl, parent, false);
+        return new PostImageViewHolder(view);
+
     }
 
     @Override
@@ -79,7 +83,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         } else {
             PostTextViewHolder textViewHolder = (PostTextViewHolder) holder;
             setupPostView(textViewHolder, post, userAPI);
-
         }
     }
 
@@ -194,12 +197,21 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             }
         });
 
-        setupLikeButton(holder, post);
-        holder.buttonComment.setOnClickListener(v -> {
-            Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
-            intent.putExtra("postId", post.getPostId());
-            v.getContext().startActivity(intent);
-        });
+        holder.status.setTextColor(Color.parseColor("#FFFFFF"));
+        switch (post.getStatus()) {
+            case 0:
+                holder.status.setText("Đang chờ duyệt");
+                holder.status.setBackgroundColor(context.getResources().getColor(R.color.warning));
+                break;
+            case 1:
+                holder.status.setText("Được duyệt");
+                holder.status.setBackgroundColor(context.getResources().getColor(R.color.success));
+                break;
+            default:
+                holder.status.setText("Từ chối");
+                holder.status.setBackgroundColor(context.getResources().getColor(R.color.danger));
+                break;
+        }
     }
 
     private void setupLikeButton(PostTextViewHolder holder, Post post) {
@@ -264,7 +276,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             public void onStudentDeleted(int studentId) {}
         });
     }
-
 
     private void setupLikeButton(PostImageViewHolder holder, Post post) {
         String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -377,6 +388,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ImageView postAvatar;
         LinearLayout buttonLike;
         ImageButton imageButtonLike;
+        TextView status;
 
         public PostImageViewHolder(View itemView) {
             super(itemView);
@@ -387,6 +399,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             postLike = itemView.findViewById(R.id.post_like);
             postAvatar = itemView.findViewById(R.id.post_avatar);
             imageButtonLike = itemView.findViewById(R.id.like_button_image);
+            status = itemView.findViewById(R.id.status_post);
         }
     }
 }

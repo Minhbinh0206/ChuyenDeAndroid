@@ -5,25 +5,38 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <LinearLayout
+    <androidx.cardview.widget.CardView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:background="@drawable/button_first_style"
-        android:paddingHorizontal="20dp"
-        android:layout_marginVertical="10dp"
+        android:elevation="15dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardCornerRadius="20dp"
+        app:cardUseCompatPadding="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <Button
-            android:id="@+id/button_group_create_new"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:backgroundTint="@color/white"
-            android:text="Tạo group mới"
-            android:textColor="@color/defaultBlue"
-            android:textSize="15dp" />
-    </LinearLayout>
+            android:layout_weight="1">
+
+            <Button
+                android:id="@+id/button_group_user_create_new"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="0dp"
+                android:background="@drawable/button_19_background"
+                android:gravity="center"
+                android:letterSpacing="0.08"
+                android:padding="13dp"
+                android:text="  Tạo group mới  "
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -118,14 +118,18 @@
             android:id="@+id/titlte_avatar_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Ảnh đại diện"
-            android:textSize="20dp" />
+            android:text="Ảnh đại diện ( nhấn vào bàn tay )"
+            android:textSize="20dp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginVertical="10dp"/>
 
         <ImageView
             android:id="@+id/content_avatar_group"
             android:layout_width="match_parent"
-            android:background="@drawable/comment_custom"
-            android:layout_height="300dp" />
+            android:background="@drawable/click"
+            android:layout_height="300dp"
+
+            />
 
     </LinearLayout>
 
