@@ -202,7 +202,7 @@ public class PersonalScreenFragment extends Fragment {
                                 requireActivity().runOnUiThread(() -> {
                                     groupAdapter = new GroupAdapter(groupList, requireContext());
                                     recyclerView.setAdapter(groupAdapter);
-                                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false);
+                                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
                                     recyclerView.setLayoutManager(linearLayoutManager);
                                     groupAdapter.notifyDataSetChanged();
                                 });
