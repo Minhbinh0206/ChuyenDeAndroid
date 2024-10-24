@@ -212,6 +212,8 @@ public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 holder.status.setBackgroundColor(context.getResources().getColor(R.color.danger));
                 break;
         }
+
+        holder.imageButtonLike.setBackground(ContextCompat.getDrawable(context, R.drawable.icon_tym));
     }
 
     private void setupLikeButton(PostTextViewHolder holder, Post post) {
