@@ -1,6 +1,7 @@
 package com.example.socialmediatdcproject.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.ChangePasswordActivity;
+import com.example.socialmediatdcproject.activity.SharedActivity;
+import com.example.socialmediatdcproject.fragment.PersonalScreenFragment;
 import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
@@ -22,11 +26,19 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
 
     private List<Student> memberList;
     private Context context;
+    private OnMemberClickListener onMemberClickListener;
 
     // Constructor
     public MemberAdapter(List<Student> memberList, Context context) {
         this.memberList = memberList;
         this.context = context;
+    }
+
+    public interface OnMemberClickListener {
+        void onMemberClick(Student student);
+    }
+    public void setOnMemberClickListener(OnMemberClickListener listener) {
+        this.onMemberClickListener = listener;
     }
 
     // Tạo ViewHolder
@@ -51,6 +63,11 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
                     .load(student.getAvatar())
                     .circleCrop()
                     .into(holder.memberAvatar);
+
+            // Chuyen sang Trang ca nhan khi click vao student
+            // Chuyển đến trang cá nhân khi click vào avatar hoặc tên thành viên
+            holder.memberAvatar.setOnClickListener(v -> openPersonalPage(student.getUserId()));
+            holder.memberName.setOnClickListener(v -> openPersonalPage(student.getUserId()));
         } else {
             Log.e("MemberAdapter", "User at position " + position + " is null");
         }
@@ -88,5 +105,11 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             memberPositionJob = itemView.findViewById(R.id.member_position_job);
             memberEmail = itemView.findViewById(R.id.member_email);
         }
+    }
+
+    private void openPersonalPage(int userId) {
+        Intent intent = new Intent(context, SharedActivity.class);
+        intent.putExtra("studentId", userId); // Chuyển userId qua trang cá nhân
+        context.startActivity(intent);
     }
 }
