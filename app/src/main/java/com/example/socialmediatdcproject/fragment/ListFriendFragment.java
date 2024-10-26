@@ -48,14 +48,14 @@ public class ListFriendFragment extends Fragment {
         Button listInvitation = view.findViewById(R.id.button_personal_list_invitation);
         Button listFollowed = view.findViewById(R.id.button_personal_list_follow);
 
-        displayFriends(3);
+        displayFriends();
 
         updateButtonColorsActive(listFriend);
         updateButtonColorsNormal(listInvitation);
         updateButtonColorsNormal(listFollowed);
 
         listFriend.setOnClickListener(v -> {
-            displayFriends(3);
+            displayFriends();
 
             updateButtonColorsActive(listFriend);
             updateButtonColorsNormal(listInvitation);
@@ -93,7 +93,7 @@ public class ListFriendFragment extends Fragment {
         button.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 
-    private void displayFriends(int status){
+    private void displayFriends(){
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
         ArrayList<Student> listFriends = new ArrayList<>();
         ArrayList<Student> tempListFriends = new ArrayList<>();
@@ -109,7 +109,7 @@ public class ListFriendFragment extends Fragment {
                     @Override
                     public void onFriendsReceived(List<Friends> friendsList) {
                         for (Friends f : friendsList) {
-                            if (f.getStatus() == status) {
+                            if (f.getStatus() == 3) {
                                 if (f.getMyUserId() == myId) {
                                     studentAPI.getStudentById(f.getYourUserId(), new StudentAPI.StudentCallback() {
                                         @Override

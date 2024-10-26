@@ -73,6 +73,12 @@
         <activity android:name=".activity.GroupDetaiActivity"
             android:exported="false">
         </activity>
+        <activity android:name=".activity.MessengerActivity"
+            android:exported="false">
+        </activity>
+        <activity android:name=".activity.MessengerDetailActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>
