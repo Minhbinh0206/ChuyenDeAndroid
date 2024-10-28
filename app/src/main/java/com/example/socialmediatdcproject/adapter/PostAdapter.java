@@ -111,6 +111,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             textViewHolder.postCreateAt.setText(getTimeAgo(post.getCreatedAt())); // Hiển thị thời gian đăng bài
         }
     }
+
     // Hàm tính thời gian "trước" để hiển thị như Facebook
     private String getTimeAgo(String createdAt) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // Điều chỉnh định dạng cho đúng với chuỗi thời gian của bạn
@@ -122,8 +123,10 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             long minutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis);
             long hours = TimeUnit.MILLISECONDS.toHours(diffInMillis);
             long days = TimeUnit.MILLISECONDS.toDays(diffInMillis);
-
-            if (minutes < 60) {
+            if(minutes == 0) {
+               return "vừa xong";
+            }
+            else if (minutes < 60) {
                 return minutes + " phút trước";
             } else if (hours < 24) {
                 return hours + " giờ trước";
