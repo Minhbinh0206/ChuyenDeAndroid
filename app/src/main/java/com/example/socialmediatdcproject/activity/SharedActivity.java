@@ -183,12 +183,11 @@ public class SharedActivity extends AppCompatActivity {
         LinearLayout navLayout = (LinearLayout) navigationView.getHeaderView(0).findViewById(R.id.nav_container);
 
         // Danh sách item để thêm vào Navigation Drawer
-        int[] icons = {R.drawable.icon_home, R.drawable.icon_flag, R.drawable.icon_department, R.drawable.icon_department, R.drawable.icon_department, R.drawable.icon_group, R.drawable.icon_profile, R.drawable.icon_logout};
-        String[] titles = {"Trang chủ", "Phòng đào tạo", "Khoa", "Doanh nghiệp", "Đoàn thanh niên", "Câu lạc bộ - Nhóm", "Trang cá nhân", "Đăng xuất"};
+        int[] icons = {R.drawable.icon_home, R.drawable.icon_flag, R.drawable.icon_department, R.drawable.icon_department, R.drawable.icon_department, R.drawable.icon_group, R.drawable.icon_profile,R.drawable.baseline_settings_24 ,R.drawable.icon_logout};
+        String[] titles = {"Trang chủ", "Phòng đào tạo", "Khoa", "Doanh nghiệp", "Đoàn thanh niên", "Câu lạc bộ - Nhóm", "Trang cá nhân","Cài đặt",  "Đăng xuất"};
 
         // Khởi tạo FragmentManager
         FragmentManager fragmentManager = getSupportFragmentManager();
-
         // Duyệt qua danh sách và thêm từng item
         for (int i = 0; i < icons.length; i++) {
             View itemView = LayoutInflater.from(this).inflate(R.layout.nav_item_layout, navLayout, false);
@@ -232,6 +231,11 @@ public class SharedActivity extends AppCompatActivity {
                         fragment = new PersonalScreenFragment();
                         break;
                     case 7:
+                        // Mở SettingActivity
+                        Intent settingIntent = new Intent(SharedActivity.this, SettingActivity.class);
+                        startActivity(settingIntent);
+                        break;
+                    case 8:
                         // Đăng xuất người dùng và chuyển đến LoginActivity
                         FirebaseAuth auth = FirebaseAuth.getInstance();
                         auth.signOut();
