@@ -27,6 +27,7 @@ public class SearchGroupFragment extends Fragment {
 
     private GroupAdapter adapter;
     private List<Group> groupList;
+    private List<Group> filteredGroupList;
     private EditText editTextSearch;
     private ImageButton iconSearchGroup;
 
@@ -38,16 +39,33 @@ public class SearchGroupFragment extends Fragment {
         // Ánh xạ các view từ layout
         editTextSearch = view.findViewById(R.id.edit_text_search);
         iconSearchGroup = view.findViewById(R.id.icon_search_group);
-        RecyclerView recyclerView = view.findViewById(R.id.recyclerView_find_group);
+        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment); // Chỉnh sửa từ requireActivity() thành view
 
         // Khởi tạo danh sách nhóm và adapter
         groupList = new ArrayList<>();
-        adapter = new GroupAdapter(groupList, requireContext());
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        recyclerView.setAdapter(adapter);
+        filteredGroupList = new ArrayList<>(); // Khởi tạo filteredGroupList
 
-        // Sự kiện khi nhấn vào nút tìm kiếm
-        iconSearchGroup.setOnClickListener(v -> searchGroupByName(editTextSearch.getText().toString()));
+        // Gọi API để lấy dữ liệu nhóm
+        GroupAPI groupAPI = new GroupAPI();
+        groupAPI.getAllGroups(new GroupAPI.GroupCallback() {
+            @Override
+            public void onGroupReceived(Group group) {
+
+            }
+
+            @Override
+            public void onGroupsReceived(List<Group> groups) {
+                groupList.addAll(groups);
+
+                filteredGroupList = new ArrayList<>(groupList);
+
+                adapter = new GroupAdapter(filteredGroupList, requireContext());
+                adapter.notifyDataSetChanged();
+                LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
+                recyclerView.setLayoutManager(linearLayoutManager);
+                recyclerView.setAdapter(adapter);
+            }
+        });
 
         // TextWatcher để theo dõi và lọc danh sách nhóm khi thay đổi text trong EditText
         editTextSearch.addTextChangedListener(new TextWatcher() {
@@ -57,7 +75,7 @@ public class SearchGroupFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // Tìm kiếm khi người dùng nhập text
-                searchGroupByName(s.toString());
+                filterGroups(s.toString());
             }
 
             @Override
@@ -67,27 +85,18 @@ public class SearchGroupFragment extends Fragment {
         return view;
     }
 
-    // Hàm để tìm kiếm nhóm dựa trên văn bản nhập
-    private void searchGroupByName(String query) {
+    // Hàm để lọc danh sách nhóm dựa trên văn bản nhập
+    private void filterGroups(String query) {
+        filteredGroupList.clear(); // Xóa nội dung hiện tại của filteredGroupList
         if (query.isEmpty()) {
-            groupList.clear();
-            adapter.notifyDataSetChanged();
-            return;
+            filteredGroupList.addAll(groupList); // Nếu chuỗi tìm kiếm rỗng, hiển thị toàn bộ danh sách
+        } else {
+            for (Group group : groupList) {
+                if (group.getGroupName().toLowerCase().contains(query.toLowerCase())) { // Tìm kiếm không phân biệt hoa thường
+                    filteredGroupList.add(group);
+                }
+            }
         }
-
-        GroupAPI groupAPI = new GroupAPI();
-        groupAPI.getGroupByName(query, new GroupAPI.GroupCallback() {
-            @Override
-            public void onGroupsReceived(List<Group> groups) {
-                groupList.clear();
-                groupList.addAll(groups);
-                adapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onGroupReceived(Group group) {
-                // Không sử dụng trong tìm kiếm
-            }
-        });
+        adapter.notifyDataSetChanged(); // Cập nhật adapter
     }
 }
