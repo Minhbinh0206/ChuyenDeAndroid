@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -176,8 +177,6 @@ public class EditScreenActivity extends AppCompatActivity {
                       //  uploadImageFromCamera( bitmap, student);
                     });
                 }
-
-
             }
 
             @Override
@@ -248,7 +247,7 @@ public class EditScreenActivity extends AppCompatActivity {
         }
     }
 
-    //Xử lí ảnh từu cam
+    //Xử lí ảnh từ cam
     private void uploadImageFromCamera(Bitmap bitmap, Student student) {
         // Lưu tạm ảnh vào bộ nhớ và chuyển thành Uri
         Uri tempUri = getImageUriFromBitmap(this, bitmap);
@@ -282,7 +281,13 @@ public class EditScreenActivity extends AppCompatActivity {
     }
 
     private void onClickRequestPermission() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CUR_DEVELOPMENT) {
+
+        SharedPreferences preferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
+        boolean isPermissionGranted = preferences.getBoolean("GalleryPermissionGranted", false);
+        if (isPermissionGranted == true) {
+            openGallery();
+        }
+        else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CUR_DEVELOPMENT) {
             showPermissionDialog();
             return;
         }
@@ -317,7 +322,6 @@ public class EditScreenActivity extends AppCompatActivity {
         }
     }
 
-    //hiển thị thông báo cấp quyền
     // Hàm hiển thị bảng thông báo
     private void showPermissionDialog() {
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -327,10 +331,28 @@ public class EditScreenActivity extends AppCompatActivity {
 
         dialog.show();
 
-        Button btnAllow = dialog.findViewById(R.id.btn_allow);
+        //
+        Button btnOneOfTime = dialog.findViewById(R.id.btn_one_of_time);
         Button btnDeny = dialog.findViewById(R.id.btn_deny);
+        Button btnAllow = dialog.findViewById(R.id.btn_allow);
+
+        changeColorButtonNormal(btnAllow);
+        changeColorButtonNormal(btnDeny);
+        changeColorButtonNormal(btnOneOfTime);
+        //
+        SharedPreferences preferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
 
         btnAllow.setOnClickListener(v -> {
+            //Nếu người dùng nhấn nó thì thiết bị sẽ mở quyền gallery và không hỏi lại nữa
+            editor.putBoolean("GalleryPermissionGranted", true);
+            editor.apply();
+            openGallery();
+            dialog.dismiss();
+
+        });
+
+        btnOneOfTime.setOnClickListener(v -> {
             // Nếu người dùng chọn cho phép, mở thư viện ảnh
             openGallery();
             dialog.dismiss();
@@ -391,6 +413,7 @@ public class EditScreenActivity extends AppCompatActivity {
 
             }
     );
+
     private void showNotifyQuicklyPopup(int id ,List<NotifyQuickly> notifications) {
         if (notifications == null || notifications.isEmpty()) {
             return;  // Nếu không có thông báo thì không làm gì
@@ -450,6 +473,11 @@ public class EditScreenActivity extends AppCompatActivity {
 
         // Bắt đầu hiển thị thông báo đầu tiên sau khi popup được mở
         handler.post(updateNotification);
+    }
+
+    public void changeColorButtonNormal(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(EditScreenActivity.this, R.color.white));
+        btn.setTextColor(ContextCompat.getColorStateList(EditScreenActivity.this, R.color.defaultBlue));
     }
     @Override
     protected void onResume() {

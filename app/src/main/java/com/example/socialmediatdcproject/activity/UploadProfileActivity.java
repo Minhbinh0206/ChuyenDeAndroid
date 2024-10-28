@@ -100,10 +100,13 @@ public class UploadProfileActivity extends AppCompatActivity {
     private void onClickRequestCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             openCamera();
+            showImageSourceDialog();
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
         }
     }
+
+    //Chỉ hiện lần đầu tiên
     // Hàm hiển thị hộp thoại để chọn nguồn hình ảnh
     private void showImageSourceDialog() {
         new AlertDialog.Builder(this)
@@ -513,15 +516,11 @@ public class UploadProfileActivity extends AppCompatActivity {
     // Cấp quyền mở file ảnh trong thiết bị và camera
     private void onClickRequestPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CUR_DEVELOPMENT) {
-
             showImageSourceDialog();
-
             return;
         }
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            showImageSourceDialog();
         } else {
             // Cấp quyền yêu cầu
             ActivityCompat.requestPermissions(this,
@@ -532,8 +531,8 @@ public class UploadProfileActivity extends AppCompatActivity {
                     MY_REQUEST_CODE);
         }
     }
-    // Lắng nghe người dùng cho phép hay từ chối
 
+    // Lắng nghe người dùng cho phép hay từ chối
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
