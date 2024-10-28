@@ -56,6 +56,16 @@ import java.util.concurrent.CountDownLatch;
 
 public class PersonalScreenFragment extends Fragment {
 
+    private static final String ARG_USER_ID = "userId";
+
+    public static PersonalScreenFragment newInstance(int userId) {
+        PersonalScreenFragment fragment = new PersonalScreenFragment();
+        Bundle args = new Bundle();
+        args.putInt(ARG_USER_ID, userId);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     private FirebaseAuth mAuth;
 
     private RecyclerView recyclerView; // RecyclerView để hiển thị bài viết và doanh nghiệp

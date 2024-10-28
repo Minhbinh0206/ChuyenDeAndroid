@@ -100,6 +100,33 @@ public class GroupAPI {
         });
     }
 
+    // Tìm kiếm nhóm theo keyword
+    public void getGroupByKeyword(String keyword, final GroupCallback callback) {
+        groupRef.orderByChild("groupName").startAt(keyword).endAt(keyword + "\uf8ff").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.d("GroupAPI", "DataSnapshot: " + dataSnapshot.toString()); // In ra kết quả để kiểm tra
+                List<Group> groups = new ArrayList<>();
+                for (DataSnapshot groupSnapshot : dataSnapshot.getChildren()) {
+                    Group group = groupSnapshot.getValue(Group.class);
+                    if (group != null) {
+                        groups.add(group);
+                    }
+                }
+                if (!groups.isEmpty()) {
+                    callback.onGroupsReceived(groups); // Gọi callback với danh sách nhóm tìm thấy
+                } else {
+                    callback.onGroupReceived(null); // Không tìm thấy nhóm
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                callback.onGroupReceived(null);
+            }
+        });
+    }
+
     // Cập nhật thông tin một nhóm
     public void updateGroup(int groupId, Group updatedGroup) {
         groupRef.child(String.valueOf(groupId)).setValue(updatedGroup)

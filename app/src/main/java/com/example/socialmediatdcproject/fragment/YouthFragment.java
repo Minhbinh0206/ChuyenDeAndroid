@@ -14,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,6 +26,7 @@ import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.adapter.GroupAdapter;
 import com.example.socialmediatdcproject.adapter.MemberAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
 import com.example.socialmediatdcproject.dataModels.GroupUser;
@@ -79,7 +82,7 @@ public class YouthFragment extends Fragment {
             }
         });
 
-                loadPostFromFirebase(User.ID_ADMIN_DOANTHANHNIEN);
+        loadPostFromFirebase(User.ID_ADMIN_DOANTHANHNIEN);
 
         // Tìm các nút
         Button postButton = view.findViewById(R.id.button_youth_post);
@@ -109,6 +112,16 @@ public class YouthFragment extends Fragment {
             changeColorButtonActive(postButton);
             changeColorButtonNormal(memberButton);
             changeColorButtonNormal(groupButton);
+        });
+
+        groupButton.setOnClickListener(v -> {
+            loadGroupsInYouth(User.ID_ADMIN_DOANTHANHNIEN);
+
+            // Cập nhật màu cho các nút
+
+            changeColorButtonActive(groupButton);
+            changeColorButtonNormal(memberButton);
+            changeColorButtonNormal(postButton);
         });
     }
 
@@ -181,6 +194,11 @@ public class YouthFragment extends Fragment {
 
                                     // Cập nhật RecyclerView sau khi thêm tất cả member
                                     MemberAdapter memberAdapter = new MemberAdapter(memberGroup, requireContext());
+                                    memberAdapter.setOnMemberClickListener(student -> {
+                                        // Khi một thành viên được click, mở Trang cá nhân
+                                        openPersonalPageFragment(student.getUserId()); // Gọi hàm mở trang cá nhân
+                                        Log.d("Mở Trang cá nhân" , "Student ID: " + student.getUserId());
+                                    });
                                     recyclerView.removeAllViews();
                                     recyclerView.setAdapter(memberAdapter);
                                     recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -202,6 +220,47 @@ public class YouthFragment extends Fragment {
             }
         });
     }
+    public void loadGroupsInYouth(int userId) {
+        ArrayList<Group> groupsList = new ArrayList<>();
+        GroupAPI groupAPI = new GroupAPI();
+        GroupUserAPI groupUserAPI = new GroupUserAPI();
+
+        groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
+            @Override
+            public void onGroupUsersReceived(List<GroupUser> groupUsers) {
+                List<Integer> userGroupIds = new ArrayList<>();
+
+                // Lọc danh sách các GroupUser có userId phù hợp
+                for (GroupUser gu : groupUsers) {
+                    if (gu.getUserId() == userId) {
+                        userGroupIds.add(gu.getGroupId());
+                    }
+                }
+
+                // Lấy thông tin nhóm từ các groupId
+                for (int groupId : userGroupIds) {
+                    groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                        @Override
+                        public void onGroupReceived(Group group) {
+                            if (group != null) {
+                                groupsList.add(group);
+
+                                // Cập nhật RecyclerView với dữ liệu nhóm
+                                GroupAdapter groupAdapter = new GroupAdapter(groupsList, requireContext());
+                                recyclerView.setAdapter(groupAdapter);
+                                recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                            }
+                        }
+
+                        @Override
+                        public void onGroupsReceived(List<Group> groups) {
+                            // Không cần sử dụng phương thức này trong trường hợp này
+                        }
+                    });
+                }
+            }
+        });
+    }
 
     public void changeColorButtonActive(Button btn){
         btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
@@ -211,5 +270,15 @@ public class YouthFragment extends Fragment {
     public void changeColorButtonNormal(Button btn){
         btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+    }
+    public void openPersonalPageFragment(int userId) {
+        // Chuyển sang màn hình PersonalScreenFragment với userId được truyền vào
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        PersonalScreenFragment personalScreenFragment = PersonalScreenFragment.newInstance(userId);
+        fragmentTransaction.replace(R.id.first_content_fragment, personalScreenFragment);
+        fragmentTransaction.addToBackStack(null); // Thêm vào back stack để có thể quay lại
+        fragmentTransaction.commit();
     }
 }
