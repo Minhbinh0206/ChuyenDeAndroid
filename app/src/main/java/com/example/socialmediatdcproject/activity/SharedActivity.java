@@ -510,6 +510,12 @@ public class SharedActivity extends AppCompatActivity {
             public void onNotificationsReceived(List<Notify> notifications) {
                 TextView countNotify = findViewById(R.id.count_notify);
                 countNotify.setText(notifications.size() + "");
+
+                if (notifications.size() == 0) {
+                    countNotify.setVisibility(View.GONE);
+                }else {
+                    countNotify.setVisibility(View.VISIBLE);
+                }
             }
 
             @Override
