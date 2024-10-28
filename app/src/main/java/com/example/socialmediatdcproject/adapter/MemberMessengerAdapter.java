@@ -13,11 +13,15 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.MessageAPI;
+import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.MessengerDetailActivity;
+import com.example.socialmediatdcproject.dataModels.Message;
 import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
@@ -53,7 +57,58 @@ public class MemberMessengerAdapter extends RecyclerView.Adapter<MemberMessenger
                     .circleCrop()
                     .into(holder.memberAvatar);
 
-            holder.memberRecent.setText("Chưa cập nhật");
+            StudentAPI studentAPI = new StudentAPI();
+            studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                @Override
+                public void onStudentReceived(Student myStudent) {
+                    MessageAPI messageAPI = new MessageAPI();
+                    messageAPI.getMessagesByType(myStudent.getUserId(), new MessageAPI.MessageListCallback() {
+                        @Override
+                        public void onMessageListReceived(List<Message> messageList) {
+                            messageAPI.listenForMessages(myStudent.getUserId(), new MessageAPI.MessageCallback() {
+                                @Override
+                                public void onMessagesReceived(List<Message> messages) {
+                                    Message m = messages.get(messages.size() - 1);
+                                    if (m.getYourUserId() == student.getUserId()) {
+                                        if (m.getMessageType().equals("Send")) {
+                                            holder.memberRecent.setText("Bạn: " + m.getContent());
+                                        }
+                                        else {
+                                            holder.memberRecent.setText(m.getContent());
+                                        }z
+                                    }
+                                }
+
+                                @Override
+                                public void onMessageAdded(Message message) {
+
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onStudentsReceived(List<Student> students) {
+
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+
+                }
+
+                @Override
+                public void onStudentDeleted(int studentId) {
+
+                }
+            });
+
         } else {
             Log.e("MemberAdapter", "User at position " + position + " is null");
         }

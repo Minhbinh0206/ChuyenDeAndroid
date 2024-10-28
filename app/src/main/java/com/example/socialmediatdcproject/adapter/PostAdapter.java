@@ -191,12 +191,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         holder.buttonComment.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
             intent.putExtra("postId", post.getPostId());
-            if (v.getContext() instanceof CommentPostActivity) {
-                // Không làm gì
-            }
-            else {
-                v.getContext().startActivity(intent);
-            }
+            v.getContext().startActivity(intent);
         });
     }
 
