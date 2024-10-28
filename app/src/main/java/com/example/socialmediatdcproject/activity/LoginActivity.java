@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
-import com.example.socialmediatdcproject.admin.AdminActivity;
+
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -118,10 +118,33 @@ public class LoginActivity extends AppCompatActivity {
                                                                 Set<Integer> adminRoleIds = new HashSet<>(Arrays.asList(2, 3, 4, 5));
                                                                 boolean isAdmin = adminRoleIds.contains(roleId);
 
+                                                                // Xu ly dang nhap Admin
                                                                 if (isAdmin) {
-                                                                    Intent intent = new Intent(LoginActivity.this, AdminActivity.class);
-                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                                                                    startActivity(intent);
+                                                                    if(roleId == 2) {
+                                                                        Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
+                                                                        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                                                        startActivity(intent);
+                                                                        finish();
+                                                                    }
+                                                                    else if(roleId == 3) {
+                                                                        Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
+                                                                        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                                                        startActivity(intent);
+                                                                        finish();
+                                                                    }
+                                                                    else if(roleId == 4) {
+                                                                        Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
+                                                                        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                                                        startActivity(intent);
+                                                                        finish();
+                                                                    }
+                                                                    else {
+                                                                        Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
+                                                                        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                                                        startActivity(intent);
+                                                                        finish();
+                                                                    }
+
                                                                 } else {
                                                                     Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
 //                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
