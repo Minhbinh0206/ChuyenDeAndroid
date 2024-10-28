@@ -29,10 +29,18 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int VIEW_TYPE_TEXT = 0;  // Kiểu view cho post không có ảnh
@@ -45,7 +53,27 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public PostAdapter(ArrayList<Post> postList, Context context) {
         this.postList = postList;
         this.context = context;
+        sortPostsByDate();
     }
+
+    // Hàm sắp xếp danh sách bài viết mới nhất lên đầu
+    private void sortPostsByDate() {
+        Collections.sort(postList, new Comparator<Post>() {
+            @Override
+            public int compare(Post post1, Post post2) {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                try {
+                    Date date1 = format.parse(post1.getCreatedAt());
+                    Date date2 = format.parse(post2.getCreatedAt());
+                    return date2.compareTo(date1); // Sắp xếp giảm dần
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    return 0;
+                }
+            }
+        });
+    }
+
 
     @Override
     public int getItemViewType(int position) {
@@ -75,18 +103,43 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (holder.getItemViewType() == VIEW_TYPE_IMAGE) {
             PostImageViewHolder imageViewHolder = (PostImageViewHolder) holder;
             setupPostView(imageViewHolder, post, userAPI);
+            imageViewHolder.postCreateAt.setText(getTimeAgo(post.getCreatedAt())); // Hiển thị thời gian đăng bài
 
         } else {
             PostTextViewHolder textViewHolder = (PostTextViewHolder) holder;
             setupPostView(textViewHolder, post, userAPI);
+            textViewHolder.postCreateAt.setText(getTimeAgo(post.getCreatedAt())); // Hiển thị thời gian đăng bài
+        }
+    }
+    // Hàm tính thời gian "trước" để hiển thị như Facebook
+    private String getTimeAgo(String createdAt) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // Điều chỉnh định dạng cho đúng với chuỗi thời gian của bạn
+        try {
+            Date createdDate = format.parse(createdAt);
+            Date currentDate = new Date();
 
+            long diffInMillis = currentDate.getTime() - createdDate.getTime();
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis);
+            long hours = TimeUnit.MILLISECONDS.toHours(diffInMillis);
+            long days = TimeUnit.MILLISECONDS.toDays(diffInMillis);
+
+            if (minutes < 60) {
+                return minutes + " phút trước";
+            } else if (hours < 24) {
+                return hours + " giờ trước";
+            } else {
+                return days + " ngày trước";
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return "";
         }
     }
 
     private void setupPostView(PostTextViewHolder holder, Post post, UserAPI userAPI) {
         holder.postcontent.setText(post.getContent());
         holder.postLike.setText(String.valueOf(post.getPostLike()));
-        holder.postComment.setText(String.valueOf(post.getPostComment()));
+//        holder.postComment.setText(String.valueOf(post.getPostComment()));
 
         userAPI.getAllUsers(new UserAPI.UserCallback() {
             @Override
@@ -122,7 +175,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private void setupPostView(PostImageViewHolder holder, Post post, UserAPI userAPI) {
         holder.postcontent.setText(post.getContent());
         holder.postLike.setText(String.valueOf(post.getPostLike()));
-        holder.postComment.setText(String.valueOf(post.getPostComment()));
+//        holder.postComment.setText(String.valueOf(post.getPostComment()));
 
         userAPI.getAllUsers(new UserAPI.UserCallback() {
             @Override
@@ -146,7 +199,28 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         holder.buttonComment.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
             intent.putExtra("postId", post.getPostId());
-            v.getContext().startActivity(intent);
+
+            if (v.getContext() instanceof CommentPostActivity) {
+                //
+            }
+            else {
+                v.getContext().startActivity(intent);
+            }
+        });
+        // Cài đặt hiển thị cho số lượng bình luận realtime
+        DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
+        commentsRef.orderByChild("postId").equalTo(post.getPostId()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                // Cập nhật số lượng bình luận theo postId
+                long commentCount = snapshot.getChildrenCount();
+                holder.textViewComent.setText(String.valueOf(commentCount));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("CommentListener", "Failed to read comments count.", error.toException());
+            }
         });
     }
 
@@ -292,10 +366,10 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         TextView postAdminUserId;
         LinearLayout buttonComment;
         TextView postLike;
-        TextView postComment;
         ImageView postAvatar;
         LinearLayout buttonLike;
         ImageButton imageButtonLike;
+        TextView postCreateAt; // Thêm TextView cho thời gian đăng
 
         public PostTextViewHolder(View itemView) {
             super(itemView);
@@ -304,9 +378,9 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             buttonComment = itemView.findViewById(R.id.button_comment);
             buttonLike = itemView.findViewById(R.id.button_like);
             postLike = itemView.findViewById(R.id.post_like);
-            postComment = itemView.findViewById(R.id.post_comment);
             postAvatar = itemView.findViewById(R.id.post_avatar);
             imageButtonLike = itemView.findViewById(R.id.like_button_image);
+            postCreateAt = itemView.findViewById(R.id.post_create_at); // Ánh xạ ID cho thời gian đăng
         }
     }
 
@@ -315,10 +389,11 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         TextView postAdminUserId;
         LinearLayout buttonComment;
         TextView postLike;
-        TextView postComment;
         ImageView postAvatar;
         LinearLayout buttonLike;
+        TextView textViewComent;
         ImageButton imageButtonLike;
+        TextView postCreateAt; // Thêm TextView cho thời gian đăng
 
         public PostImageViewHolder(View itemView) {
             super(itemView);
@@ -327,9 +402,10 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             buttonComment = itemView.findViewById(R.id.button_comment);
             buttonLike = itemView.findViewById(R.id.button_like);
             postLike = itemView.findViewById(R.id.post_like);
-            postComment = itemView.findViewById(R.id.post_comment);
             postAvatar = itemView.findViewById(R.id.post_avatar);
+            textViewComent = itemView.findViewById(R.id.post_comment);
             imageButtonLike = itemView.findViewById(R.id.like_button_image);
+            postCreateAt = itemView.findViewById(R.id.post_create_at); // Ánh xạ ID cho thời gian đăng
         }
     }
 }
