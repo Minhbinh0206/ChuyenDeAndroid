@@ -149,7 +149,7 @@ public class CreateNewPostFragment extends Fragment {
 
                         @Override
                         public void onPostsReceived(List<Post> posts) {
-                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
                             NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
                             NotifyQuickly notifyQuickly = new NotifyQuickly();

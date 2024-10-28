@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -64,10 +65,9 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
                     .circleCrop()
                     .into(holder.memberAvatar);
 
-            // Chuyen sang Trang ca nhan khi click vao student
-            // Chuyển đến trang cá nhân khi click vào avatar hoặc tên thành viên
-            holder.memberAvatar.setOnClickListener(v -> openPersonalPage(student.getUserId()));
-            holder.memberName.setOnClickListener(v -> openPersonalPage(student.getUserId()));
+            holder.cardView.setOnClickListener(v -> {
+                openPersonalPage(student.getUserId());
+            });
         } else {
             Log.e("MemberAdapter", "User at position " + position + " is null");
         }
@@ -97,6 +97,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
         TextView memberName;
         TextView memberPositionJob;
         TextView memberEmail;
+        CardView cardView;
 
         public MemberViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -104,6 +105,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             memberName = itemView.findViewById(R.id.member_name);
             memberPositionJob = itemView.findViewById(R.id.member_position_job);
             memberEmail = itemView.findViewById(R.id.member_email);
+            cardView = itemView.findViewById(R.id.item_member);
         }
     }
 
