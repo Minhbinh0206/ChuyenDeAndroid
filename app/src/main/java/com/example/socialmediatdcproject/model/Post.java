@@ -9,14 +9,15 @@ public class Post implements Serializable {
     private int postId;
     private int userId;
     private int postLike;
-    private int postComment;
-    private String title;
     private String postImage;
     private String content;
     private int status;
-    private int isPublic;
     private int groupId;
     private String createdAt;
+
+    public static final int WAITING = 0;
+    public static final int APPROVED = 1;
+    public static final int DENIED = 2;
 
     public int getPostId() {
         return postId;
@@ -40,22 +41,6 @@ public class Post implements Serializable {
 
     public void setPostLike(int postLike) {
         this.postLike = postLike;
-    }
-
-    public int getPostComment() {
-        return postComment;
-    }
-
-    public void setPostComment(int postComment) {
-        this.postComment = postComment;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getPostImage() {
@@ -82,13 +67,6 @@ public class Post implements Serializable {
         this.status = status;
     }
 
-    public int getIsPublic() {
-        return isPublic;
-    }
-
-    public void setIsPublic(int isPublic) {
-        this.isPublic = isPublic;
-    }
 
     public String getCreatedAt() {
         return createdAt;
@@ -106,16 +84,13 @@ public class Post implements Serializable {
         this.groupId = groupId;
     }
 
-    public Post(int postId, int userId, int postLike, int postComment, String title, String postImage, String content, int status, int isPublic, int groupId, String createdAt) {
+    public Post(int postId, int userId, int postLike, String postImage, String content, int status, int groupId, String createdAt) {
         this.postId = postId;
         this.userId = userId; //
         this.postLike = postLike; //
-        this.postComment = postComment;
-        this.title = title;
         this.postImage = postImage;
         this.content = content;  //
         this.status = status; //
-        this.isPublic = isPublic;
         this.createdAt = createdAt; //
         this.groupId = groupId; //
     }
@@ -124,12 +99,9 @@ public class Post implements Serializable {
         this.postId = -1;
         this.userId = -1;
         this.postLike = 0;
-        this.postComment = 0;
-        this.title = "";
         this.postImage = "";
         this.content = "";
         this.status = -1;
-        this.isPublic = -1;
         this.groupId = -1;
         this.createdAt = "";
     }

@@ -8,7 +8,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:elevation="5dp"
+        android:elevation="15dp"
         app:cardCornerRadius="20dp"
         app:cardElevation="5dp"
         app:cardUseCompatPadding="true"
@@ -141,7 +141,7 @@
                         android:background="#fff"
                         android:scaleX="0.5"
                         android:scaleY="0.5"
-                        android:src="@drawable/icon_tym_like"
+                        android:src="@drawable/icon_tym"
                         />
 
                     <TextView
@@ -182,7 +182,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingRight="10dp"
-                        android:text="30"
+                        android:text="0"
                         android:textSize="13dp" />
                 </LinearLayout>
 

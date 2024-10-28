@@ -100,14 +100,13 @@ public class PersonalScreenFragment extends Fragment {
         studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
-                if (student != null && student.getAvatar() != null) {
+                if (isAdded() && student != null && student.getAvatar() != null) {
                     String name = student.getFullName();
                     nameUser.setText(name);
                     Glide.with(requireContext())
                             .load(student.getAvatar())
                             .circleCrop()
                             .into(imageUser);
-
                 }
             }
 
