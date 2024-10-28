@@ -33,6 +33,7 @@ import com.example.socialmediatdcproject.API.NotifyAPI;
 import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
+import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.NotifyQuicklyAdapter;
@@ -55,6 +56,7 @@ import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Notify;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
+import com.example.socialmediatdcproject.model.User;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -149,16 +151,30 @@ public class SharedActivity extends AppCompatActivity {
                 ArrayList<Post> postList = new ArrayList<>();
 
                 for (Post p : posts) {
-                    postList.add(p);
+                    UserAPI userAPI = new UserAPI();
+                    userAPI.getUserById(p.getUserId(), new UserAPI.UserCallback() {
+                        @Override
+                        public void onUserReceived(User user) {
+                            if (user.getRoleId() == User.ROLE_PHONGDAOTAO || user.getRoleId() == User.ROLE_DOANTHANHNIEN || user.getRoleId() == User.ROLE_ADMIN_DEPARTMENT || user.getRoleId() == User.ROLE_ADMIN_BUSSINESS) {
+                                postList.add(p);
+                            }
+
+                            // Setup RecyclerView với Adapter
+                            RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
+                            PostAdapter postAdapter = new PostAdapter(postList, SharedActivity.this);
+                            recyclerView.setAdapter(postAdapter);
+
+                            // Sử dụng LayoutManager cho RecyclerView
+                            recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
+                        }
+
+                        @Override
+                        public void onUsersReceived(List<User> users) {
+
+                        }
+                    });
+
                 }
-                // Setup RecyclerView với Adapter
-                RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-                PostAdapter postAdapter = new PostAdapter(postList, SharedActivity.this);
-                recyclerView.setAdapter(postAdapter);
-
-                // Sử dụng LayoutManager cho RecyclerView
-                recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
-
             }
         });
     }
@@ -494,6 +510,13 @@ public class SharedActivity extends AppCompatActivity {
             public void onNotificationsReceived(List<Notify> notifications) {
                 TextView countNotify = findViewById(R.id.count_notify);
                 countNotify.setText(notifications.size() + "");
+
+                if (notifications.size() == 0) {
+                    countNotify.setVisibility(View.GONE);
+                }
+                else {
+                    countNotify.setVisibility(View.VISIBLE);
+                }
             }
 
             @Override

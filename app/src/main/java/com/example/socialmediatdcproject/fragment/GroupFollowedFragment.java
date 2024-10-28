@@ -226,7 +226,7 @@ public class GroupFollowedFragment extends Fragment {
                         }
 
                         // Cập nhật RecyclerView với dữ liệu bài viết
-                        PostAdapter postAdapter = new PostAdapter(postsList, requireContext());
+                        PostAdapter postAdapter = new PostAdapter(postsList, getContext());
                         recyclerView.setAdapter(postAdapter);
                         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
                     }

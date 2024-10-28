@@ -263,6 +263,8 @@ public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             Toast.makeText(context, "Bài viết đã được gỡ", Toast.LENGTH_SHORT).show();
         });
+
+        holder.imageButtonLike.setBackground(ContextCompat.getDrawable(context, R.drawable.icon_tym));
     }
 
     private void setupLikeButton(PostTextViewHolder holder, Post post) {

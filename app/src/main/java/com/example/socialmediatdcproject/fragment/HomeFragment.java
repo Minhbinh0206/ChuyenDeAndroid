@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.socialmediatdcproject.R; // Import đúng package chứa R
+import com.example.socialmediatdcproject.activity.MessengerActivity;
 import com.example.socialmediatdcproject.activity.SearchFriendActivity;
 
 public class HomeFragment extends Fragment {
@@ -33,6 +34,13 @@ public class HomeFragment extends Fragment {
         frameLayout.setVisibility(view.GONE);
 
         ImageButton searchFriends = view.findViewById(R.id.search_friends);
+
+        ImageButton mes = view.findViewById(R.id.icon_mess);
+
+        mes.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), MessengerActivity.class);
+            startActivity(intent);
+        });
 
         searchFriends.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), SearchFriendActivity.class);

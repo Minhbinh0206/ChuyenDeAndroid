@@ -141,7 +141,7 @@
                         android:background="#fff"
                         android:scaleX="0.5"
                         android:scaleY="0.5"
-                        android:src="@drawable/icon_tym_like"
+                        android:src="@drawable/icon_tym"
                         />
 
                     <TextView
