@@ -6,7 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -42,7 +44,8 @@ public class GroupFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate layout cho fragment này
-        return inflater.inflate(R.layout.fragment_group_first, container, false);
+        View view = inflater.inflate(R.layout.fragment_group_first, container, false);
+        return view;
     }
 
     @Override
@@ -61,6 +64,7 @@ public class GroupFragment extends Fragment {
         Button groupAvailable = view.findViewById(R.id.button_group_available);
         Button groupCreateNew = view.findViewById(R.id.button_group_create_new);
 
+
         // Set màu mặc định cho nút "Bài viết"
         groupAvailable.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
         groupAvailable.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
@@ -77,6 +81,8 @@ public class GroupFragment extends Fragment {
             groupAvailable.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
             groupAvailable.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
         });
+
+
 
         // Sự kiện khi nhấn vào nút memberButton
         groupCreateNew.setOnClickListener(v -> {
@@ -118,7 +124,6 @@ public class GroupFragment extends Fragment {
         FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
         fragmentTransaction.commit();
-
 
         GroupAPI groupAPI = new GroupAPI();
         groupAPI.getAllGroups(new GroupAPI.GroupCallback() {
@@ -173,5 +178,11 @@ public class GroupFragment extends Fragment {
                 }
             }
         });
+    }
+    // Phương thức để cập nhật RecyclerView với danh sách nhóm
+    private void updateRecyclerView(List<Group> groups) {
+        GroupAdapter groupAdapter = new GroupAdapter(groups, requireContext());
+        recyclerView.setAdapter(groupAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
     }
 }
