@@ -68,14 +68,15 @@ public class MemberMessengerAdapter extends RecyclerView.Adapter<MemberMessenger
                             messageAPI.listenForMessages(myStudent.getUserId(), new MessageAPI.MessageCallback() {
                                 @Override
                                 public void onMessagesReceived(List<Message> messages) {
-                                    Message m = messages.get(messages.size() - 1);
-                                    if (m.getYourUserId() == student.getUserId()) {
-                                        if (m.getMessageType().equals("Send")) {
-                                            holder.memberRecent.setText("Bạn: " + m.getContent());
+                                    for (Message m: messages) {
+                                        if (m.getYourUserId() == student.getUserId()) {
+                                            if (m.getMessageType().equals("Send")) {
+                                                holder.memberRecent.setText("Bạn: " + m.getContent());
+                                            }
+                                            else {
+                                                holder.memberRecent.setText(m.getContent());
+                                            }
                                         }
-                                        else {
-                                            holder.memberRecent.setText(m.getContent());
-                                        }z
                                     }
                                 }
 

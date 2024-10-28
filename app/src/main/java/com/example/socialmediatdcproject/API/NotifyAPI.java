@@ -22,7 +22,7 @@ public class NotifyAPI {
     }
 
     public void getNotifications(final NotificationCallback callback) {
-        databaseReference.addValueEventListener(new ValueEventListener() {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 List<Notify> notifyList = new ArrayList<>();

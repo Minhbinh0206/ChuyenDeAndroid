@@ -1,6 +1,7 @@
 package com.example.socialmediatdcproject.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,11 +9,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.GroupDetaiActivity;
 import com.example.socialmediatdcproject.model.Business;
+import com.example.socialmediatdcproject.model.Group;
 
 import java.util.List;
 
@@ -50,6 +55,23 @@ public class BussinessAdapter extends RecyclerView.Adapter<BussinessAdapter.Buss
                         .circleCrop()
                         .into(holder.bussinessImage);
             }
+
+            holder.cardView.setOnClickListener(v -> {
+                GroupAPI groupAPI = new GroupAPI();
+                groupAPI.getGroupById(bussiness.getGroupId(), new GroupAPI.GroupCallback() {
+                    @Override
+                    public void onGroupReceived(Group group) {
+                        Intent intent = new Intent(v.getContext(), GroupDetaiActivity.class);
+                        intent.putExtra("groupId", group.getGroupId());
+                        v.getContext().startActivity(intent);
+                    }
+
+                    @Override
+                    public void onGroupsReceived(List<Group> groups) {
+
+                    }
+                });
+            });
         } else {
             Log.e("BusinessAdapter", "Bussiness at position " + position + " is null");
         }
@@ -67,12 +89,14 @@ public class BussinessAdapter extends RecyclerView.Adapter<BussinessAdapter.Buss
         ImageView bussinessImage;
         TextView bussinessName;
         TextView bussinessAddress;
+        CardView cardView;
 
         public BussinessViewHolder(@NonNull View itemView) {
             super(itemView);
             bussinessName = itemView.findViewById(R.id.bussiness_name);
             bussinessAddress = itemView.findViewById(R.id.bussiness_address);
             bussinessImage = itemView.findViewById(R.id.bussiness_avatar);
+            cardView = itemView.findViewById(R.id.item_business);
         }
     }
 

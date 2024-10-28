@@ -123,7 +123,9 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             long hours = TimeUnit.MILLISECONDS.toHours(diffInMillis);
             long days = TimeUnit.MILLISECONDS.toDays(diffInMillis);
 
-            if (minutes < 60) {
+            if (minutes == 0) {
+                return "Vừa xong";
+            } else if (minutes < 60) {
                 return minutes + " phút trước";
             } else if (hours < 24) {
                 return hours + " giờ trước";
