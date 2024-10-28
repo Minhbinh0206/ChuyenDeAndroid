@@ -52,28 +52,29 @@
             android:exported="false" />
         <activity
             android:name=".activity.CreateNewGroupActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activity.EditScreenActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activity.NotifyDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activity.SearchFriendActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activity.GroupDetaiActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activity.MessengerActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activity.MessengerDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".admin.AdminActivity"
-            android:exported="false" />
+            android:exported="false">
+        </activity>
+        <activity android:name=".activity.EditScreenActivity"
+            android:exported="false">
+        </activity>
+        <activity android:name=".activity.NotifyDetailActivity"
+            android:exported="false">
+        </activity>
+        <activity android:name=".activity.SearchFriendActivity"
+            android:exported="false">
+        </activity>
+        <activity android:name=".activity.GroupDetaiActivity"
+            android:exported="false">
+        </activity>
+        <activity android:name=".activity.MessengerActivity"
+            android:exported="false">
+        </activity>
+        <activity android:name=".activity.MessengerDetailActivity"
+            android:exported="false">
+        </activity>
+        <activity android:name=".activity.SettingActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>

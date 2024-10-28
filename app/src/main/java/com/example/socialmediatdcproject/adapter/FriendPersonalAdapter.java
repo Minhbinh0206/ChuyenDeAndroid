@@ -134,21 +134,6 @@ public class FriendPersonalAdapter extends RecyclerView.Adapter<FriendPersonalAd
         return friendList.size();
     }
 
-    // Hàm lấy trạng thái bạn bè
-    private String getFriendStatus(Friends friend) {
-        int status = friend.getStatus();
-        switch (status) {
-            case 0:
-                return "Chưa kết bạn";
-            case 1:
-                return "Đang chờ kết bạn";
-            case 2:
-                return "Đã kết bạn";
-            default:
-                return "Trạng thái không xác định";
-        }
-    }
-
     // Lớp ViewHolder
     public static class FriendViewHolder extends RecyclerView.ViewHolder {
         ImageView friendAvatar;

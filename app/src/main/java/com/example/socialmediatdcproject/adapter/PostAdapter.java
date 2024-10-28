@@ -15,12 +15,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.LikeAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.CommentPostActivity;
+import com.example.socialmediatdcproject.activity.GroupDetaiActivity;
+import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
@@ -111,6 +114,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             textViewHolder.postCreateAt.setText(getTimeAgo(post.getCreatedAt())); // Hiển thị thời gian đăng bài
         }
     }
+
     // Hàm tính thời gian "trước" để hiển thị như Facebook
     private String getTimeAgo(String createdAt) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // Điều chỉnh định dạng cho đúng với chuỗi thời gian của bạn
@@ -123,7 +127,9 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             long hours = TimeUnit.MILLISECONDS.toHours(diffInMillis);
             long days = TimeUnit.MILLISECONDS.toDays(diffInMillis);
 
-            if (minutes < 60) {
+            if (minutes == 0) {
+                return "Vừa xong";
+            } else if (minutes < 60) {
                 return minutes + " phút trước";
             } else if (hours < 24) {
                 return hours + " giờ trước";
@@ -181,14 +187,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         setupLikeButton(holder, post);
         holder.buttonComment.setOnClickListener(v -> {
-            if (v.getContext() instanceof CommentPostActivity) {
-                // Không làm gì
-            }
-            else {
-                Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
-                intent.putExtra("postId", post.getPostId());
-                v.getContext().startActivity(intent);
-            }
+
         });
     }
 
@@ -214,6 +213,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                         .load(student.getAvatar())
                                         .circleCrop()
                                         .into(holder.postAvatar);
+
                             }
                         }
 
@@ -243,6 +243,47 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     }
                 }
             }
+        });
+        holder.postAdminUserId.setOnClickListener(v -> {
+            GroupAPI groupAPI = new GroupAPI();
+            groupAPI.getGroupById(post.getGroupId(), new GroupAPI.GroupCallback() {
+                @Override
+                public void onGroupReceived(Group group) {
+                    Intent intent = new Intent(v.getContext(), GroupDetaiActivity.class);
+                    intent.putExtra("groupId", group.getGroupId());
+                    if (v.getContext() instanceof GroupDetaiActivity) {
+
+                    }else {
+                        v.getContext().startActivity(intent);
+                    }
+                }
+
+                @Override
+                public void onGroupsReceived(List<Group> groups) {
+
+                }
+            });
+        });
+
+        holder.postAvatar.setOnClickListener(v -> {
+            GroupAPI groupAPI = new GroupAPI();
+            groupAPI.getGroupById(post.getGroupId(), new GroupAPI.GroupCallback() {
+                @Override
+                public void onGroupReceived(Group group) {
+                    Intent intent = new Intent(v.getContext(), GroupDetaiActivity.class);
+                    intent.putExtra("groupId", group.getGroupId());
+                    if (v.getContext() instanceof GroupDetaiActivity) {
+
+                    }else {
+                        v.getContext().startActivity(intent);
+                    }
+                }
+
+                @Override
+                public void onGroupsReceived(List<Group> groups) {
+
+                }
+            });
         });
 
         setupLikeButton(holder, post);
