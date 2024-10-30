@@ -20,4 +20,7 @@ public class AdminDepartment extends User{
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
         this.departmentId = -1;
     }
+
+    public AdminDepartment() {
+    }
 }

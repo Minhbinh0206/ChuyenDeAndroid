@@ -1,4 +1,4 @@
-package com.example.socialmediatdcproject.fragment;
+package com.example.socialmediatdcproject.fragment.Student;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -24,7 +24,6 @@ import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
-import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.GroupAdapter;
 import com.example.socialmediatdcproject.adapter.MemberAdapter;
@@ -34,9 +33,6 @@ import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
