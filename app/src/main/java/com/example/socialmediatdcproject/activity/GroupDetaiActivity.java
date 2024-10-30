@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
@@ -24,8 +23,8 @@ import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyQuicklyAdapter;
 import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
-import com.example.socialmediatdcproject.fragment.GroupFollowedFragment;
-import com.example.socialmediatdcproject.fragment.GroupNotFollowFragment;
+import com.example.socialmediatdcproject.fragment.Student.GroupFollowedFragment;
+import com.example.socialmediatdcproject.fragment.Student.GroupNotFollowFragment;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
 

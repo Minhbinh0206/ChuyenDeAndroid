@@ -1,4 +1,4 @@
-package com.example.socialmediatdcproject.fragment;
+package com.example.socialmediatdcproject.fragment.Student;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -25,9 +25,6 @@ import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.User;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -11,9 +11,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.admin.AdminActivity;
+import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -44,6 +46,7 @@ public class LoginActivity extends AppCompatActivity {
         // Kiểm tra xem người dùng đã đăng nhập hay chưa
         FirebaseUser currentUser = mAuth.getCurrentUser();
         StudentAPI studentAPI = new StudentAPI();
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
 
         if (currentUser != null) {
             studentAPI.getStudentByKey(currentUser.getUid(), new StudentAPI.StudentCallback() {
@@ -69,6 +72,28 @@ public class LoginActivity extends AppCompatActivity {
 
                 @Override
                 public void onStudentDeleted(int studentId) {}
+            });
+
+            adminDepartmentAPI.getAdminDepartmentByKey(currentUser.getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                @Override
+                public void onUserReceived(AdminDepartment adminDepartment) {
+                    if (adminDepartment.getUserId() != -1) {
+                        // Nếu đã đăng nhập, chuyển đến SharedActivity
+                        Intent intent = new Intent(LoginActivity.this, HomeAdminActivity.class);
+                        startActivity(intent);
+                        finish(); // Đóng LoginActivity để không quay lại
+                    }
+                }
+
+                @Override
+                public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+                }
+
+                @Override
+                public void onError(String s) {
+
+                }
             });
         }
 
@@ -119,9 +144,25 @@ public class LoginActivity extends AppCompatActivity {
                                                                 boolean isAdmin = adminRoleIds.contains(roleId);
 
                                                                 if (isAdmin) {
-                                                                    Intent intent = new Intent(LoginActivity.this, AdminActivity.class);
-                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                                                                    startActivity(intent);
+                                                                    adminDepartmentAPI.getAdminDepartmentById(userId, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                                                                        @Override
+                                                                        public void onUserReceived(AdminDepartment adminDepartment) {
+                                                                            Intent intent = new Intent(LoginActivity.this, HomeAdminActivity.class);
+                                                                            intent.putExtra("adminDepartmentId", userId);
+                                                                            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                                                            startActivity(intent);
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onError(String s) {
+
+                                                                        }
+                                                                    });
                                                                 } else {
                                                                     Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
 //                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);

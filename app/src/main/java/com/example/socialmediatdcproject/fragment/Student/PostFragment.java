@@ -1,26 +1,25 @@
-package com.example.socialmediatdcproject.fragment;
+package com.example.socialmediatdcproject.fragment.Student;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import com.example.socialmediatdcproject.R;
 
-public class MemberFragment extends Fragment {
+import com.example.socialmediatdcproject.R; // Import đúng package chứa R
 
+public class PostFragment extends Fragment {
     FrameLayout frameLayout;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.item_member_list, container, false);
-        return view;
+        // Inflate layout for this fragment
+        setRetainInstance(true);
+        return inflater.inflate(R.layout.item_post_image, container, false);
     }
 
     @Override

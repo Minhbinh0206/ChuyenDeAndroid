@@ -1,4 +1,4 @@
-package com.example.socialmediatdcproject.fragment;
+package com.example.socialmediatdcproject.fragment.Student;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,17 +9,17 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import com.example.socialmediatdcproject.R;
 
-import com.example.socialmediatdcproject.R; // Import đúng package chứa R
+public class MemberFragment extends Fragment {
 
-public class PostFragment extends Fragment {
     FrameLayout frameLayout;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Inflate layout for this fragment
-        setRetainInstance(true);
-        return inflater.inflate(R.layout.item_post_image, container, false);
+        View view = inflater.inflate(R.layout.item_member_list, container, false);
+        return view;
     }
 
     @Override

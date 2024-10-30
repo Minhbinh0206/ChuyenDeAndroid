@@ -14,12 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.R;
-import com.example.socialmediatdcproject.activity.ChangePasswordActivity;
 import com.example.socialmediatdcproject.activity.SharedActivity;
-import com.example.socialmediatdcproject.fragment.PersonalScreenFragment;
-import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Student;
-import com.example.socialmediatdcproject.model.User;
 
 import java.util.List;
 

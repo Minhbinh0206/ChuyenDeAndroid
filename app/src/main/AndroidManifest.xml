@@ -79,6 +79,9 @@
         <activity android:name=".activity.MessengerDetailActivity"
             android:exported="false">
         </activity>
+        <activity android:name=".activity.HomeAdminActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>
