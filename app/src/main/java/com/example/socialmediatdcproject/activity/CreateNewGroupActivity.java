@@ -214,12 +214,6 @@ public class CreateNewGroupActivity extends AppCompatActivity {
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
 
         // Hủy tạo nhóm

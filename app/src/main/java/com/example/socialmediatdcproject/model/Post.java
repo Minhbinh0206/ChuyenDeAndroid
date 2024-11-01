@@ -13,6 +13,7 @@ public class Post implements Serializable {
     private String content;
     private int status;
     private int groupId;
+    private boolean isFilter;
     private String createdAt;
 
     public static final int WAITING = 0;
@@ -67,6 +68,13 @@ public class Post implements Serializable {
         this.status = status;
     }
 
+    public boolean isFilter() {
+        return isFilter;
+    }
+
+    public void setFilter(boolean filter) {
+        isFilter = filter;
+    }
 
     public String getCreatedAt() {
         return createdAt;
@@ -84,7 +92,7 @@ public class Post implements Serializable {
         this.groupId = groupId;
     }
 
-    public Post(int postId, int userId, int postLike, String postImage, String content, int status, int groupId, String createdAt) {
+    public Post(int postId, int userId, int postLike, String postImage, String content, int status, int groupId, String createdAt, boolean isFilter) {
         this.postId = postId;
         this.userId = userId; //
         this.postLike = postLike; //
@@ -92,7 +100,8 @@ public class Post implements Serializable {
         this.content = content;  //
         this.status = status; //
         this.createdAt = createdAt; //
-        this.groupId = groupId; //
+        this.groupId = groupId;
+        this.isFilter = isFilter;
     }
 
     public Post() {

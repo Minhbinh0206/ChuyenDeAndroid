@@ -75,27 +75,11 @@ public class SearchFriendActivity extends AppCompatActivity {
                             public void afterTextChanged(Editable s) {}
                         });
                     }
-
-                    @Override
-                    public void onError(String errorMessage) {}
-
-                    @Override
-                    public void onStudentDeleted(int studentId) {}
                 });
             }
 
             @Override
             public void onStudentsReceived(List<Student> students) {
-
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
 
             }
         });
@@ -150,12 +134,6 @@ public class SearchFriendActivity extends AppCompatActivity {
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
     }
 

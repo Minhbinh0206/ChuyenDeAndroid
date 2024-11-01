@@ -171,16 +171,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         public void onStudentsReceived(List<Student> students) {
 
                         }
-
-                        @Override
-                        public void onError(String errorMessage) {
-
-                        }
-
-                        @Override
-                        public void onStudentDeleted(int studentId) {
-
-                        }
                     });
 
                     AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
@@ -244,16 +234,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
                         @Override
                         public void onStudentsReceived(List<Student> students) {
-
-                        }
-
-                        @Override
-                        public void onError(String errorMessage) {
-
-                        }
-
-                        @Override
-                        public void onStudentDeleted(int studentId) {
 
                         }
                     });
@@ -394,12 +374,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
     }
 
@@ -471,12 +445,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
 
         AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();

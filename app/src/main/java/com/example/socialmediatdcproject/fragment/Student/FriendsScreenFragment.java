@@ -104,12 +104,6 @@ public class FriendsScreenFragment extends Fragment {
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
 
         updateButtonColorsNormal(personalMyGroup);
@@ -131,12 +125,6 @@ public class FriendsScreenFragment extends Fragment {
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
 
         // Thiết lập nút cho giao diện
@@ -164,16 +152,6 @@ public class FriendsScreenFragment extends Fragment {
 
             @Override
             public void onStudentsReceived(List<Student> students) {
-
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
 
             }
         });
@@ -359,16 +337,6 @@ public class FriendsScreenFragment extends Fragment {
                         public void onStudentsReceived(List<Student> students) {
 
                         }
-
-                        @Override
-                        public void onError(String errorMessage) {
-
-                        }
-
-                        @Override
-                        public void onStudentDeleted(int studentId) {
-
-                        }
                     });
                 }
             });
@@ -416,12 +384,6 @@ public class FriendsScreenFragment extends Fragment {
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
     }
     //Set sự kiện màu cho các nút
@@ -483,16 +445,6 @@ public class FriendsScreenFragment extends Fragment {
                                         public void onStudentsReceived(List<Student> students) {
 
                                         }
-
-                                        @Override
-                                        public void onError(String errorMessage) {
-
-                                        }
-
-                                        @Override
-                                        public void onStudentDeleted(int studentId) {
-
-                                        }
                                     });
                                 }
                                 else if (f.getYourUserId() == myId){
@@ -525,16 +477,6 @@ public class FriendsScreenFragment extends Fragment {
                                         public void onStudentsReceived(List<Student> students) {
 
                                         }
-
-                                        @Override
-                                        public void onError(String errorMessage) {
-
-                                        }
-
-                                        @Override
-                                        public void onStudentDeleted(int studentId) {
-
-                                        }
                                     });
                                 }
                             }
@@ -545,16 +487,6 @@ public class FriendsScreenFragment extends Fragment {
 
             @Override
             public void onStudentsReceived(List<Student> students) {
-
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
 
             }
         });

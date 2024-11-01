@@ -141,26 +141,12 @@ public class MessengerDetailActivity extends AppCompatActivity {
 
                             @Override
                             public void onStudentsReceived(List<Student> students) {}
-
-                            @Override
-                            public void onError(String errorMessage) {}
-
-                            @Override
-                            public void onStudentDeleted(int studentId) {}
                         });
                     });
                 }
 
                 @Override
                 public void onStudentsReceived(List<Student> students) {}
-
-                @Override
-                public void onError(String errorMessage) {
-                    Log.e("MessengerActivity", "Error fetching avatar: " + errorMessage);
-                }
-
-                @Override
-                public void onStudentDeleted(int studentId) {}
             });
         }
 
@@ -173,12 +159,6 @@ public class MessengerDetailActivity extends AppCompatActivity {
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
     }
 

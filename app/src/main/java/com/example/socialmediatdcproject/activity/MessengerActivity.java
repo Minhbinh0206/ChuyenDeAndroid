@@ -86,12 +86,6 @@ public class MessengerActivity extends AppCompatActivity {
 
                                         @Override
                                         public void onStudentsReceived(List<Student> students) {}
-
-                                        @Override
-                                        public void onError(String errorMessage) {}
-
-                                        @Override
-                                        public void onStudentDeleted(int studentId) {}
                                     });
                                 }
                                 else {
@@ -112,12 +106,6 @@ public class MessengerActivity extends AppCompatActivity {
 
                                         @Override
                                         public void onStudentsReceived(List<Student> students) {}
-
-                                        @Override
-                                        public void onError(String errorMessage) {}
-
-                                        @Override
-                                        public void onStudentDeleted(int studentId) {}
                                     });
                                 }
                             }
@@ -142,15 +130,8 @@ public class MessengerActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onError(String errorMessage) {
-                Log.e("MessengerActivity", "Error fetching student: " + errorMessage);
-            }
-
-            @Override
             public void onStudentsReceived(List<Student> students) {}
 
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
     }
 
@@ -188,16 +169,6 @@ public class MessengerActivity extends AppCompatActivity {
 
             @Override
             public void onStudentsReceived(List<Student> students) {
-
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                Log.e("MessengerActivity", "Error fetching avatar: " + errorMessage);
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
 
             }
         });

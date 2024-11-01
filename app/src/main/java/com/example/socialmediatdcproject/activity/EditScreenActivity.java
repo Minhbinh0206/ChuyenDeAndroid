@@ -110,7 +110,6 @@ public class EditScreenActivity extends AppCompatActivity {
                     // Hiển thị dữ liệu lên các EditText
                     editTextName.setText(student.getFullName());
                     editTextMSSV.setText(student.getStudentNumber());
-                    editTextClass.setText(student.getStudentClass());
                     editTextDepartment.setText(String.valueOf(student.getDepartmentId()));
 //                    editTextDescription.setText(student.getDescription());
 
@@ -140,7 +139,6 @@ public class EditScreenActivity extends AppCompatActivity {
                             student.setDepartmentId(Integer.parseInt(department));
 //                            student.setDescription(description);
                             student.setStudentNumber(mssv);
-                            student.setStudentClass(className);
 
                             studentAPI.updateStudent(student, new StudentAPI.StudentCallback() {
                                 @Override
@@ -150,16 +148,6 @@ public class EditScreenActivity extends AppCompatActivity {
 
                                 @Override
                                 public void onStudentsReceived(List<Student> students) {
-
-                                }
-
-                                @Override
-                                public void onError(String errorMessage) {
-
-                                }
-
-                                @Override
-                                public void onStudentDeleted(int studentId) {
 
                                 }
                             });
@@ -181,12 +169,6 @@ public class EditScreenActivity extends AppCompatActivity {
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
 
         // Sự kiện click chọn ảnh từ thư viện
@@ -500,12 +482,6 @@ public class EditScreenActivity extends AppCompatActivity {
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
     }
 }
