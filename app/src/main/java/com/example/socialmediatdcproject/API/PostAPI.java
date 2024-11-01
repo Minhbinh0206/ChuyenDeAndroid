@@ -87,7 +87,7 @@ public class PostAPI {
 
     // Lấy bài viết theo group ID
     public void getPostByGroupId(int groupId, final PostCallback callback) {
-        postDatabase.orderByChild("groupId").equalTo(groupId).addListenerForSingleValueEvent(new ValueEventListener() {
+        postDatabase.orderByChild("groupId").equalTo(groupId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Post> postList = new ArrayList<>();

@@ -11,10 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.CommentAPI;
 import com.example.socialmediatdcproject.API.LikeAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Comment;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
@@ -44,6 +46,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     public void onBindViewHolder(@NonNull CommentAdapter.CommentViewHolder holder, int position) {
         Comment comment = commentsList.get(position);
         StudentAPI studentAPI = new StudentAPI();
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
         if (comment != null) {
             // Set dữ liệu cho các view
             studentAPI.getAllStudents(new StudentAPI.StudentCallback() {
@@ -75,6 +78,30 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
                 }
             });
+            adminDepartmentAPI.getAllAdminDepartments(new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                @Override
+                public void onUserReceived(AdminDepartment adminDepartment) {
+
+                }
+
+                @Override
+                public void onUsersReceived(List<AdminDepartment> adminDepartments) {
+                    for (AdminDepartment adminDepartment: adminDepartments) {
+                        if (adminDepartment.getUserId() == comment.getUserId()){
+                            holder.commentUserId.setText(adminDepartment.getFullName());
+                            Glide.with(context)
+                                    .load(adminDepartment.getAvatar())
+                                    .circleCrop()
+                                    .into(holder.avatar);
+                        }
+                    }
+                }
+
+                @Override
+                public void onError(String s) {
+
+                }
+            });
 
             holder.commentLike.setText(comment.getCommentLike() + "");
             holder.commentContent.setText(comment.getContent());
@@ -93,6 +120,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     private void setupLikeButton(CommentViewHolder holder, Comment comment) {
         String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
         StudentAPI studentAPI = new StudentAPI();
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
 
         studentAPI.getStudentByKey(userKey, new StudentAPI.StudentCallback() {
             @Override
@@ -168,6 +196,83 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
             @Override
             public void onStudentDeleted(int studentId) {}
+        });
+
+        adminDepartmentAPI.getAdminDepartmentByKey(userKey, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+            @Override
+            public void onUserReceived(AdminDepartment adminDepartment) {
+                LikeAPI likeAPI = new LikeAPI();
+
+                // Lắng nghe thay đổi số lượt thích theo thời gian thực
+                likeAPI.listenForLikeCountChangesComment(comment.getId(), new LikeAPI.LikeCountCallback() {
+                    @Override
+                    public void onLikeCountUpdated(long newLikeCount) {
+                        comment.setCommentLike((int) newLikeCount);  // Cập nhật số lượt thích
+                        holder.commentLike.setText(String.valueOf(comment.getCommentLike()));  // Cập nhật giao diện TextView hiển thị số lượt thích
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("CommentAdapter", "Error listening for like count changes: " + errorMessage);
+                    }
+                });
+
+                // Kiểm tra trạng thái like cho comment hiện tại
+                likeAPI.checkLikeComment(adminDepartment.getUserId(), comment.getId(), new LikeAPI.LikeStatusCallback() {
+                    @Override
+                    public void onStatusChecked(boolean isLiked) {
+                        // Cập nhật giao diện dựa trên trạng thái like
+                        holder.commentLikeImage.setBackground(isLiked
+                                ? context.getResources().getDrawable(R.drawable.icon_tym_red)
+                                : context.getResources().getDrawable(R.drawable.icon_tym));
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("CommentAdapter", "Error checking like status: " + errorMessage);
+                    }
+                });
+
+                // Sự kiện khi nhấn vào icon like
+                holder.commentLikeImage.setOnClickListener(v -> {
+                    likeAPI.toggleLikeComment(adminDepartment.getUserId(), comment.getId(), new LikeAPI.LikeStatusCallback() {
+                        @Override
+                        public void onStatusChecked(boolean isLiked) {
+                            // Cập nhật số lượt thích
+                            if (isLiked) {
+                                comment.setCommentLike(comment.getCommentLike() + 1);
+                            } else {
+                                comment.setCommentLike(comment.getCommentLike() - 1);
+                            }
+
+                            // Cập nhật lại giao diện
+                            holder.commentLikeImage.setBackground(isLiked
+                                    ? context.getResources().getDrawable(R.drawable.icon_tym_red)
+                                    : context.getResources().getDrawable(R.drawable.icon_tym));
+                            holder.commentLike.setText(String.valueOf(comment.getCommentLike()));
+
+                            // Cập nhật comment trong cơ sở dữ liệu
+                            CommentAPI commentAPI = new CommentAPI();
+                            commentAPI.updateComment(comment);
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            Log.e("CommentAdapter", "Error toggling like status: " + errorMessage);
+                        }
+                    });
+                });
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+            }
+
+            @Override
+            public void onError(String s) {
+
+            }
         });
     }
 

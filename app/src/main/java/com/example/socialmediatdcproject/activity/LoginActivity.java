@@ -14,7 +14,6 @@ import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
-import com.example.socialmediatdcproject.admin.AdminActivity;
 import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
@@ -43,59 +42,7 @@ public class LoginActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance(); // Khởi tạo FirebaseAuth
         initUi();
 
-        // Kiểm tra xem người dùng đã đăng nhập hay chưa
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        StudentAPI studentAPI = new StudentAPI();
-        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
-
-        if (currentUser != null) {
-            studentAPI.getStudentByKey(currentUser.getUid(), new StudentAPI.StudentCallback() {
-                @Override
-                public void onStudentReceived(Student student) {
-                    Log.d("TAG", "User: " + student.getFullName());
-
-                    if (student.getUserId() != -1) {
-                        // Nếu đã đăng nhập, chuyển đến SharedActivity
-                        Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
-                        startActivity(intent);
-                        finish(); // Đóng LoginActivity để không quay lại
-                    } else {
-                        Toast.makeText(LoginActivity.this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onStudentsReceived(List<Student> students) {}
-
-                @Override
-                public void onError(String errorMessage) {}
-
-                @Override
-                public void onStudentDeleted(int studentId) {}
-            });
-
-            adminDepartmentAPI.getAdminDepartmentByKey(currentUser.getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
-                @Override
-                public void onUserReceived(AdminDepartment adminDepartment) {
-                    if (adminDepartment.getUserId() != -1) {
-                        // Nếu đã đăng nhập, chuyển đến SharedActivity
-                        Intent intent = new Intent(LoginActivity.this, HomeAdminActivity.class);
-                        startActivity(intent);
-                        finish(); // Đóng LoginActivity để không quay lại
-                    }
-                }
-
-                @Override
-                public void onUsersReceived(List<AdminDepartment> adminDepartment) {
-
-                }
-
-                @Override
-                public void onError(String s) {
-
-                }
-            });
-        }
+       AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
 
         // Xử lý đăng nhập
         Button btnLogin = findViewById(R.id.btnLogin);
@@ -165,11 +112,9 @@ public class LoginActivity extends AppCompatActivity {
                                                                     });
                                                                 } else {
                                                                     Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
-//                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                                                                     startActivity(intent);
-                                                                    finish();
                                                                 }
-                                                                finish();
                                                             }
 
                                                             @Override

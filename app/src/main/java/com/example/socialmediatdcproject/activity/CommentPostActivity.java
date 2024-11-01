@@ -19,12 +19,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.CommentAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.CommentAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
+import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Comment;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
@@ -204,6 +206,8 @@ public class CommentPostActivity extends AppCompatActivity {
 
         String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
         StudentAPI studentAPI = new StudentAPI();
+        userId = -1;
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
         studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
@@ -226,6 +230,27 @@ public class CommentPostActivity extends AppCompatActivity {
 
             @Override
             public void onStudentDeleted(int studentId) {
+
+            }
+        });
+
+        adminDepartmentAPI.getAdminDepartmentByKey(key, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+            @Override
+            public void onUserReceived(AdminDepartment adminDepartment) {
+                Glide.with(CommentPostActivity.this)
+                        .load(adminDepartment.getAvatar())
+                        .circleCrop()
+                        .into(avatarUser);
+                userId = adminDepartment.getUserId();
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+            }
+
+            @Override
+            public void onError(String s) {
 
             }
         });
