@@ -42,7 +42,8 @@ public class AdminDepartmentFragment extends Fragment {
         adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
             @Override
             public void onUserReceived(AdminDepartment adminDepartment) {
-                if (adminDepartment.getDepartmentId() != -1) {
+                // Kiểm tra nếu fragment đã được đính kèm vào context
+                if (isAdded() && adminDepartment.getDepartmentId() != -1) {
                     Glide.with(requireContext())
                             .load(adminDepartment.getAvatar())
                             .circleCrop()
@@ -54,17 +55,13 @@ public class AdminDepartmentFragment extends Fragment {
 
             @Override
             public void onUsersReceived(List<AdminDepartment> adminDepartment) {
-
+                // Xử lý khi nhận được danh sách AdminDepartment
             }
 
             @Override
             public void onError(String s) {
-
+                // Xử lý lỗi
             }
         });
-
-
-
-
     }
 }

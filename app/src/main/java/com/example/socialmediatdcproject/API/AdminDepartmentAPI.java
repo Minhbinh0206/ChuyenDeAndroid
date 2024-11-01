@@ -24,7 +24,7 @@ public class AdminDepartmentAPI {
 
     public AdminDepartmentAPI() {
         // Khởi tạo reference đến nút "users" trong Firebase
-        userDatabase = FirebaseDatabase.getInstance().getReference("AdminDepartment");
+        userDatabase = FirebaseDatabase.getInstance().getReference("Admins").child("AdminDepartments");
     }
 
     // Cập nhật thông tin người dùng

@@ -30,6 +30,7 @@ import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
 import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentFragment;
+import com.example.socialmediatdcproject.fragment.Admin.MainFeatureFragment;
 import com.example.socialmediatdcproject.fragment.Student.NotifyFragment;
 import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Department;
@@ -45,7 +46,6 @@ import java.util.List;
 public class HomeAdminActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     protected DrawerLayout drawerLayout;
-    private FrameLayout firstContentFragment;
     private int currentNotifyIndex = 0;
 
     @Override
@@ -59,7 +59,6 @@ public class HomeAdminActivity extends AppCompatActivity {
         // Thiết lập DrawerLayout và NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
-        firstContentFragment = findViewById(R.id.first_content_fragment); // Khởi tạo FrameLayout
 
         // Xử lý sự kiện nhấn vào icon 3 gạch để mở Navigation Drawer
         ImageButton navigationButton = findViewById(R.id.icon_navigation);
@@ -128,6 +127,7 @@ public class HomeAdminActivity extends AppCompatActivity {
 
             @Override
             public void onPostsReceived(List<Post> posts) {
+                postsList.clear();
                 // Kiểm tra nếu có bài viết
                 if (posts.size() > 0) {
                     for (Post p : posts) {
@@ -298,6 +298,7 @@ public class HomeAdminActivity extends AppCompatActivity {
 
         // Nạp HomeFragment vào first_content_fragment
         fragmentTransaction.replace(R.id.first_content_fragment, new AdminDepartmentFragment());
+        fragmentTransaction.replace(R.id.third_content_fragment, new MainFeatureFragment());
 
         // Lấy dữ lệu từ firebase
         fragmentTransaction.commit();

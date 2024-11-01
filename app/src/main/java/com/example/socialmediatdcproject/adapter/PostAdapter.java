@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.LikeAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
@@ -23,6 +24,7 @@ import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.CommentPostActivity;
 import com.example.socialmediatdcproject.activity.GroupDetaiActivity;
+import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
@@ -181,6 +183,29 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         }
                     });
 
+                    AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+                    adminDepartmentAPI.getAdminDepartmentById(u.getUserId(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                        @Override
+                        public void onUserReceived(AdminDepartment adminDepartment) {
+                            if (adminDepartment.getUserId() == post.getUserId()) {
+                                holder.postAdminUserId.setText(adminDepartment.getFullName());
+                                Glide.with(context)
+                                        .load(u.getAvatar())
+                                        .circleCrop()
+                                        .into(holder.postAvatar);
+                            }
+                        }
+
+                        @Override
+                        public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+                        }
+
+                        @Override
+                        public void onError(String s) {
+
+                        }
+                    });
                 }
             }
         });
@@ -378,7 +403,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         });
     }
 
-
     private void setupLikeButton(PostImageViewHolder holder, Post post) {
         String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
         StudentAPI studentAPI = new StudentAPI();
@@ -453,6 +477,81 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             @Override
             public void onStudentDeleted(int studentId) {}
+        });
+
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+        adminDepartmentAPI.getAdminDepartmentByKey(userKey, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+            @Override
+            public void onUserReceived(AdminDepartment adminDepartment) {
+                LikeAPI likeAPI = new LikeAPI();
+
+                // Lắng nghe sự thay đổi của số lượt thích theo thời gian thực
+                likeAPI.listenForLikeCountChanges(post.getPostId(), new LikeAPI.LikeCountCallback() {
+                    @Override
+                    public void onLikeCountUpdated(long newLikeCount) {
+                        post.setPostLike((int) newLikeCount);  // Cập nhật số lượt thích trong model
+                        holder.postLike.setText(String.valueOf(post.getPostLike()));  // Cập nhật TextView hiển thị số lượt thích
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("TAG", "Error listening for like count changes: " + errorMessage);
+                    }
+                });
+
+                // Kiểm tra trạng thái thích của người dùng hiện tại
+                likeAPI.checkLikeStatus(adminDepartment.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
+                    @Override
+                    public void onStatusChecked(boolean isLiked) {
+                        // Cập nhật giao diện nút Like
+                        holder.postLike.setTextColor(isLiked ? context.getResources().getColor(R.color.white) : context.getResources().getColor(R.color.black));
+                        holder.buttonLike.setBackground(isLiked ? context.getResources().getDrawable(R.drawable.button_custom_liked) : context.getResources().getDrawable(R.drawable.button_custom));
+                        holder.imageButtonLike.setBackgroundColor(isLiked ? context.getResources().getColor(R.color.like) : context.getResources().getColor(R.color.white));
+                        holder.imageButtonLike.setImageResource(isLiked ? R.drawable.icon_tym_like : R.drawable.icon_tym);
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("TAG", "Error checking like status: " + errorMessage);
+                    }
+                });
+
+                // Toggle trạng thái thích khi nhấn nút Like
+                holder.buttonLike.setOnClickListener(v -> {
+                    likeAPI.toggleLikeStatus(adminDepartment.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
+                        @Override
+                        public void onStatusChecked(boolean isLiked) {
+                            // Cập nhật giao diện nút Like và TextView
+                            if (isLiked) {
+                                post.setPostLike(post.getPostLike() + 1);  // Tăng số lượt thích
+                            } else {
+                                post.setPostLike(post.getPostLike() - 1);  // Giảm số lượt thích
+                            }
+
+                            holder.postLike.setText(String.valueOf(post.getPostLike()));  // Cập nhật số lượt thích hiển thị
+                            holder.postLike.setTextColor(isLiked ? context.getResources().getColor(R.color.white) : context.getResources().getColor(R.color.black));
+                            holder.buttonLike.setBackground(isLiked ? context.getResources().getDrawable(R.drawable.button_custom_liked) : context.getResources().getDrawable(R.drawable.button_custom));
+                            holder.imageButtonLike.setBackgroundColor(isLiked ? context.getResources().getColor(R.color.like) : context.getResources().getColor(R.color.white));
+                            holder.imageButtonLike.setImageResource(isLiked ? R.drawable.icon_tym_like : R.drawable.icon_tym);
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            Log.e("TAG", "Error toggling like status: " + errorMessage);
+                        }
+                    });
+                });
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+            }
+
+            @Override
+            public void onError(String s) {
+
+            }
         });
     }
 
