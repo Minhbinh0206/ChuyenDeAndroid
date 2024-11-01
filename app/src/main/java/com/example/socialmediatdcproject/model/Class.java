@@ -1,7 +1,6 @@
 package com.example.socialmediatdcproject.model;
 
 public class Class {
-
     private int id;
     private String className;
     private int majorId;

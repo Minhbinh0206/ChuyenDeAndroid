@@ -222,16 +222,6 @@ public class CommentPostActivity extends AppCompatActivity {
             public void onStudentsReceived(List<Student> students) {
 
             }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
-
-            }
         });
 
         adminDepartmentAPI.getAdminDepartmentByKey(key, new AdminDepartmentAPI.AdminDepartmentCallBack() {

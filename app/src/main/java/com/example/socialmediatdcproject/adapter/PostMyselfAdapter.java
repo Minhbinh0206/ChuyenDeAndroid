@@ -114,16 +114,6 @@ public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                         public void onStudentsReceived(List<Student> students) {
 
                         }
-
-                        @Override
-                        public void onError(String errorMessage) {
-
-                        }
-
-                        @Override
-                        public void onStudentDeleted(int studentId) {
-
-                        }
                     });
 
                 }
@@ -171,16 +161,6 @@ public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
                         @Override
                         public void onStudentsReceived(List<Student> students) {
-
-                        }
-
-                        @Override
-                        public void onError(String errorMessage) {
-
-                        }
-
-                        @Override
-                        public void onStudentDeleted(int studentId) {
 
                         }
                     });
@@ -270,12 +250,6 @@ public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
     }
 
@@ -347,12 +321,6 @@ public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
     }
 

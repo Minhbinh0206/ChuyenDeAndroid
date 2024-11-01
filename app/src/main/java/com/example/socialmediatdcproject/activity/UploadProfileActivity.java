@@ -265,7 +265,7 @@ public class UploadProfileActivity extends AppCompatActivity {
             // Lấy ID từ spinner
             int departmentId = departmentSpinner.getSelectedItemPosition(); // Thay đổi nếu bạn cần lấy ID thực sự từ đối tượng Department
             int majorId = majorSpinner.getSelectedItemPosition(); // Tương tự
-            String classId = studentClass.getText().toString();
+            int classId = 0;
             String phoneNumberInfo = phoneNumber.getText().toString();
             int roleId = User.ROLE_STUDENT;
             String fullnameStudent = fullNameText.getText().toString();
@@ -644,16 +644,6 @@ public class UploadProfileActivity extends AppCompatActivity {
 
             @Override
             public void onStudentsReceived(List<Student> students) {
-
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                Toast.makeText(getApplicationContext(), "Error: " + errorMessage, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
 
             }
         });

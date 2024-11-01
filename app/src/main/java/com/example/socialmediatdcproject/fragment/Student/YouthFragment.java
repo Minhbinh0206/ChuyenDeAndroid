@@ -204,16 +204,6 @@ public class YouthFragment extends Fragment {
                     }
                 });
             }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
-
-            }
         });
     }
     public void loadGroupsInYouth(int userId) {

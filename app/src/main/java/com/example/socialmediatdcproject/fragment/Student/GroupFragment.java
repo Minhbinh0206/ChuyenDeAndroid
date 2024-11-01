@@ -89,16 +89,6 @@ public class GroupFragment extends Fragment {
                 public void onStudentsReceived(List<Student> students) {
                     // Không dùng trong ngữ cảnh này
                 }
-
-                @Override
-                public void onError(String errorMessage) {
-                    Log.e("GroupFragment", "Error fetching student: " + errorMessage);
-                }
-
-                @Override
-                public void onStudentDeleted(int studentId) {
-                    // Không dùng trong ngữ cảnh này
-                }
             });
 
             // Cập nhật màu cho các nút

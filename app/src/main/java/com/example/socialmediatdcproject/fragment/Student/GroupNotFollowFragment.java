@@ -114,16 +114,6 @@ public class GroupNotFollowFragment extends Fragment {
             public void onStudentsReceived(List<Student> students) {
 
             }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
-
-            }
         });
     }
     public void changeColorButtonActive(Button btn){

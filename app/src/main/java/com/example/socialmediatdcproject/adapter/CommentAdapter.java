@@ -67,16 +67,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                         }
                     }
                 }
-
-                @Override
-                public void onError(String errorMessage) {
-
-                }
-
-                @Override
-                public void onStudentDeleted(int studentId) {
-
-                }
             });
             adminDepartmentAPI.getAllAdminDepartments(new AdminDepartmentAPI.AdminDepartmentCallBack() {
                 @Override
@@ -190,12 +180,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
 
         adminDepartmentAPI.getAdminDepartmentByKey(userKey, new AdminDepartmentAPI.AdminDepartmentCallBack() {

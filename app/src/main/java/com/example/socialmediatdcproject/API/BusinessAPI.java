@@ -62,8 +62,8 @@ public class BusinessAPI {
     }
 
     // Get a business by ID
-    public void getBusinessById(String businessId, final BusinessCallback callback) {
-        databaseReference.child(businessId).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void getBusinessById(int businessId, final BusinessCallback callback) {
+        databaseReference.child(String.valueOf(businessId)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Business business = snapshot.getValue(Business.class);

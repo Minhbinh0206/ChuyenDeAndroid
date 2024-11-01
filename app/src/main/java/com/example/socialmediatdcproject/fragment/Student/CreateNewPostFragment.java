@@ -68,16 +68,6 @@ public class CreateNewPostFragment extends Fragment {
             public void onStudentsReceived(List<Student> students) {
 
             }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
-
-            }
         });
 
         TextView textView = view.findViewById(R.id.create_post_action);
@@ -115,16 +105,6 @@ public class CreateNewPostFragment extends Fragment {
 
             @Override
             public void onStudentsReceived(List<Student> students) {
-
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
 
             }
         });
@@ -179,6 +159,7 @@ public class CreateNewPostFragment extends Fragment {
                                                 post.setPostLike(0);
                                                 post.setPostImage("");
                                                 post.setContent(content);
+                                                post.setFilter(false);
                                                 post.setStatus(Post.WAITING);
                                                 post.setGroupId(groupId);
                                                 post.setCreatedAt(sdf.format(new Date()));
@@ -208,16 +189,6 @@ public class CreateNewPostFragment extends Fragment {
 
                 @Override
                 public void onStudentsReceived(List<Student> students) {
-
-                }
-
-                @Override
-                public void onError(String errorMessage) {
-
-                }
-
-                @Override
-                public void onStudentDeleted(int studentId) {
 
                 }
             });

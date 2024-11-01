@@ -107,16 +107,6 @@ public class SearchFriendAdapter extends RecyclerView.Adapter<SearchFriendAdapte
                     public void onStudentsReceived(List<Student> students) {
                         // Xử lý nếu cần
                     }
-
-                    @Override
-                    public void onError(String errorMessage) {
-                        Log.e("SearchFriendAdapter", "Error retrieving student: " + errorMessage);
-                    }
-
-                    @Override
-                    public void onStudentDeleted(int studentId) {
-                        // Xử lý nếu cần
-                    }
                 });
                 Intent intent = new Intent(v.getContext(), SharedActivity.class);
                 intent.putExtra("studentId", friend.getUserId());

@@ -31,10 +31,33 @@ public class StudentAPI {
                     if (task.isSuccessful()) {
                         callback.onStudentReceived(student);
                     } else {
-                        callback.onError("Error adding student: " + task.getException().getMessage());
+
                     }
                 });
     }
+
+    // Lấy sinh viên theo classId
+    public void getStudentByClassId(int classId, final StudentCallback callback) {
+        studentDatabase.orderByChild("classId").equalTo(classId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Student> studentList = new ArrayList<>();
+                for (DataSnapshot studentSnapshot : snapshot.getChildren()) {
+                    Student student = studentSnapshot.getValue(Student.class);
+                    if (student != null) {
+                        studentList.add(student);
+                    }
+                }
+                callback.onStudentsReceived(studentList); // Trả về danh sách sinh viên thuộc lớp đã chọn
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Xử lý khi có lỗi xảy ra
+            }
+        });
+    }
+
 
     // Cập nhật thông tin sinh viên
     public void updateStudent(Student student, final StudentCallback callback) {
@@ -49,7 +72,7 @@ public class StudentAPI {
                     if (task.isSuccessful()) {
                         callback.onStudentReceived(student);
                     } else {
-                        callback.onError("Error updating student: " + task.getException().getMessage());
+
                     }
                 });
     }
@@ -68,14 +91,12 @@ public class StudentAPI {
                                     return; // Nếu tìm thấy một sinh viên, trả về ngay
                                 }
                             }
-                        } else {
-                            callback.onError("Student not found.");
                         }
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        callback.onError("Error retrieving student: " + error.getMessage());
+
                     }
                 });
     }
@@ -88,28 +109,14 @@ public class StudentAPI {
                 if (dataSnapshot.exists()) {
                     Student student = dataSnapshot.getValue(Student.class);
                     callback.onStudentReceived(student);
-                } else {
-                    callback.onError("Student not found.");
                 }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                callback.onError("Error retrieving student: " + databaseError.getMessage());
+            public void onCancelled(@NonNull DatabaseError error) {
+
             }
         });
-    }
-
-    // Xóa sinh viên theo ID
-    public void deleteStudent(int studentId, final StudentCallback callback) {
-        studentDatabase.child(String.valueOf(studentId)).removeValue()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        callback.onStudentDeleted(studentId);
-                    } else {
-                        callback.onError("Error deleting student: " + task.getException().getMessage());
-                    }
-                });
     }
 
     // Lấy tất cả sinh viên
@@ -129,7 +136,7 @@ public class StudentAPI {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                callback.onError("Error retrieving students: " + error.getMessage());
+
             }
         });
     }
@@ -138,7 +145,5 @@ public class StudentAPI {
     public interface StudentCallback {
         void onStudentReceived(Student student);
         void onStudentsReceived(List<Student> students);
-        void onError(String errorMessage);
-        void onStudentDeleted(int studentId);
     }
 }
