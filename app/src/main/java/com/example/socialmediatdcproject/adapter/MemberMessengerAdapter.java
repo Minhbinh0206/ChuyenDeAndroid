@@ -98,16 +98,6 @@ public class MemberMessengerAdapter extends RecyclerView.Adapter<MemberMessenger
                 public void onStudentsReceived(List<Student> students) {
 
                 }
-
-                @Override
-                public void onError(String errorMessage) {
-
-                }
-
-                @Override
-                public void onStudentDeleted(int studentId) {
-
-                }
             });
 
         } else {

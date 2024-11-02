@@ -114,16 +114,6 @@ public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                         public void onStudentsReceived(List<Student> students) {
 
                         }
-
-                        @Override
-                        public void onError(String errorMessage) {
-
-                        }
-
-                        @Override
-                        public void onStudentDeleted(int studentId) {
-
-                        }
                     });
 
                 }
@@ -171,16 +161,6 @@ public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
                         @Override
                         public void onStudentsReceived(List<Student> students) {
-
-                        }
-
-                        @Override
-                        public void onError(String errorMessage) {
-
-                        }
-
-                        @Override
-                        public void onStudentDeleted(int studentId) {
 
                         }
                     });
@@ -321,12 +301,6 @@ public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
     }
 
@@ -399,12 +373,6 @@ public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
     }
 

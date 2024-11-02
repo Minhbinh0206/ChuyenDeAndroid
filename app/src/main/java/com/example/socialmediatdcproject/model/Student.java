@@ -7,7 +7,7 @@ public class Student extends User {
     private String birthday;
     private int departmentId;
     private int majorId;
-    private String studentClass;
+    private int classId;
     private String description;
     // Thêm trường cập nhật Avatar
     private String avatar;
@@ -56,12 +56,12 @@ public class Student extends User {
         this.majorId = majorId;
     }
 
-    public String getStudentClass() {
-        return studentClass;
+    public int getClassId() {
+        return classId;
     }
 
-    public void setStudentClass(String studentClass) {
-        this.studentClass = studentClass;
+    public void setClassId(int classId) {
+        this.classId = classId;
     }
 
     public String getDescription() {
@@ -72,25 +72,14 @@ public class Student extends User {
         this.description = description;
     }
 
-    public Student(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String studentNumber, String birthday, int departmentId, int majorId, String studentClass, String description) {
+    public Student(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String studentNumber, String birthday, int departmentId, int majorId, int studentClass, String description) {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
         this.studentNumber = studentNumber;
         this.birthday = birthday;
         this.departmentId = departmentId;
         this.majorId = majorId;
-        this.studentClass = studentClass;
+        this.classId = studentClass;
         this.description = description;
-    }
-
-
-    public Student(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId) {
-        super(userId, email, password, fullName, avatar, phoneNumber, roleId);
-        this.studentNumber = "";
-        this.birthday = "";
-        this.departmentId = -1;
-        this.majorId = -1;
-        this.studentClass = "";
-        this.description = "";
     }
 
     public Student() {

@@ -137,16 +137,6 @@ public class DepartmentFragment extends Fragment {
             public void onStudentsReceived(List<Student> students) {
 
             }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
-
-            }
         });
     }
 
@@ -234,16 +224,6 @@ public class DepartmentFragment extends Fragment {
                         }
                     }
                 });
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
-
             }
         });
     }

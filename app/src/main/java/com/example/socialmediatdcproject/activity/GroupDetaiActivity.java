@@ -87,12 +87,6 @@ public class GroupDetaiActivity extends AppCompatActivity {
 
                         @Override
                         public void onStudentsReceived(List<Student> students) {}
-
-                        @Override
-                        public void onError(String errorMessage) {}
-
-                        @Override
-                        public void onStudentDeleted(int studentId) {}
                     });
                 }
             });
@@ -181,12 +175,6 @@ public class GroupDetaiActivity extends AppCompatActivity {
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
     }
 }

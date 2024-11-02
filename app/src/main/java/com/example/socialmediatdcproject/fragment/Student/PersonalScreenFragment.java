@@ -107,16 +107,6 @@ public class PersonalScreenFragment extends Fragment {
             public void onStudentsReceived(List<Student> students) {
 
             }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
-
-            }
         });
         friendsFragment = new ListFriendFragment();
         fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
@@ -209,16 +199,6 @@ public class PersonalScreenFragment extends Fragment {
 
             @Override
             public void onStudentsReceived(List<Student> students) {
-                // Không sử dụng trong trường hợp này
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                // Xử lý lỗi
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
                 // Không sử dụng trong trường hợp này
             }
         });

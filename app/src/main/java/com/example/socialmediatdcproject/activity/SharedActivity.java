@@ -373,12 +373,6 @@ public class SharedActivity extends AppCompatActivity {
 
             @Override
             public void onStudentsReceived(List<Student> students) {}
-
-            @Override
-            public void onError(String errorMessage) {}
-
-            @Override
-            public void onStudentDeleted(int studentId) {}
         });
 
         Intent intent = getIntent();
@@ -423,16 +417,6 @@ public class SharedActivity extends AppCompatActivity {
 
             @Override
             public void onStudentsReceived(List<Student> students) {
-
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
 
             }
         });

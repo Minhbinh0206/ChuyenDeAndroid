@@ -139,16 +139,6 @@ public class ListFriendFragment extends Fragment {
                                         public void onStudentsReceived(List<Student> students) {
 
                                         }
-
-                                        @Override
-                                        public void onError(String errorMessage) {
-
-                                        }
-
-                                        @Override
-                                        public void onStudentDeleted(int studentId) {
-
-                                        }
                                     });
                                 }
                                 else if (f.getYourUserId() == myId){
@@ -181,16 +171,6 @@ public class ListFriendFragment extends Fragment {
                                         public void onStudentsReceived(List<Student> students) {
 
                                         }
-
-                                        @Override
-                                        public void onError(String errorMessage) {
-
-                                        }
-
-                                        @Override
-                                        public void onStudentDeleted(int studentId) {
-
-                                        }
                                     });
                                 }
                             }
@@ -201,16 +181,6 @@ public class ListFriendFragment extends Fragment {
 
             @Override
             public void onStudentsReceived(List<Student> students) {
-
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
 
             }
         });
@@ -257,16 +227,6 @@ public class ListFriendFragment extends Fragment {
                                     public void onStudentsReceived(List<Student> students) {
 
                                     }
-
-                                    @Override
-                                    public void onError(String errorMessage) {
-
-                                    }
-
-                                    @Override
-                                    public void onStudentDeleted(int studentId) {
-
-                                    }
                                 });
                             }
 
@@ -277,16 +237,6 @@ public class ListFriendFragment extends Fragment {
 
             @Override
             public void onStudentsReceived(List<Student> students) {
-
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
 
             }
         });
@@ -334,16 +284,6 @@ public class ListFriendFragment extends Fragment {
                                     public void onStudentsReceived(List<Student> students) {
 
                                     }
-
-                                    @Override
-                                    public void onError(String errorMessage) {
-
-                                    }
-
-                                    @Override
-                                    public void onStudentDeleted(int studentId) {
-
-                                    }
                                 });
                             }
 
@@ -354,16 +294,6 @@ public class ListFriendFragment extends Fragment {
 
             @Override
             public void onStudentsReceived(List<Student> students) {
-
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
 
             }
         });
