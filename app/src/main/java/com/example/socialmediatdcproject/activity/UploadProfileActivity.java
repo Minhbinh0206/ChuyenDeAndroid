@@ -106,6 +106,15 @@ public class UploadProfileActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
         }
     }
+    //Kiểm tra quyền camera
+    private void onClickRequestGalleryPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            openGallery();
+            showImageSourceDialog();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_REQUEST_CODE);
+        }
+    }
 
     //Chỉ hiện lần đầu tiên
     // Hàm hiển thị hộp thoại để chọn nguồn hình ảnh

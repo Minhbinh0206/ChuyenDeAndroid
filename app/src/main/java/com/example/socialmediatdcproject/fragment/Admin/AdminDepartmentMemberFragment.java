@@ -191,16 +191,6 @@ public class AdminDepartmentMemberFragment extends Fragment {
                     }
                 });
             }
-
-            @Override
-            public void onError(String errorMessage) {
-
-            }
-
-            @Override
-            public void onStudentDeleted(int studentId) {
-
-            }
         });
     }
     // Hiển thị giảng viên có trong khoa
