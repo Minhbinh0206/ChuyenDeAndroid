@@ -1,6 +1,7 @@
 package com.example.socialmediatdcproject.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -84,7 +85,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 userAPI.getAllUsers(new UserAPI.UserCallback() {
                                     @Override
                                     public void onUserReceived(User user) {
-
+                                        // Do nothing
                                     }
 
                                     @Override
@@ -102,7 +103,13 @@ public class RegisterActivity extends AppCompatActivity {
 
                                         userAPI.addUser(userDTB); // Thêm người dùng vào cơ sở dữ liệu
 
-                                        // Chuyển đến hoạt động tiếp theo
+                                        // Lưu trạng thái đăng ký vào SharedPreferences
+                                        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                                        editor.putBoolean("isRegistering", true); // Đánh dấu đang đăng ký
+                                        editor.apply();
+
+                                        // Chuyển đến hoạt động UploadProfileActivity
                                         Intent intent = new Intent(RegisterActivity.this, UploadProfileActivity.class);
                                         intent.putExtra("userId", userId);
                                         startActivity(intent);

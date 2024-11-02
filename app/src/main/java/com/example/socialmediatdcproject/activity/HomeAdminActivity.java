@@ -30,6 +30,7 @@ import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
 import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentFragment;
+import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentMemberFragment;
 import com.example.socialmediatdcproject.fragment.Admin.MainFeatureFragment;
 import com.example.socialmediatdcproject.fragment.Student.NotifyFragment;
 import com.example.socialmediatdcproject.model.AdminDepartment;
@@ -181,6 +182,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                         break;
                     case 1:
                         // Member
+                        fragment = new AdminDepartmentMemberFragment();
                         break;
                     case 2:
                         // Group

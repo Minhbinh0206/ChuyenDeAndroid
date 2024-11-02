@@ -1,6 +1,7 @@
 package com.example.socialmediatdcproject.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -72,6 +73,8 @@ public class SharedActivity extends AppCompatActivity {
         NavigationView navigationView = findViewById(R.id.nav_view);
         firstContentFragment = findViewById(R.id.first_content_fragment); // Khởi tạo FrameLayout
 
+//        checkUserProfile();
+
         // Xử lý sự kiện nhấn vào icon 3 gạch để mở Navigation Drawer
         ImageButton navigationButton = findViewById(R.id.icon_navigation);
         navigationButton.setOnClickListener(v -> {
@@ -122,6 +125,29 @@ public class SharedActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
 
     }
+
+//    private void checkUserProfile(){
+//        // Kiểm tra trạng thái trong SharedPreferences
+//        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+//        boolean isRegistering = sharedPreferences.getBoolean("isRegistering", false);
+//
+//        if (isRegistering) {
+//            // Nếu đang trong quá trình đăng ký, điều hướng đến UploadProfileActivity
+//            Intent intent = new Intent(SharedActivity.this, UploadProfileActivity.class);
+//            startActivity(intent);
+//            finish();
+//
+//            // Đặt lại trạng thái để không chuyển đến UploadProfileActivity lần nữa
+//            SharedPreferences.Editor editor = sharedPreferences.edit();
+//            editor.putBoolean("isRegistering", false);
+//            editor.apply();
+//        } else {
+//            // Chuyển đến SharedActivity hoặc hoạt động chính khác
+//            Intent intent = new Intent(SharedActivity.this, SettingActivity.class);
+//            startActivity(intent);
+//            finish();
+//        }
+//    }
 
     private void loadPostsFromFirebase() {
         PostAPI postAPI = new PostAPI();  // Sử dụng PostAPI để lấy dữ liệu từ Firebase
