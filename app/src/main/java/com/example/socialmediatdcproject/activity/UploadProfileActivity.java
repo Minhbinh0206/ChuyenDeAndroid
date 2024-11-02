@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -638,6 +639,12 @@ public class UploadProfileActivity extends AppCompatActivity {
         studentAPI.addStudent(student, new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
+                // Đặt isRegistering thành false để không điều hướng đến UploadProfileActivity nữa
+                SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("isRegistering", false);
+                editor.apply();
+
                 Toast.makeText(getApplicationContext(), "Student profile uploaded successfully!", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(UploadProfileActivity.this, SharedActivity.class));
             }

@@ -64,4 +64,7 @@ public class Lecturer extends User {
         this.majorId = -1;
         this.description = "";
     }
+
+    public Lecturer() {
+    }
 }
