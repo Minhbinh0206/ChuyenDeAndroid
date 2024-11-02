@@ -101,6 +101,29 @@ public class StudentAPI {
                 });
     }
 
+    public void getStudentByStudentNumber(String studentNumber, final StudentCallback callback) {
+        studentDatabase.orderByChild("studentNumber").equalTo(studentNumber)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            for (DataSnapshot studentSnapshot : snapshot.getChildren()) {
+                                Student student = studentSnapshot.getValue(Student.class);
+                                if (student != null) {
+                                    callback.onStudentReceived(student);
+                                    return; // Nếu tìm thấy một sinh viên, trả về ngay
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+    }
+
 
     public void getStudentByKey(String key, StudentCallback callback) {
         studentDatabase.child(key).addListenerForSingleValueEvent(new ValueEventListener() {

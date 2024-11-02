@@ -31,18 +31,18 @@ public class ClassAPI {
     }
 
     // Get classes by className
-    public void getClassesByClassName(String className, final ClassCallback callback) {
-        databaseReference.orderByChild("className").equalTo(className).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void getClassByClassName(String className, final ClassCallback callback) {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Class> classList = new ArrayList<>();
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     Class classItem = ds.getValue(Class.class);
-                    if (classItem != null) {
+                    if (classItem != null && className.equals(classItem.getClassName())) {
                         classList.add(classItem);
                     }
                 }
-                callback.onClassesReceived(classList); // Return list of classes with the specified className
+                callback.onClassesReceived(classList);
             }
 
             @Override
@@ -51,7 +51,6 @@ public class ClassAPI {
             }
         });
     }
-
 
     // Get all classes
     public void getAllClasses(final ClassCallback callback) {
