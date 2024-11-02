@@ -116,6 +116,7 @@ public class CreateNewPostFragment extends Fragment {
         postButtonCreate.setOnClickListener(v -> {
             String content = postContent.getText().toString();
             PostAPI postAPI = new PostAPI();
+            final boolean[] isPostAdded = {false};
             studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
                 @Override
                 public void onStudentReceived(Student student) {
@@ -138,40 +139,42 @@ public class CreateNewPostFragment extends Fragment {
                                     groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
                                         @Override
                                         public void onGroupReceived(Group group) {
-                                            if (student.getUserId() == group.getAdminUserId()) {
-                                                Post post = new Post();
-                                                post.setPostId(posts.size());
-                                                post.setUserId(student.getUserId());
-                                                post.setPostLike(0);
-                                                post.setPostImage("");
-                                                post.setContent(content);
-                                                post.setStatus(Post.APPROVED);
-                                                post.setGroupId(groupId);
-                                                post.setCreatedAt(sdf.format(new Date()));
-                                                postAPI.addPost(post);
+                                            if (!isPostAdded[0]) {
+                                                if (student.getUserId() == group.getAdminUserId()) {
+                                                    Post post = new Post();
+                                                    post.setPostId(posts.size());
+                                                    post.setUserId(student.getUserId());
+                                                    post.setPostLike(0);
+                                                    post.setPostImage("");
+                                                    post.setContent(content);
+                                                    post.setStatus(Post.APPROVED);
+                                                    post.setGroupId(groupId);
+                                                    post.setCreatedAt(sdf.format(new Date()));
+                                                    postAPI.addPost(post);
 
-                                                Toast.makeText(requireContext(), "Đăng bài thành công", Toast.LENGTH_SHORT).show();
-                                            }
-                                            else {
-                                                Post post = new Post();
-                                                post.setPostId(posts.size());
-                                                post.setUserId(student.getUserId());
-                                                post.setPostLike(0);
-                                                post.setPostImage("");
-                                                post.setContent(content);
-                                                post.setFilter(false);
-                                                post.setStatus(Post.WAITING);
-                                                post.setGroupId(groupId);
-                                                post.setCreatedAt(sdf.format(new Date()));
-                                                postAPI.addPost(post);
+                                                    Toast.makeText(requireContext(), "Đăng bài thành công", Toast.LENGTH_SHORT).show();
+                                                } else {
+                                                    Post post = new Post();
+                                                    post.setPostId(posts.size());
+                                                    post.setUserId(student.getUserId());
+                                                    post.setPostLike(0);
+                                                    post.setPostImage("");
+                                                    post.setContent(content);
+                                                    post.setFilter(false);
+                                                    post.setStatus(Post.WAITING);
+                                                    post.setGroupId(groupId);
+                                                    post.setCreatedAt(sdf.format(new Date()));
+                                                    postAPI.addPost(post);
 
-                                                Toast.makeText(requireContext(), "Bài đăng của bạn đang chờ phê duyệt", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(requireContext(), "Bài đăng của bạn đang chờ phê duyệt", Toast.LENGTH_SHORT).show();
 
-                                                notifyQuickly.setNotifyId(notifications.size());
-                                                notifyQuickly.setUserSendId(student.getUserId());
-                                                notifyQuickly.setUserGetId(group.getAdminUserId());
-                                                notifyQuickly.setContent(student.getFullName() + " vừa đăng bài mới và đang chờ bạn duuyệt!");
-                                                notifyQuicklyAPI.addNotification(notifyQuickly);
+                                                    notifyQuickly.setNotifyId(notifications.size());
+                                                    notifyQuickly.setUserSendId(student.getUserId());
+                                                    notifyQuickly.setUserGetId(group.getAdminUserId());
+                                                    notifyQuickly.setContent(student.getFullName() + " vừa đăng bài mới và đang chờ bạn duuyệt!");
+                                                    notifyQuicklyAPI.addNotification(notifyQuickly);
+                                                }
+                                                isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
                                             }
                                         }
 
