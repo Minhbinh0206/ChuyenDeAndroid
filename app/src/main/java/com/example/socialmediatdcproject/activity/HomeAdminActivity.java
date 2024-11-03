@@ -32,6 +32,7 @@ import com.example.socialmediatdcproject.adapter.PostAdapter;
 import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentFragment;
 import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentMemberFragment;
 import com.example.socialmediatdcproject.fragment.Admin.MainFeatureFragment;
+import com.example.socialmediatdcproject.fragment.Admin.RepairButtonFragment;
 import com.example.socialmediatdcproject.fragment.Student.NotifyFragment;
 import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Department;
@@ -153,6 +154,7 @@ public class HomeAdminActivity extends AppCompatActivity {
         });
     }
 
+
     private void addNavigationItems(NavigationView navigationView) {
         LinearLayout navLayout = (LinearLayout) navigationView.getHeaderView(0).findViewById(R.id.nav_container);
 
@@ -207,6 +209,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                 if (fragment != null) {
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                     fragmentTransaction.replace(R.id.first_content_fragment, fragment);
+                    fragmentTransaction.addToBackStack(null);
                     fragmentTransaction.commit();
                 }
 

@@ -14,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -53,6 +55,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
         return inflater.inflate(R.layout.admin_department_members_first, container, false);
     }
 
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -61,7 +64,6 @@ public class AdminDepartmentMemberFragment extends Fragment {
         // Khởi tạo danh sách người dùng và RecyclerView
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
-        frameLayout.setVisibility(view.GONE);
 
         String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -144,7 +146,36 @@ public class AdminDepartmentMemberFragment extends Fragment {
 
             }
         });
+
+        // Hiển thị phần layout dưới
+        repairButtonFragment();
+
+        changeFragmentByButtonClick();
+
+        if (isAddOrCancelFragmentVisible()) {
+            // Fragment hiện tại là AddOrCancelButtonFragment
+            Log.d("AdminDepartmentFragment", "Fragment hiện tại là AddOrCancelButtonFragment");
+        } else {
+            // Fragment hiện tại là RepairButtonFragment hoặc Fragment khác
+            Log.d("AdminDepartmentFragment", "Fragment hiện tại không phải là AddOrCancelButtonFragment");
+        }
     }
+    private void changeFragmentByButtonClick(){
+        RepairButtonFragment fragment = new RepairButtonFragment();
+        fragment.setEditAction(() -> {
+            // Hành động khi nút chỉnh sửa được nhấn
+            replaceFragmentWithAddOrCancel();
+        });
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.third_content_fragment, fragment)
+                .commit();
+    }
+    private boolean isAddOrCancelFragmentVisible() {
+        Fragment currentFragment = getActivity().getSupportFragmentManager().findFragmentById(R.id.third_content_fragment);
+        return currentFragment instanceof AddOrCancelButtonFragment; // Kiểm tra xem Fragment hiện tại có phải là AddOrCancelButtonFragment không
+    }
+
     // Hiển thị sinh viên có trong khoa
     private void loadStudentsByGroupId(int id) {
         ArrayList<Student> memberGroup = new ArrayList<>();
@@ -182,7 +213,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
 
                                     // Cập nhật RecyclerView sau khi thêm tất cả member
                                     MemberAdapter memberAdapter = new MemberAdapter(memberGroup, requireContext());
-                                    recyclerView.removeAllViews();
+                                    memberAdapter.notifyDataSetChanged();
                                     recyclerView.setAdapter(memberAdapter);
                                     recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
                                 }
@@ -231,7 +262,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
 
                                     // Cập nhật RecyclerView sau khi thêm tất cả member
                                     LecturerAdapter lecturerAdapter = new LecturerAdapter(memberGroup, requireContext());
-                                    recyclerView.removeAllViews();
+                                    lecturerAdapter.notifyDataSetChanged();
                                     recyclerView.setAdapter(lecturerAdapter);
                                     recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
                                 }
@@ -262,4 +293,28 @@ public class AdminDepartmentMemberFragment extends Fragment {
         btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
+
+    public void repairButtonFragment(){
+        // Gán fragment home là mặc định
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        // Nạp HomeFragment vào
+        fragmentTransaction.replace(R.id.third_content_fragment, new RepairButtonFragment());
+        fragmentTransaction.addToBackStack(null); // Thêm dòng này
+
+        // Lấy dữ lệu từ firebase
+        fragmentTransaction.commit();
+    }
+
+    public void replaceFragmentWithAddOrCancel() {
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        fragmentTransaction.replace(R.id.third_content_fragment, new AddOrCancelButtonFragment());
+        fragmentTransaction.addToBackStack(null); // Thêm dòng này
+        fragmentTransaction.commit();
+    }
+
+
 }

@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -24,11 +25,18 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
     private List<Lecturer> lecturerList;
     private Context context;
     private OnLecturerClickListener onLecturerClickListener;
+    private boolean showRemoveButton;
+
 
     // Constructor
     public LecturerAdapter(List<Lecturer> lecturerList, Context context) {
         this.lecturerList = lecturerList;
         this.context = context;
+    }
+    public LecturerAdapter(List<Lecturer> lecturerList, Context context , boolean showRemoveButton) {
+        this.lecturerList = lecturerList;
+        this.context = context;
+        this.showRemoveButton = showRemoveButton;
     }
 
     public interface OnLecturerClickListener {
@@ -38,12 +46,16 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
     public void setOnLecturerClickListener(OnLecturerClickListener listener) {
         this.onLecturerClickListener = listener;
     }
+    public void setShowRemoveButton(boolean show) {
+        this.showRemoveButton = show;
+        notifyDataSetChanged(); // Cập nhật UI nếu cần
+    }
 
     // Tạo ViewHolder
     @NonNull
     @Override
     public LecturerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_member_list, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_member_list_remove, parent, false);
         return new LecturerViewHolder(view);
     }
 
@@ -63,6 +75,16 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
                     .into(holder.lecturerAvatar);
 
             holder.cardView.setOnClickListener(v -> openPersonalPage(lecturer.getUserId()));
+            // Hiển thị hoặc ẩn nút 'X' dựa trên tham số showRemoveButton
+            if (showRemoveButton) {
+                holder.removeButton.setVisibility(View.VISIBLE);
+                holder.removeButton.setOnClickListener(v -> {
+                    removeMember(lecturer); // Gọi hàm để loại bỏ thành viên
+                });
+            } else {
+                holder.removeButton.setVisibility(View.GONE);
+            }
+
         } else {
             Log.e("LecturerAdapter", "Lecturer at position " + position + " is null");
         }
@@ -85,6 +107,7 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
         TextView lecturerPositionJob;
         TextView lecturerEmail;
         CardView cardView;
+        Button removeButton;
 
         public LecturerViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -93,6 +116,7 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
             lecturerPositionJob = itemView.findViewById(R.id.member_position_job);
             lecturerEmail = itemView.findViewById(R.id.member_email);
             cardView = itemView.findViewById(R.id.item_member);
+            removeButton = itemView.findViewById(R.id.button_remove);
         }
     }
 
@@ -100,5 +124,11 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
         Intent intent = new Intent(context, SharedActivity.class);
         intent.putExtra("lecturerId", userId); // Chuyển userId qua trang cá nhân
         context.startActivity(intent);
+    }
+    private void removeMember(Lecturer lecturer) {
+        // Xử lý logic để loại bỏ thành viên
+        // Ví dụ: loại bỏ khỏi danh sách và thông báo cho adapter
+        lecturerList.remove(lecturer);
+        notifyDataSetChanged(); // Cập nhật UI
     }
 }
