@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.FilterPostsAPI;
 import com.example.socialmediatdcproject.API.NotifyAPI;
 import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
@@ -52,6 +53,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SharedActivity extends AppCompatActivity {
@@ -150,42 +152,75 @@ public class SharedActivity extends AppCompatActivity {
 //    }
 
     private void loadPostsFromFirebase() {
-        PostAPI postAPI = new PostAPI();  // Sử dụng PostAPI để lấy dữ liệu từ Firebase
+        PostAPI postAPI = new PostAPI();
 
         postAPI.getAllPosts(new PostAPI.PostCallback() {
             @Override
             public void onPostReceived(Post post) {
-
             }
 
             @Override
             public void onPostsReceived(List<Post> posts) {
                 ArrayList<Post> postList = new ArrayList<>();
+                ArrayList<Post> filteredPosts = new ArrayList<>();
+                int[] processedPostsCount = {0};  // Biến đếm số bài viết đã xử lý
 
                 for (Post p : posts) {
                     UserAPI userAPI = new UserAPI();
                     userAPI.getUserById(p.getUserId(), new UserAPI.UserCallback() {
                         @Override
                         public void onUserReceived(User user) {
-                            if (user.getRoleId() == User.ROLE_PHONGDAOTAO || user.getRoleId() == User.ROLE_DOANTHANHNIEN || user.getRoleId() == User.ROLE_ADMIN_DEPARTMENT || user.getRoleId() == User.ROLE_ADMIN_BUSSINESS) {
-                                postList.add(p);
+                            if (!p.isFilter()) {
+                                if (user.getRoleId() == 2 || user.getRoleId() == 3 || user.getRoleId() == 4 || user.getRoleId() == 5) {
+                                    postList.add(p);
+                                }
+                                processedPostsCount[0]++;
+                                if (processedPostsCount[0] == posts.size()) {
+                                    postList.addAll(filteredPosts);  // Thêm tất cả bài viết đã lọc vào danh sách chung
+
+                                    // Setup RecyclerView với Adapter sau khi tất cả các bài viết đã được xử lý
+                                    RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
+                                    PostAdapter postAdapter = new PostAdapter(postList, SharedActivity.this);
+                                    recyclerView.setAdapter(postAdapter);
+                                    recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
+                                }
+                            } else {
+                                StudentAPI studentAPI = new StudentAPI();
+                                studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                                    @Override
+                                    public void onStudentReceived(Student student) {
+                                        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
+                                        filterPostsAPI.findUserInReceive(p.getPostId(), student.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
+                                            @Override
+                                            public void onResult(boolean isFound) {
+                                                if (isFound) {
+                                                    filteredPosts.add(p);
+                                                }
+                                                processedPostsCount[0]++;
+                                                if (processedPostsCount[0] == posts.size()) {
+                                                    postList.addAll(filteredPosts);  // Thêm tất cả bài viết đã lọc vào danh sách chung
+
+                                                    // Setup RecyclerView với Adapter sau khi tất cả các bài viết đã được xử lý
+                                                    RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
+                                                    PostAdapter postAdapter = new PostAdapter(postList, SharedActivity.this);
+                                                    recyclerView.setAdapter(postAdapter);
+                                                    recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
+                                                }
+                                            }
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onStudentsReceived(List<Student> students) {
+                                    }
+                                });
                             }
-
-                            // Setup RecyclerView với Adapter
-                            RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-                            PostAdapter postAdapter = new PostAdapter(postList, SharedActivity.this);
-                            recyclerView.setAdapter(postAdapter);
-
-                            // Sử dụng LayoutManager cho RecyclerView
-                            recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
                         }
 
                         @Override
                         public void onUsersReceived(List<User> users) {
-
                         }
                     });
-
                 }
             }
         });

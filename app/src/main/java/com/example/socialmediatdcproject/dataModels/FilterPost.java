@@ -1,18 +1,16 @@
 package com.example.socialmediatdcproject.dataModels;
 
-import com.example.socialmediatdcproject.model.User;
-
 import java.util.List;
 
-public class ReceicePost {
+public class FilterPost {
     private int postId;
-    private List<Object> listUserGet;
+    private List<Integer> listUserGet;
 
-    public List<?> getListUserGet() {
+    public List<Integer> getListUserGet() {
         return listUserGet;
     }
 
-    public void setListUserGet(List<Object> listUserGet) {
+    public void setListUserGet(List<Integer> listUserGet) {
         this.listUserGet = listUserGet;
     }
 
@@ -25,11 +23,11 @@ public class ReceicePost {
     }
 
 
-    public ReceicePost(int postId, List<Object> listUserGet) {
+    public FilterPost(int postId, List<Integer> listUserGet) {
         this.postId = postId;
         this.listUserGet = listUserGet;
     }
 
-    public ReceicePost() {
+    public FilterPost() {
     }
 }

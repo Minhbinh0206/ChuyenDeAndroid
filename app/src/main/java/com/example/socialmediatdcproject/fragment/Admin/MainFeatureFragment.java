@@ -2,7 +2,6 @@ package com.example.socialmediatdcproject.fragment.Admin;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,7 +12,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -24,7 +22,6 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -34,16 +31,13 @@ import com.example.socialmediatdcproject.API.ClassAPI;
 import com.example.socialmediatdcproject.API.CollabAPI;
 import com.example.socialmediatdcproject.API.DepartmentAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
-import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
-import com.example.socialmediatdcproject.API.ReceivePostAPI;
+import com.example.socialmediatdcproject.API.FilterPostsAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R; // Import đúng package chứa R
-import com.example.socialmediatdcproject.activity.UploadProfileActivity;
 import com.example.socialmediatdcproject.adapter.ItemFilterAdapter;
 import com.example.socialmediatdcproject.dataModels.Collab;
-import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
-import com.example.socialmediatdcproject.dataModels.ReceicePost;
+import com.example.socialmediatdcproject.dataModels.FilterPost;
 import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Business;
 import com.example.socialmediatdcproject.model.Class;
@@ -51,14 +45,12 @@ import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
-import com.example.socialmediatdcproject.model.User;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 public class MainFeatureFragment extends Fragment {
     private List<String> optionsOfAdminDepartment = new ArrayList<>();
@@ -96,6 +88,19 @@ public class MainFeatureFragment extends Fragment {
         Dialog dialog = new Dialog(requireContext());
         dialog.setContentView(R.layout.post_create_filter_layout);
 
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.getWindow().setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.comment_custom));
+
+        int marginInDp = (int) (10 * getResources().getDisplayMetrics().density);
+        if (dialog.getWindow() != null) {
+            WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            params.horizontalMargin = marginInDp / (float) getResources().getDisplayMetrics().widthPixels;
+            dialog.getWindow().setAttributes(params);
+        }
+
+        dialog.show();
+
         // Tìm các view bên trong Dialog
         Button postButtonCreate = dialog.findViewById(R.id.button_post_user_create_new);
         Button postButtonCancle = dialog.findViewById(R.id.button_post_user_create_cancle);
@@ -123,11 +128,14 @@ public class MainFeatureFragment extends Fragment {
             }
 
             @Override
-            public void onUsersReceived(List<AdminDepartment> adminDepartment) { }
+            public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+            }
 
             @Override
-            public void onError(String s) { }
+            public void onError(String s) {
+            }
         });
+        optionsOfAdminDepartment.clear();
 
         // Các tùy chọn cho Spinner
         optionsOfAdminDepartment.add("Toàn bộ học sinh thuộc khoa");
@@ -141,9 +149,9 @@ public class MainFeatureFragment extends Fragment {
         filterMain.setAdapter(filterMainAdapter);
 
         recyclerView.setVisibility(View.GONE);
-        List<Object> receivePostUser = new ArrayList<>();
+        List<Integer> receivePostUser = new ArrayList<>();
 
-        final boolean[] isFilter = {false};
+        final boolean[] isFilterPost = {false};
         // Gán sự kiện cho Spinner khi người dùng chọn item
         filterMain.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -151,111 +159,133 @@ public class MainFeatureFragment extends Fragment {
                 String selected = optionsOfAdminDepartment.get(position);
                 if (selected.equals(optionsOfAdminDepartment.get(0))) {
                     recyclerView.setVisibility(View.GONE);
-                    isFilter[0] = false;
+                    isFilterPost[0] = false;
 
                 } else if (selected.equals(optionsOfAdminDepartment.get(1))) {
                     recyclerView.setVisibility(View.VISIBLE);
                     loadBusinessFilter();
-                    isFilter[0] = true;
+                    isFilterPost[0] = true;
 
 
                 } else if (selected.equals(optionsOfAdminDepartment.get(2))) {
                     recyclerView.setVisibility(View.VISIBLE);
                     loadClassFilter();
-                    isFilter[0] = true;
+                    isFilterPost[0] = true;
 
                 } else {
                     loadStudentInDepartmentFilter();
                     recyclerView.setVisibility(View.VISIBLE);
-                    isFilter[0] = true;
+                    isFilterPost[0] = true;
 
                 }
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) { }
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
         });
 
-
-        // Gán sự kiện cho nút "Post"
         postButtonCreate.setOnClickListener(v -> {
-            List<String> selectedFilter = itemFilterAdapter.getSelectedFilters();
+            // Vô hiệu hóa nút để tránh nhấn nhiều lần
+            postButtonCreate.setEnabled(false);
 
             String content = postContent.getText().toString();
-            PostAPI postAPI = new PostAPI();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-            adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
-                @Override
-                public void onUserReceived(AdminDepartment adminDepartment) {
-                    postAPI.getAllPosts(new PostAPI.PostCallback() {
-                        @Override
-                        public void onPostReceived(Post post) { }
 
-                        @Override
-                        public void onPostsReceived(List<Post> posts) {
-                            GroupAPI groupAPI = new GroupAPI();
-                            DepartmentAPI departmentAPI = new DepartmentAPI();
-                            departmentAPI.getDepartmentById(adminDepartment.getDepartmentId(), new DepartmentAPI.DepartmentCallback() {
-                                @Override
-                                public void onDepartmentReceived(Department department) {
-                                    groupAPI.getGroupById(department.getGroupId(), new GroupAPI.GroupCallback() {
-                                        @Override
-                                        public void onGroupReceived(Group group) {
+            if (isFilterPost[0]) {
+                // Xử lý các bộ lọc như đã đề cập ở trên
+                receivePostUser.clear(); // Đảm bảo danh sách rỗng trước khi thêm
 
-                                            if (adminDepartment.getUserId() == group.getAdminUserId()) {
-                                                Post newPost = new Post();
-                                                newPost.setPostId(posts.size());
-                                                newPost.setUserId(adminDepartment.getUserId());
-                                                newPost.setPostLike(0);
-                                                newPost.setPostImage("");
-                                                newPost.setContent(content);
-                                                newPost.setStatus(Post.APPROVED);
-                                                newPost.setFilter(isFilter[0]);
-                                                newPost.setGroupId(department.getGroupId());
-                                                newPost.setCreatedAt(sdf.format(new Date()));
-                                                postAPI.addPost(newPost);
+                List<String> selectedFilter = itemFilterAdapter.getSelectedFilters();
+                if (selectedFilter.get(0).substring(0, 5).equals("Doanh")) {
+                    // Xử lý các phần tử là doanh nghiệp
+                    for (String s : selectedFilter) {
+                        BusinessAPI businessAPI = new BusinessAPI();
+                        businessAPI.getAllBusinesses(new BusinessAPI.BusinessCallback() {
+                            @Override
+                            public void onBusinessReceived(Business business) {
 
-                                                processAdditional(newPost.getPostId(), receivePostUser);
+                            }
 
-                                                Toast.makeText(requireContext(), "Đăng bài thành công", Toast.LENGTH_SHORT).show();
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onGroupsReceived(List<Group> groups) { }
-                                    });
+                            @Override
+                            public void onBusinessesReceived(List<Business> businesses) {
+                                for (Business b : businesses) {
+                                    if (s.equals(b.getBussinessName())) {
+                                        receivePostUser.add(b.getBusinessAdminId());
+                                    }
                                 }
+                            }
+                        });
+                    }
+                    processCreatePost(content, isFilterPost[0], receivePostUser);
+                    dialog.dismiss();
+                } else if (selectedFilter.get(0).substring(0, 2).equals("CD")) {
+                    for (String s : selectedFilter) {
+                        ClassAPI classAPI = new ClassAPI();
+                        classAPI.getAllClasses(new ClassAPI.ClassCallback() {
+                            @Override
+                            public void onClassReceived(Class classItem) {
+                                // Không cần xử lý ở đây
+                            }
 
-                                @Override
-                                public void onDepartmentsReceived(List<Department> departments) { }
-                            });
-                        }
-                    });
+                            @Override
+                            public void onClassesReceived(List<Class> classList) {
+                                for (Class c : classList) {
+                                    Log.d("Class", "Class Name: " + c.getClassName());
+                                    if (s.equals(c.getClassName())) {
+                                        StudentAPI studentAPI = new StudentAPI();
+                                        studentAPI.getAllStudents(new StudentAPI.StudentCallback() {
+                                            @Override
+                                            public void onStudentReceived(Student student) {
+                                                // Không cần xử lý ở đây
+                                            }
+
+                                            @Override
+                                            public void onStudentsReceived(List<Student> students) {
+                                                for (Student student : students) {
+                                                    if (student.getClassId() == c.getId()) {
+                                                        receivePostUser.add(student.getUserId());
+                                                    }
+                                                }
+
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    processCreatePost(content, isFilterPost[0], receivePostUser);
+                    dialog.dismiss(); // Đóng dialog sau khi processCreatePost hoàn tất
+                } else {
+                    // Xử lý trường hợp học sinh cụ thể
+                    for (String s : selectedFilter) {
+                        StudentAPI studentAPI = new StudentAPI();
+                        studentAPI.getStudentByStudentNumber(s, new StudentAPI.StudentCallback() {
+                            @Override
+                            public void onStudentReceived(Student student) {
+                                receivePostUser.add(student.getUserId());
+                            }
+
+                            @Override
+                            public void onStudentsReceived(List<Student> students) {
+
+                            }
+                        });
+                    }
+                    processCreatePost(content, isFilterPost[0], receivePostUser);
+                    dialog.dismiss(); // Đóng dialog sau khi processCreatePost hoàn tất
                 }
+            } else {
+                // Nếu không dùng bộ lọc, chỉ gọi processCreatePost một lần
+                processCreatePost(content, isFilterPost[0], receivePostUser);
+                dialog.dismiss(); // Đóng dialog
+            }
 
-                @Override
-                public void onUsersReceived(List<AdminDepartment> adminDepartment) { }
-
-                @Override
-                public void onError(String s) { }
-            });
-            dialog.dismiss();
+            // Bật lại nút sau khi hoàn thành
+            postButtonCreate.setEnabled(true);
         });
 
         postButtonCancle.setOnClickListener(v -> dialog.dismiss());
-
-        dialog.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        dialog.getWindow().setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.comment_custom));
-
-        int marginInDp = (int) (10 * getResources().getDisplayMetrics().density);
-        if (dialog.getWindow() != null) {
-            WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
-            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-            params.horizontalMargin = marginInDp / (float) getResources().getDisplayMetrics().widthPixels;
-            dialog.getWindow().setAttributes(params);
-        }
-
-        dialog.show();
     }
 
     // Phương thức cập nhật RecyclerView sau khi có đủ dữ liệu
@@ -334,12 +364,12 @@ public class MainFeatureFragment extends Fragment {
         });
     }
 
-    private void processAdditional(int id, List<Object> users){
-        ReceivePostAPI receivePostAPI = new ReceivePostAPI();
-        ReceicePost receicePost = new ReceicePost();
-        receicePost.setPostId(id);
-        receicePost.setListUserGet(users);
-        receivePostAPI.addReceivePost(receicePost);
+    private void processAdditional(int id, List<Integer> users){
+        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
+        FilterPost filterPost = new FilterPost();
+        filterPost.setPostId(id);
+        filterPost.setListUserGet(users);
+        filterPostsAPI.addReceivePost(filterPost);
     }
 
     private void loadClassFilter() {
@@ -414,6 +444,86 @@ public class MainFeatureFragment extends Fragment {
             @Override
             public void onError(String s) {
 
+            }
+        });
+    }
+
+    private void processCreatePost(String content, boolean filter, List<Integer> postsReceive) {
+        PostAPI postAPI = new PostAPI();
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+        // Cờ để kiểm tra chỉ gọi addPost một lần
+        final boolean[] isPostAdded = {false};
+
+        adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
+            @Override
+            public void onUserReceived(AdminDepartment adminDepartment) {
+                postAPI.getAllPosts(new PostAPI.PostCallback() {
+                    @Override
+                    public void onPostReceived(Post post) {
+                        // Không cần xử lý ở đây
+                    }
+
+                    @Override
+                    public void onPostsReceived(List<Post> posts) {
+                        GroupAPI groupAPI = new GroupAPI();
+                        DepartmentAPI departmentAPI = new DepartmentAPI();
+
+                        departmentAPI.getDepartmentById(adminDepartment.getDepartmentId(), new DepartmentAPI.DepartmentCallback() {
+                            @Override
+                            public void onDepartmentReceived(Department department) {
+                                groupAPI.getGroupById(department.getGroupId(), new GroupAPI.GroupCallback() {
+                                    @Override
+                                    public void onGroupReceived(Group group) {
+                                        // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
+                                        if (adminDepartment.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
+                                            isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
+
+                                            Post newPost = new Post();
+                                            newPost.setPostId(posts.size());
+                                            newPost.setUserId(adminDepartment.getUserId());
+                                            newPost.setPostLike(0);
+                                            newPost.setPostImage("");
+                                            newPost.setContent(content);
+                                            newPost.setStatus(Post.APPROVED);
+                                            newPost.setFilter(filter);
+                                            newPost.setGroupId(department.getGroupId());
+                                            newPost.setCreatedAt(sdf.format(new Date()));
+
+                                            if (postsReceive.size() != 0) {
+                                                processAdditional(newPost.getPostId(), postsReceive);
+                                            }
+
+                                            postAPI.addPost(newPost);
+                                            Toast.makeText(requireContext(), "Đăng bài thành công", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onGroupsReceived(List<Group> groups) {
+                                        // Không cần xử lý ở đây
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onDepartmentsReceived(List<Department> departments) {
+                                // Không cần xử lý ở đây
+                            }
+                        });
+                    }
+                });
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+                // Không cần xử lý ở đây
+            }
+
+            @Override
+            public void onError(String s) {
+                // Xử lý lỗi nếu cần
             }
         });
     }
