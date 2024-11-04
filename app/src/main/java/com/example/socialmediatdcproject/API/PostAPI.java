@@ -49,7 +49,7 @@ public class PostAPI {
 
     // Lấy tất cả bài viết
     public void getAllPosts(final PostCallback callback) {
-        postDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+        postDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Post> postList = new ArrayList<>();

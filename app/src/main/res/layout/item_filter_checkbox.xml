@@ -19,6 +19,7 @@
         android:layout_height="match_parent"
         android:maxWidth="300dp"
         android:gravity="start"
+        android:textSize="15dp"
         android:text=""
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/checkBox"

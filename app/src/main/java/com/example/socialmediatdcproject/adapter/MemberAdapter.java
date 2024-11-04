@@ -15,8 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.SharedActivity;
+import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Student;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberViewHolder> {
@@ -30,7 +32,6 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
         this.memberList = memberList;
         this.context = context;
     }
-
     public interface OnMemberClickListener {
         void onMemberClick(Student student);
     }

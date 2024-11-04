@@ -3,18 +3,18 @@ package com.example.socialmediatdcproject.model;
 public class Class {
     private int id;
     private String className;
-    private int majorId;
+    private int departmentId;
 
     public Class(int id, String className, int majorId) {
         this.id = id;
         this.className = className;
-        this.majorId = majorId;
+        this.departmentId = majorId;
     }
 
     public Class() {
         this.id = -1;
         this.className = "";
-        this.majorId = -1;
+        this.departmentId = -1;
     }
 
     public int getId() {
@@ -34,10 +34,10 @@ public class Class {
     }
 
     public int getMajorId() {
-        return majorId;
+        return departmentId;
     }
 
     public void setMajorId(int majorId) {
-        this.majorId = majorId;
+        this.departmentId = majorId;
     }
 }

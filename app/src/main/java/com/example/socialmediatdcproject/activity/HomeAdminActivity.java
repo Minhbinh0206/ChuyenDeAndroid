@@ -30,7 +30,9 @@ import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
 import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentFragment;
+import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentMemberFragment;
 import com.example.socialmediatdcproject.fragment.Admin.MainFeatureFragment;
+import com.example.socialmediatdcproject.fragment.Admin.RepairButtonFragment;
 import com.example.socialmediatdcproject.fragment.Student.NotifyFragment;
 import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Department;
@@ -80,7 +82,12 @@ public class HomeAdminActivity extends AppCompatActivity {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.first_content_fragment, fragment);
 
-            notifyAPI.getNotifications(new NotifyAPI.NotificationCallback() {
+            notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                @Override
+                public void onNotificationReceived(Notify notify) {
+
+                }
+
                 @Override
                 public void onNotificationsReceived(List<Notify> notifications) {
                     // Xử lý danh sách thông báo
@@ -152,6 +159,7 @@ public class HomeAdminActivity extends AppCompatActivity {
         });
     }
 
+
     private void addNavigationItems(NavigationView navigationView) {
         LinearLayout navLayout = (LinearLayout) navigationView.getHeaderView(0).findViewById(R.id.nav_container);
 
@@ -181,6 +189,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                         break;
                     case 1:
                         // Member
+                        fragment = new AdminDepartmentMemberFragment();
                         break;
                     case 2:
                         // Group
@@ -205,6 +214,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                 if (fragment != null) {
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                     fragmentTransaction.replace(R.id.first_content_fragment, fragment);
+                    fragmentTransaction.addToBackStack(null);
                     fragmentTransaction.commit();
                 }
 
@@ -304,6 +314,11 @@ public class HomeAdminActivity extends AppCompatActivity {
         fragmentTransaction.commit();
 
         notifyAPI.getNotificationsByReadStatus(0, new NotifyAPI.NotificationCallback() {
+            @Override
+            public void onNotificationReceived(Notify notify) {
+
+            }
+
             @Override
             public void onNotificationsReceived(List<Notify> notifications) {
                 TextView countNotify = findViewById(R.id.count_notify);

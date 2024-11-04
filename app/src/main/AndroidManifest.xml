@@ -87,6 +87,9 @@
         <activity android:name=".activity.SettingActivity"
             android:exported="false">
         </activity>
+        <activity android:name=".activity.SendNotificationActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>
