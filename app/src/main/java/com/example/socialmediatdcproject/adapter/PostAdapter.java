@@ -318,6 +318,16 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 Log.e("CommentListener", "Failed to read comments count.", error.toException());
             }
         });
+
+        if (!post.getPostImage().isEmpty()) {
+            holder.postImageView.setVisibility(View.VISIBLE);
+            Glide.with(context)
+                    .load(post.getPostImage())
+                    .into(holder.postImageView);
+        }
+        else {
+            holder.postImageView.setVisibility(View.GONE);
+        }
     }
 
     private void setupLikeButton(PostTextViewHolder holder, Post post) {
@@ -552,6 +562,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     public static class PostImageViewHolder extends RecyclerView.ViewHolder {
+        ImageView postImageView;
         TextView postcontent;
         TextView postAdminUserId;
         LinearLayout buttonComment;
@@ -573,6 +584,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             textViewComent = itemView.findViewById(R.id.post_comment);
             imageButtonLike = itemView.findViewById(R.id.like_button_image);
             postCreateAt = itemView.findViewById(R.id.post_create_at); // Ánh xạ ID cho thời gian đăng
+            postImageView = itemView.findViewById(R.id.post_image);
         }
     }
 }
