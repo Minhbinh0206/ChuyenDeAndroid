@@ -80,7 +80,12 @@ public class HomeAdminActivity extends AppCompatActivity {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.first_content_fragment, fragment);
 
-            notifyAPI.getNotifications(new NotifyAPI.NotificationCallback() {
+            notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                @Override
+                public void onNotificationReceived(Notify notify) {
+
+                }
+
                 @Override
                 public void onNotificationsReceived(List<Notify> notifications) {
                     // Xử lý danh sách thông báo
@@ -304,6 +309,11 @@ public class HomeAdminActivity extends AppCompatActivity {
         fragmentTransaction.commit();
 
         notifyAPI.getNotificationsByReadStatus(0, new NotifyAPI.NotificationCallback() {
+            @Override
+            public void onNotificationReceived(Notify notify) {
+
+            }
+
             @Override
             public void onNotificationsReceived(List<Notify> notifications) {
                 TextView countNotify = findViewById(R.id.count_notify);

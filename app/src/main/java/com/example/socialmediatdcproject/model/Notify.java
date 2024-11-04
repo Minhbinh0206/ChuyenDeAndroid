@@ -9,6 +9,8 @@ public class    Notify {
     private String notifyTitle;
     private String notifyContent;
     private int isRead;
+    private boolean isFilter;
+    private String createAt;
 
     public int getNotifyId() {
         return notifyId;
@@ -42,6 +44,14 @@ public class    Notify {
         this.notifyContent = notifyContent;
     }
 
+    public boolean isFilter() {
+        return isFilter;
+    }
+
+    public void setFilter(boolean filter) {
+        isFilter = filter;
+    }
+
     public int getIsRead() {
         return isRead;
     }
@@ -50,12 +60,22 @@ public class    Notify {
         this.isRead = isRead;
     }
 
-    public Notify(int notifyId, int userSendId, String notifyTitle, String notifyContent, int isRead) {
+    public String getCreateAt() {
+        return createAt;
+    }
+
+    public void setCreateAt(String createAt) {
+        this.createAt = createAt;
+    }
+
+    public Notify(int notifyId, int userSendId, String notifyTitle, String notifyContent, boolean isFilter, int isRead, String createAt) {
         this.notifyId = notifyId;
         this.userSendId = userSendId;
         this.notifyTitle = notifyTitle;
         this.notifyContent = notifyContent;
         this.isRead = isRead;
+        this.createAt = createAt;
+        this.isFilter = isFilter;
     }
 
     public Notify() {

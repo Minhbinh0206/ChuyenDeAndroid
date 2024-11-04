@@ -47,10 +47,10 @@ public class NotifyDetailActivity extends AppCompatActivity {
         UserAPI userAPI = new UserAPI();
         notifyAPI.getNotificationById(notifyId, new NotifyAPI.NotificationCallback() {
             @Override
-            public void onNotificationsReceived(List<Notify> notifications) {
-                title.setText(notifications.get(0).getNotifyTitle());
-                content.setText(notifications.get(0).getNotifyContent());
-                userAPI.getUserById(notifications.get(0).getUserSendId(), new UserAPI.UserCallback() {
+            public void onNotificationReceived(Notify notify) {
+                title.setText(notify.getNotifyTitle());
+                content.setText(notify.getNotifyContent());
+                userAPI.getUserById(notify.getUserSendId(), new UserAPI.UserCallback() {
                     @Override
                     public void onUserReceived(User user) {
                         nameUser.setText(user.getFullName());
@@ -61,6 +61,11 @@ public class NotifyDetailActivity extends AppCompatActivity {
 
                     }
                 });
+            }
+
+            @Override
+            public void onNotificationsReceived(List<Notify> notifications) {
+
             }
 
             @Override

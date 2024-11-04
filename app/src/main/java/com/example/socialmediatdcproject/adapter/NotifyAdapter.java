@@ -84,17 +84,7 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
                 // Đánh dấu là đã đọc
                 notify.setIsRead(1);
                 NotifyAPI notifyAPI = new NotifyAPI();
-                notifyAPI.updateNotification(notify, new NotifyAPI.NotificationCallback() {
-                    @Override
-                    public void onNotificationsReceived(List<Notify> notifications) {
-                        // Update thanh cong
-                    }
-
-                    @Override
-                    public void onError(String errorMessage) {
-
-                    }
-                });
+                notifyAPI.updateNotification(notify);
 
                 Intent intent = new Intent(v.getContext(), NotifyDetailActivity.class);
                 intent.putExtra("notifyId", notify.getNotifyId());
