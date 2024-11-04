@@ -1,6 +1,7 @@
 package com.example.socialmediatdcproject.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -39,6 +40,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         if (mAuth != null) {
             currentUser = mAuth.getCurrentUser();
         }
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -48,16 +50,17 @@ public class SplashScreenActivity extends AppCompatActivity {
                 AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
 
                 if (currentUser != null) {
+                    checkUserProfile(); // Kiểm tra trạng thái đăng ký trước khi điều hướng
+
                     studentAPI.getStudentByKey(currentUser.getUid(), new StudentAPI.StudentCallback() {
                         @Override
                         public void onStudentReceived(Student student) {
                             Log.d("TAG", "User: " + student.getFullName());
 
                             if (student.getUserId() != -1) {
-                                // Nếu đã đăng nhập, chuyển đến SharedActivity
                                 Intent intent = new Intent(SplashScreenActivity.this, SharedActivity.class);
                                 startActivity(intent);
-                                finish(); // Đóng LoginActivity để không quay lại
+                                finish();
                             } else {
                                 Toast.makeText(SplashScreenActivity.this, "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
                             }
@@ -71,28 +74,22 @@ public class SplashScreenActivity extends AppCompatActivity {
                         @Override
                         public void onUserReceived(AdminDepartment adminDepartment) {
                             if (adminDepartment.getUserId() != -1) {
-                                // Nếu đã đăng nhập, chuyển đến SharedActivity
                                 Intent intent = new Intent(SplashScreenActivity.this, HomeAdminActivity.class);
                                 startActivity(intent);
-                                finish(); // Đóng LoginActivity để không quay lại
+                                finish();
                             }
                         }
 
                         @Override
-                        public void onUsersReceived(List<AdminDepartment> adminDepartment) {
-
-                        }
+                        public void onUsersReceived(List<AdminDepartment> adminDepartment) {}
 
                         @Override
-                        public void onError(String s) {
-
-                        }
+                        public void onError(String s) {}
                     });
-                }
-                else {
+                } else {
                     Intent intent = new Intent(SplashScreenActivity.this, LoginActivity.class);
                     startActivity(intent);
-                    finish(); // Đóng LoginActivity để không quay lại
+                    finish();
                 }
             }
         }, 3000);
@@ -105,5 +102,23 @@ public class SplashScreenActivity extends AppCompatActivity {
                 .load(R.drawable.image_logo_login)
                 .circleCrop()
                 .into(avatar);
+    }
+
+    private void checkUserProfile() {
+        // Kiểm tra trạng thái trong SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean isRegistering = sharedPreferences.getBoolean("isRegistering", false);
+
+        if (isRegistering) {
+            // Nếu đang trong quá trình đăng ký, điều hướng đến UploadProfileActivity
+            Intent intent = new Intent(SplashScreenActivity.this, UploadProfileActivity.class);
+            startActivity(intent);
+            finish();
+
+            // Đặt lại trạng thái để không chuyển đến UploadProfileActivity lần nữa
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("isRegistering", false);
+            editor.apply();
+        }
     }
 }

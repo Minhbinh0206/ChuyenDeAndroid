@@ -1,6 +1,7 @@
 package com.example.socialmediatdcproject.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -77,6 +78,8 @@ public class SharedActivity extends AppCompatActivity {
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         firstContentFragment = findViewById(R.id.first_content_fragment); // Khởi tạo FrameLayout
+
+//        checkUserProfile();
 
         // Xử lý sự kiện nhấn vào icon 3 gạch để mở Navigation Drawer
         ImageButton navigationButton = findViewById(R.id.icon_navigation);
@@ -178,7 +181,6 @@ public class SharedActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
 
     }
-
     // Phương thức kiểm tra và thiết lập RecyclerView khi đã xử lý tất cả thông báo
     private void checkAndSetupRecyclerView(ArrayList<Notify> notifyList, int processedCount, int totalNotifications) {
         if (processedCount == totalNotifications) {
