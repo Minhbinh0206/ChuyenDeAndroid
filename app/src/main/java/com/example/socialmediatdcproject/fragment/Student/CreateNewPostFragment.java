@@ -290,220 +290,129 @@
                             .load(student.getAvatar())
                             .circleCrop()
                             .into(imageViewAvatar);
-        // Gán sự kiện cho nút "Post"
-        postButtonCreate.setOnClickListener(v -> {
-            String content = postContent.getText().toString();
-            PostAPI postAPI = new PostAPI();
-            final boolean[] isPostAdded = {false};
-            studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-                @Override
-                public void onStudentReceived(Student student) {
-                    postAPI.getAllPosts(new PostAPI.PostCallback() {
-                        @Override
-                        public void onPostReceived(Post post) {
-
-                        }
-
-                        @Override
-                        public void onPostsReceived(List<Post> posts) {
-                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-
-                            NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
-                            NotifyQuickly notifyQuickly = new NotifyQuickly();
-                            notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
-                                @Override
-                                public void onNotificationsReceived(List<NotifyQuickly> notifications) {
-                                    GroupAPI groupAPI = new GroupAPI();
-                                    groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
-                                        @Override
-                                        public void onGroupReceived(Group group) {
-                                            if (!isPostAdded[0]) {
-                                                if (student.getUserId() == group.getAdminUserId()) {
-                                                    Post post = new Post();
-                                                    post.setPostId(posts.size());
-                                                    post.setUserId(student.getUserId());
-                                                    post.setPostLike(0);
-                                                    post.setPostImage("");
-                                                    post.setContent(content);
-                                                    post.setStatus(Post.APPROVED);
-                                                    post.setGroupId(groupId);
-                                                    post.setCreatedAt(sdf.format(new Date()));
-                                                    postAPI.addPost(post);
-
-                                                    Toast.makeText(requireContext(), "Đăng bài thành công", Toast.LENGTH_SHORT).show();
-                                                } else {
-                                                    Post post = new Post();
-                                                    post.setPostId(posts.size());
-                                                    post.setUserId(student.getUserId());
-                                                    post.setPostLike(0);
-                                                    post.setPostImage("");
-                                                    post.setContent(content);
-                                                    post.setFilter(false);
-                                                    post.setStatus(Post.WAITING);
-                                                    post.setGroupId(groupId);
-                                                    post.setCreatedAt(sdf.format(new Date()));
-                                                    postAPI.addPost(post);
-
-                                                    Toast.makeText(requireContext(), "Bài đăng của bạn đang chờ phê duyệt", Toast.LENGTH_SHORT).show();
-
-                                                    notifyQuickly.setNotifyId(notifications.size());
-                                                    notifyQuickly.setUserSendId(student.getUserId());
-                                                    notifyQuickly.setUserGetId(group.getAdminUserId());
-                                                    notifyQuickly.setContent(student.getFullName() + " vừa đăng bài mới và đang chờ bạn duuyệt!");
-                                                    notifyQuicklyAPI.addNotification(notifyQuickly);
-                                                }
-                                                isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onGroupsReceived(List<Group> groups) {
-
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    });
-                }
-    
-                @Override
-                public void onStudentsReceived(List<Student> students) {
-    
-                }
-            });
-    
-            changeColorButtonActive(postButtonCreate);
-            changeColorButtonActive(postButtonCancle);
-    
-            // Gán sự kiện cho nút "Post"
-            postButtonCreate.setOnClickListener(v -> {
-                String content = postContent.getText().toString();
-                PostAPI postAPI = new PostAPI();
-                studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-                    @Override
-                    public void onStudentReceived(Student student) {
-                        postAPI.getAllPosts(new PostAPI.PostCallback() {
+                    // Gán sự kiện cho nút "Post"
+                    postButtonCreate.setOnClickListener(v -> {
+                        String content = postContent.getText().toString();
+                        PostAPI postAPI = new PostAPI();
+                        final boolean[] isPostAdded = {false};
+                        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
                             @Override
-                            public void onPostReceived(Post post) {
-    
-                            }
-    
-                            @Override
-                            public void onPostsReceived(List<Post> posts) {
-                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    
-                                NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
-                                NotifyQuickly notifyQuickly = new NotifyQuickly();
-                                notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
+                            public void onStudentReceived(Student student) {
+                                postAPI.getAllPosts(new PostAPI.PostCallback() {
                                     @Override
-                                    public void onNotificationsReceived(List<NotifyQuickly> notifications) {
-                                        GroupAPI groupAPI = new GroupAPI();
-                                        groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                                    public void onPostReceived(Post post) {
+
+                                    }
+
+                                    @Override
+                                    public void onPostsReceived(List<Post> posts) {
+                                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+                                        NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+                                        NotifyQuickly notifyQuickly = new NotifyQuickly();
+                                        notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
                                             @Override
-                                            public void onGroupReceived(Group group) {
-                                                if (student.getUserId() == group.getAdminUserId()) {
-                                                    Post post = new Post();
-                                                    post.setPostId(posts.size());
-                                                    post.setUserId(student.getUserId());
-                                                    post.setPostLike(0);
-                                                    // Tải ảnh lên Firebase và cập nhật vào post
-                                                    uploadImageToFirebaseStorage(selectedImageUri, postId, post);
-                                                    post.setContent(content);
-                                                    post.setStatus(Post.APPROVED);
-                                                    post.setGroupId(groupId);
-                                                    post.setCreatedAt(sdf.format(new Date()));
-                                                    postAPI.addPost(post);
-    
-                                                    Toast.makeText(requireContext(), "Đăng bài thành công", Toast.LENGTH_SHORT).show();
-                                                }
-                                                else {
-                                                    Post post = new Post();
-                                                    post.setPostId(posts.size());
-                                                    post.setUserId(student.getUserId());
-                                                    post.setPostLike(0);
-                                                    post.setPostImage("");
-                                                    // Tải ảnh lên Firebase và cập nhật vào post
-                                                    Log.d("URI", "onGroupReceived: "+ selectedImageUri);
-                                                    if (selectedImageUri != null) {
-                                                        uploadImageToFirebaseStorage(selectedImageUri, postId, post);
-                                                    } else {
-                                                        post.setPostImage(""); // Gán ảnh rỗng nếu không có ảnh
+                                            public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                                                GroupAPI groupAPI = new GroupAPI();
+                                                groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                                                    @Override
+                                                    public void onGroupReceived(Group group) {
+                                                        if (!isPostAdded[0]) {
+                                                            if (student.getUserId() == group.getAdminUserId()) {
+                                                                Post post = new Post();
+                                                                post.setPostId(posts.size());
+                                                                post.setUserId(student.getUserId());
+                                                                post.setPostLike(0);
+                                                                post.setPostImage("");
+                                                                post.setContent(content);
+                                                                post.setStatus(Post.APPROVED);
+                                                                post.setGroupId(groupId);
+                                                                post.setCreatedAt(sdf.format(new Date()));
+                                                                postAPI.addPost(post);
+
+                                                                Toast.makeText(requireContext(), "Đăng bài thành công", Toast.LENGTH_SHORT).show();
+                                                            } else {
+                                                                Post post = new Post();
+                                                                post.setPostId(posts.size());
+                                                                post.setUserId(student.getUserId());
+                                                                post.setPostLike(0);
+                                                                post.setPostImage("");
+                                                                post.setContent(content);
+                                                                post.setFilter(false);
+                                                                post.setStatus(Post.WAITING);
+                                                                post.setGroupId(groupId);
+                                                                post.setCreatedAt(sdf.format(new Date()));
+                                                                postAPI.addPost(post);
+
+                                                                Toast.makeText(requireContext(), "Bài đăng của bạn đang chờ phê duyệt", Toast.LENGTH_SHORT).show();
+
+                                                                notifyQuickly.setNotifyId(notifications.size());
+                                                                notifyQuickly.setUserSendId(student.getUserId());
+                                                                notifyQuickly.setUserGetId(group.getAdminUserId());
+                                                                notifyQuickly.setContent(student.getFullName() + " vừa đăng bài mới và đang chờ bạn duuyệt!");
+                                                                notifyQuicklyAPI.addNotification(notifyQuickly);
+                                                            }
+                                                            isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
+                                                        }
                                                     }
-                                                    post.setContent(content);
-                                                    post.setFilter(false);
-                                                    post.setStatus(Post.WAITING);
-                                                    post.setGroupId(groupId);
-                                                    post.setCreatedAt(sdf.format(new Date()));
-                                                    postAPI.addPost(post);
-    
-                                                    Toast.makeText(requireContext(), "Bài đăng của bạn đang chờ phê duyệt", Toast.LENGTH_SHORT).show();
-    
-                                                    notifyQuickly.setNotifyId(notifications.size());
-                                                    notifyQuickly.setUserSendId(student.getUserId());
-                                                    notifyQuickly.setUserGetId(group.getAdminUserId());
-                                                    notifyQuickly.setContent(student.getFullName() + " vừa đăng bài mới và đang chờ bạn duuyệt!");
-                                                    notifyQuicklyAPI.addNotification(notifyQuickly);
-                                                }
-                                            }
-    
-                                            @Override
-                                            public void onGroupsReceived(List<Group> groups) {
-    
+
+                                                    @Override
+                                                    public void onGroupsReceived(List<Group> groups) {
+
+                                                    }
+                                                });
                                             }
                                         });
                                     }
                                 });
                             }
+
+                            @Override
+                            public void onStudentsReceived(List<Student> students) {
+
+                            }
                         });
-    
-                    }
-    
-                    @Override
-                    public void onStudentsReceived(List<Student> students) {
-    
-                    }
-                });
-    
-                dialog.dismiss();
+
+                        changeColorButtonActive(postButtonCreate);
+                        changeColorButtonActive(postButtonCancle);
+
+                        postButtonCancle.setOnClickListener(view -> {
+                            dialog.dismiss();
+                        });
+
+                        // Cài đặt kích thước cho Dialog
+                        dialog.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                        dialog.getWindow().setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.comment_custom));
+
+                        // Thiết lập marginHorizontal 10dp cho Dialog
+                        int marginInDp = (int) (10 * getResources().getDisplayMetrics().density);
+                        if (dialog.getWindow() != null) {
+                            // Lấy WindowManager.LayoutParams
+                            WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+                            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                            params.horizontalMargin = marginInDp / (float) getResources().getDisplayMetrics().widthPixels; // margin dưới dạng tỉ lệ so với chiều rộng màn hình
+
+                            dialog.getWindow().setAttributes(params);
+                        }
+
+                        // Hiển thị Dialog
+                        dialog.show();
+                    });
+                }
+
+                @Override
+                public void onStudentsReceived(List<Student> students) {
+
+                }
             });
-    
-            postButtonCancle.setOnClickListener(v -> {
-                dialog.dismiss();
-            });
-    
-            // Cài đặt kích thước cho Dialog
-            dialog.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            dialog.getWindow().setBackgroundDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.comment_custom));
-    
-            // Thiết lập marginHorizontal 10dp cho Dialog
-            int marginInDp = (int) (10 * getResources().getDisplayMetrics().density);
-            if (dialog.getWindow() != null) {
-                // Lấy WindowManager.LayoutParams
-                WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
-                params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-                params.horizontalMargin = marginInDp / (float) getResources().getDisplayMetrics().widthPixels; // margin dưới dạng tỉ lệ so với chiều rộng màn hình
-    
-                dialog.getWindow().setAttributes(params);
-            }
-    
-            // Hiển thị Dialog
-            dialog.show();
         }
-    
         public void changeColorButtonActive(Button btn){
             btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
             btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
         }
-    
+
         public void changeColorButtonNormal(Button btn){
             btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
             btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
         }
     }
-    
-    
-    
-    
-    
-    

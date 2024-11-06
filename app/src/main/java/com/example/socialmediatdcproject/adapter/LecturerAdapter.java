@@ -28,11 +28,13 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
     private Context context;
     private SharedViewModel sharedViewModel;
     private boolean isEditMode;
+    private int groupId;
 
-    public LecturerAdapter(List<Lecturer> lecturerList, Context context, SharedViewModel sharedViewModel) {
+    public LecturerAdapter(List<Lecturer> lecturerList, Context context, SharedViewModel sharedViewModel , int groupId) {
         this.lecturerList = lecturerList;
         this.context = context;
         this.sharedViewModel = sharedViewModel;
+        this.groupId = groupId;
     }
     public LecturerAdapter(List<Lecturer> lecturerList, Context context) {
         this.lecturerList = lecturerList;
@@ -82,7 +84,14 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
             Log.e("LecturerAdapter", "isEditMode: " + isEditMode );
 
             holder.removeButton.setVisibility(isEditMode ? View.VISIBLE : View.GONE);
-            holder.removeButton.setOnClickListener(v -> removeMember(lecturer));
+            holder.removeButton.setOnClickListener(view -> {
+                // Gọi phương thức xóa trong ViewModel và truyền vào groupId và studentId
+                sharedViewModel.removeLecturerFromGroup(groupId, lecturer.getUserId());
+
+                // Cập nhật danh sách hiển thị trong Adapter
+                lecturerList.remove(position);
+                notifyItemRemoved(position);
+            });
 
         } else {
             Log.e("LecturerAdapter", "Lecturer at position " + position + " is null");

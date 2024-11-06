@@ -180,6 +180,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
     private void loadStudentsByGroupId(int id) {
         ArrayList<Student> memberGroup = new ArrayList<>();
         StudentAPI studentAPI = new StudentAPI();
+
         studentAPI.getAllStudents(new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
@@ -212,7 +213,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
                                     }
 
                                     // Cập nhật RecyclerView sau khi thêm tất cả member
-                                    MemberAdapter memberAdapter = new MemberAdapter(memberGroup, requireContext());
+                                    MemberAdapter memberAdapter = new MemberAdapter(memberGroup, requireContext(), sharedViewModel, id);
                                     memberAdapter.notifyDataSetChanged();
 
                                     // truyền vào Fragment
@@ -271,7 +272,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
                         Log.d("AdminDMemberFragment", "Lecturer List Size: " + memberGroup.size());
 //                            lecturerAdapter.updateData(memberGroup);
                             lecturerAdapter.notifyDataSetChanged();
-                            lecturerAdapter = new LecturerAdapter(memberGroup, requireContext() , sharedViewModel);
+                            lecturerAdapter = new LecturerAdapter(memberGroup, requireContext() , sharedViewModel , id);
 
                             // truyền vào Fragment
                             RepairButtonFragment repairButtonFragment = new RepairButtonFragment();

@@ -30,11 +30,19 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
     private OnMemberClickListener onMemberClickListener;
     private boolean isEditMode;
     private SharedViewModel sharedViewModel;
+    private int groupId;
 
     public MemberAdapter(List<Student> memberList, Context context, SharedViewModel sharedViewModel) {
         this.memberList = memberList;
         this.context = context;
         this.sharedViewModel = sharedViewModel;
+    }
+
+    public MemberAdapter(List<Student> memberList, Context context, SharedViewModel sharedViewModel, int groupId) {
+        this.memberList = memberList;
+        this.context = context;
+        this.sharedViewModel = sharedViewModel;
+        this.groupId = groupId; // Gán giá trị cho groupId
     }
     // Constructor
     public MemberAdapter(List<Student> memberList, Context context) {
@@ -74,6 +82,20 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             holder.cardView.setOnClickListener(v -> {
                 openPersonalPage(student.getUserId());
             });
+
+            Log.e("LecturerAdapter", "isEditMode: " + isEditMode );
+
+            holder.removeButton.setVisibility(isEditMode ? View.VISIBLE : View.GONE);
+            holder.removeButton.setOnClickListener(view -> {
+                // Gọi phương thức xóa trong ViewModel và truyền vào groupId và studentId
+                sharedViewModel.removeStudentFromGroup(groupId, student.getUserId());
+
+                // Cập nhật danh sách hiển thị trong Adapter
+                memberList.remove(position);
+                notifyItemRemoved(position);
+            });
+
+
         } else {
             Log.e("MemberAdapter", "User at position " + position + " is null");
         }
@@ -87,12 +109,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
 
     // Hàm lấy chức vụ
     public String getPositionJob(Student student) {
-        if (student.getRoleId() == 0) {
-            return "Học sinh";
-        } else if (student.getRoleId() == 1){
-            return "Giảng viên";
-        }
-        return "Unknown position";  // Xử lý trường hợp không phải Lecturer hoặc Student
+        return "Học sinh";
     }
 
 
@@ -126,6 +143,11 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
     // Cập nhật chế độ chỉnh sửa và làm mới giao diện
     public void setEditMode(boolean editMode) {
         this.isEditMode = editMode;
+        notifyDataSetChanged();
+    }
+
+    private void removeMember(Student student) {
+        sharedViewModel.removeStudent(student);
         notifyDataSetChanged();
     }
 }
