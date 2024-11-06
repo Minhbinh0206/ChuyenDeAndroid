@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -39,6 +40,7 @@ import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
+import com.example.socialmediatdcproject.shareViewModels.SharedViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
@@ -47,6 +49,8 @@ import java.util.List;
 public class AdminDepartmentMemberFragment extends Fragment {
     private RecyclerView recyclerView; // RecyclerView để hiển thị danh sách người dùng
     FrameLayout frameLayout;
+    private LecturerAdapter lecturerAdapter;
+    private SharedViewModel sharedViewModel;
 
     @Nullable
     @Override
@@ -64,6 +68,12 @@ public class AdminDepartmentMemberFragment extends Fragment {
         // Khởi tạo danh sách người dùng và RecyclerView
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+
+        // Khởi tạo SharedViewModel
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+
+        // Khởi tạo LecturerAdapter rỗng để đảm bảo không bị null
+        lecturerAdapter = new LecturerAdapter(new ArrayList<>(), requireContext());
 
         String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -115,7 +125,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
 
                                 // Sự kiện khi nhấn vào nút lecturerButton
                                 lecturerButton.setOnClickListener(v -> {
-                                    loadLeturersByGroupId(finalGroupId);
+                                    loadLecturersByGroupId(finalGroupId);
 
                                     // Cập nhật màu cho các nút
                                     changeColorButtonActive(lecturerButton);
@@ -146,19 +156,14 @@ public class AdminDepartmentMemberFragment extends Fragment {
 
             }
         });
-
-        // Hiển thị phần layout dưới
-        repairButtonFragment();
+        replaceFragmentWithAddOrCancel();
 
         changeFragmentByButtonClick();
-
-        if (isAddOrCancelFragmentVisible()) {
-            // Fragment hiện tại là AddOrCancelButtonFragment
-            Log.d("AdminDepartmentFragment", "Fragment hiện tại là AddOrCancelButtonFragment");
-        } else {
-            // Fragment hiện tại là RepairButtonFragment hoặc Fragment khác
-            Log.d("AdminDepartmentFragment", "Fragment hiện tại không phải là AddOrCancelButtonFragment");
-        }
+    }
+    // Chuyển về RepairButtonFragment
+    public void onCancelEditMode() {
+        // Quay lại RepairButtonFragment
+        repairButtonFragment();
     }
     private void changeFragmentByButtonClick(){
         RepairButtonFragment fragment = new RepairButtonFragment();
@@ -171,11 +176,6 @@ public class AdminDepartmentMemberFragment extends Fragment {
                 .replace(R.id.third_content_fragment, fragment)
                 .commit();
     }
-    private boolean isAddOrCancelFragmentVisible() {
-        Fragment currentFragment = getActivity().getSupportFragmentManager().findFragmentById(R.id.third_content_fragment);
-        return currentFragment instanceof AddOrCancelButtonFragment; // Kiểm tra xem Fragment hiện tại có phải là AddOrCancelButtonFragment không
-    }
-
     // Hiển thị sinh viên có trong khoa
     private void loadStudentsByGroupId(int id) {
         ArrayList<Student> memberGroup = new ArrayList<>();
@@ -214,6 +214,19 @@ public class AdminDepartmentMemberFragment extends Fragment {
                                     // Cập nhật RecyclerView sau khi thêm tất cả member
                                     MemberAdapter memberAdapter = new MemberAdapter(memberGroup, requireContext());
                                     memberAdapter.notifyDataSetChanged();
+
+                                    // truyền vào Fragment
+                                    RepairButtonFragment repairButtonFragment = new RepairButtonFragment();
+                                    repairButtonFragment.setMemberAdapter(memberAdapter);
+
+                                    // Lấy SharedViewModel từ Activity
+                                    sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+                                    sharedViewModel.getIsEditMode().observe(getViewLifecycleOwner(), isEditMode -> {
+                                        if (memberAdapter != null) {
+                                            memberAdapter.setEditMode(isEditMode); // Cập nhật chế độ chỉnh sửa cho adapter
+                                        }
+                                    });
+
                                     recyclerView.setAdapter(memberAdapter);
                                     recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
                                 }
@@ -225,7 +238,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
         });
     }
     // Hiển thị giảng viên có trong khoa
-    private void loadLeturersByGroupId(int id) {
+    private void loadLecturersByGroupId(int id) {
         ArrayList<Lecturer> memberGroup = new ArrayList<>();
         LecturerAPI lecturerAPI = new LecturerAPI();
         lecturerAPI.getAllLecturers(new LecturerAPI.LecturerCallback() {
@@ -240,41 +253,48 @@ public class AdminDepartmentMemberFragment extends Fragment {
                 groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
                     @Override
                     public void onGroupUsersReceived(List<GroupUser> groupUsers) {
+                        List<GroupUser> groupUserList = new ArrayList<>();
                         for (GroupUser gu : groupUsers) {
-                            groupUserAPI.getGroupUserByIdGroup(gu.getGroupId(), new GroupUserAPI.GroupUserCallback() {
-                                @Override
-                                public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                                    List<GroupUser> groupUserList = new ArrayList<>();
-                                    for (GroupUser gu : groupUsers) {
-                                        if (gu.getGroupId() == id) {
-                                            groupUserList.add(gu);
-                                        }
-                                    }
+                            if (gu.getGroupId() == id) {
+                                groupUserList.add(gu);
+                            }
+                        }
 
-                                    // Chỉ thêm vào memberGroup nếu chưa có
-                                    for (GroupUser gus : groupUserList) {
-                                        for (Lecturer u : lecturers) {
-                                            if (u.getUserId() == gus.getUserId() && !memberGroup.contains(u)) {
-                                                memberGroup.add(u);
-                                            }
-                                        }
-                                    }
+                        for (GroupUser gus : groupUserList) {
+                            for (Lecturer u : lecturers) {
+                                if (u.getUserId() == gus.getUserId() && !memberGroup.contains(u)) {
+                                    memberGroup.add(u);
+                                }
+                            }
+                        }
 
-                                    // Cập nhật RecyclerView sau khi thêm tất cả member
-                                    LecturerAdapter lecturerAdapter = new LecturerAdapter(memberGroup, requireContext());
-                                    lecturerAdapter.notifyDataSetChanged();
-                                    recyclerView.setAdapter(lecturerAdapter);
-                                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                        Log.d("AdminDMemberFragment", "Lecturer List Size: " + memberGroup.size());
+//                            lecturerAdapter.updateData(memberGroup);
+                            lecturerAdapter.notifyDataSetChanged();
+                            lecturerAdapter = new LecturerAdapter(memberGroup, requireContext() , sharedViewModel);
+
+                            // truyền vào Fragment
+                            RepairButtonFragment repairButtonFragment = new RepairButtonFragment();
+                            repairButtonFragment.setLecturerAdapter(lecturerAdapter);
+
+                             // Lấy SharedViewModel từ Activity
+                            sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+                            sharedViewModel.getIsEditMode().observe(getViewLifecycleOwner(), isEditMode -> {
+                                if (lecturerAdapter != null) {
+                                    lecturerAdapter.setEditMode(isEditMode); // Cập nhật chế độ chỉnh sửa cho adapter
                                 }
                             });
-                        }
+
+                            recyclerView.setAdapter(lecturerAdapter);
+                            recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
                     }
                 });
             }
 
             @Override
             public void onError(String errorMessage) {
-
+                Log.e("AdminDMemberFragment", "Error loading lecturers: " + errorMessage);
             }
 
             @Override
@@ -283,6 +303,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
             }
         });
     }
+
 
     public void changeColorButtonActive(Button btn){
         btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
@@ -294,16 +315,16 @@ public class AdminDepartmentMemberFragment extends Fragment {
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 
-    public void repairButtonFragment(){
-        // Gán fragment home là mặc định
+    public void repairButtonFragment() {
+        // Lấy FragmentManager và bắt đầu giao dịch fragment
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        // Nạp HomeFragment vào
+        // Thay thế fragment hiện tại bằng RepairButtonFragment
         fragmentTransaction.replace(R.id.third_content_fragment, new RepairButtonFragment());
-        fragmentTransaction.addToBackStack(null); // Thêm dòng này
+        fragmentTransaction.addToBackStack(null); // Thêm vào back stack
 
-        // Lấy dữ lệu từ firebase
+        // Thực hiện giao dịch
         fragmentTransaction.commit();
     }
 
