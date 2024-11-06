@@ -1,5 +1,6 @@
 package com.example.socialmediatdcproject.fragment.Student;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -43,20 +44,32 @@ public class TrainingFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+//        frameLayout = requireActivity().findViewById(R.id.second_content_fragment);
         frameLayout.setVisibility(view.GONE);
 
-        // Hiển thị dữ liệu ra màn hình
-        loadPostFromFirebase();
+
 
         // Tìm các nút
         Button infoButton = view.findViewById(R.id.button_phongdaotao_info);
         Button postButton = view.findViewById(R.id.button_phongdaotao_post);
 
+
+
         // Set màu mặc định cho nút "Bài viết"
-        postButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-        postButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
-        infoButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
-        infoButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        postButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        postButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        infoButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        infoButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+
+        // Sự kiện khi nhấn vào nút memberButton
+        infoButton.setOnClickListener(v -> {
+
+            // Cập nhật màu cho các nút
+            infoButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+            infoButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+            postButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
+            postButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        });
 
         // Sự kiện khi nhấn vào nút postButton
         postButton.setOnClickListener(v -> {
@@ -71,15 +84,7 @@ public class TrainingFragment extends Fragment {
             postButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
         });
 
-        // Sự kiện khi nhấn vào nút memberButton
-        infoButton.setOnClickListener(v -> {
 
-            // Cập nhật màu cho các nút
-            infoButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-            infoButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
-            postButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
-            postButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-        });
     }
 
     public void loadPostFromFirebase() {
