@@ -16,6 +16,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
@@ -25,6 +26,7 @@ import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
 import com.example.socialmediatdcproject.fragment.Student.GroupFollowedFragment;
 import com.example.socialmediatdcproject.fragment.Student.GroupNotFollowFragment;
+import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -75,14 +77,33 @@ public class GroupDetaiActivity extends AppCompatActivity {
                             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
                             // Nếu user chưa tham gia, hiển thị GroupNotFollowFragment
-                            if (!isJoin) {
-                                fragmentTransaction.replace(R.id.first_content_fragment, new GroupNotFollowFragment());
-                            } else {
-                                // Nếu đã tham gia, hiển thị GroupFollowedFragment
+                            if (isJoin) {
                                 fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
+
+                                fragmentTransaction.commit();
+                            } else {
+                                GroupAPI groupAPI = new GroupAPI();
+                                groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                                    @Override
+                                    public void onGroupReceived(Group group) {
+                                        if (group.isGroupDefault()){
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
+                                        }
+                                        else {
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupNotFollowFragment());
+                                        }
+
+                                        fragmentTransaction.commit();
+                                    }
+
+                                    @Override
+                                    public void onGroupsReceived(List<Group> groups) {
+
+                                    }
+                                });
+
                             }
 
-                            fragmentTransaction.commit();
                         }
 
                         @Override

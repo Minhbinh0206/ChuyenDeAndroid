@@ -242,6 +242,7 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                     g.setGroupId(lastId);
                     g.setGroupName(nameGroup);
                     g.setAdminUserId(adminUserId);
+                    g.setGroupDefault(false);
                     g.setPrivate(isPrivate);
                     g.setAvatar(avatar); // Đặt URI ảnh làm avatar của nhóm
 
