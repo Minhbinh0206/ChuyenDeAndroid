@@ -106,7 +106,7 @@ public class UploadProfileActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
         }
     }
-    //Kiểm tra quyền camera
+    //Kiểm tra quyền gallery
     private void onClickRequestGalleryPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             openGallery();
@@ -130,6 +130,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                 })
                 .show();
     }
+
     // Hàm xử lý kết quả từ camera hoặc gallery
     private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
