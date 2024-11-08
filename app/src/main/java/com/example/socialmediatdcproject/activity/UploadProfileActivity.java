@@ -140,7 +140,6 @@ public class UploadProfileActivity extends AppCompatActivity {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
 
-
                         // Nếu chọn ảnh từ Gallery
                         if (data != null && data.getData() != null) {
                             selectedImageUri = data.getData();

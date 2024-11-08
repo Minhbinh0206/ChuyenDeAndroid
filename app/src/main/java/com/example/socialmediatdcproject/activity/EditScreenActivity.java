@@ -54,10 +54,10 @@ public class EditScreenActivity extends AppCompatActivity {
 
     private static final int MY_REQUEST_CODE = 10;
     private FirebaseAuth mAuth;
-    private EditText editTextName, editTextMSSV, editTextClass, editTextDepartment, editTextDescription;
+    private EditText editTextName, editTextMSSV, editTextClass, editTextDepartment, editTextDescription, editTextDoB , editTextPhone;
     private Button buttonUpdate;
     private Uri selectedImageUri;
-    private ImageView imageEditPersonal, imageEditPersonalSmall;
+    private ImageView imageEditPersonal, imageEditPersonalSmall, imageEditBackgroupPersonalBig, imageEditBackgroupPersonalSmall ;
     private ImageButton btnBack;
     private String userId;
 //    private Student student;  // Khai báo student ở đây
@@ -90,11 +90,16 @@ public class EditScreenActivity extends AppCompatActivity {
         // Tìm các view từ layout
         imageEditPersonal = findViewById(R.id.image_edit_personal);
         imageEditPersonalSmall = findViewById(R.id.image_edit_personal_small);
+        imageEditBackgroupPersonalBig = findViewById(R.id.anh_nen_big);
+        imageEditBackgroupPersonalBig = findViewById(R.id.image_anh_nen_small);
         editTextName = findViewById(R.id.editTextName);
         editTextMSSV = findViewById(R.id.editTextMSSV);
-        editTextClass = findViewById(R.id.editTextLop);
-        editTextDepartment = findViewById(R.id.editTextKhoa);
-//        editTextDescription = findViewById(R.id.editTextMota);
+        editTextDoB = findViewById(R.id.editTextDoB);
+        editTextPhone = findViewById(R.id.editTextPhone);
+
+      //  editTextClass = findViewById(R.id.editTextLop);
+       // editTextDepartment = findViewById(R.id.editTextKhoa);
+         editTextDescription = findViewById(R.id.editTextDescription);
         buttonUpdate = findViewById(R.id.button_club_post);
          btnBack = findViewById(R.id.icon_back);
 
@@ -110,35 +115,43 @@ public class EditScreenActivity extends AppCompatActivity {
                     // Hiển thị dữ liệu lên các EditText
                     editTextName.setText(student.getFullName());
                     editTextMSSV.setText(student.getStudentNumber());
-                    editTextDepartment.setText(String.valueOf(student.getDepartmentId()));
-//                    editTextDescription.setText(student.getDescription());
+                    editTextDoB.setText(student.getBirthday());
+                   editTextDescription.setText(student.getDescription());
+                   editTextPhone.setText(student.getPhoneNumber());
+                        // Hiển thị ảnh sử dụng Glide
+                        Glide.with(EditScreenActivity.this)
+                                .load(student.getAvatar())
+                                .circleCrop()
+                                .into(imageEditPersonal);
 
-                    // Hiển thị ảnh sử dụng Glide
+                        Glide.with(EditScreenActivity.this)
+                                .load(student.getAvatar())
+                                .circleCrop()
+                                .into(imageEditPersonalSmall);
                     Glide.with(EditScreenActivity.this)
                             .load(student.getAvatar())
                             .circleCrop()
-                            .into(imageEditPersonal);
-
+                            .into(imageEditBackgroupPersonalBig);
                     Glide.with(EditScreenActivity.this)
                             .load(student.getAvatar())
                             .circleCrop()
-                            .into(imageEditPersonalSmall);
-
+                            .into(imageEditBackgroupPersonalSmall);
                     // Sự kiện click cập nhật thông tin
                     buttonUpdate.setOnClickListener(v -> {
                         String name = editTextName.getText().toString().trim();
                         String mssv = editTextMSSV.getText().toString().trim();
-                        String className = editTextClass.getText().toString().trim();
-                        String department = editTextDepartment.getText().toString().trim();
-//                        String description = editTextDescription.getText().toString().trim();
+                        String dob = editTextDoB.getText().toString().trim();
+                        String phone = editTextPhone.getText().toString().trim();
+                       String description = editTextDescription.getText().toString().trim();
 
-                        if (name.isEmpty() || mssv.isEmpty() || className.isEmpty() || department.isEmpty()) {
+                        if (name.isEmpty() || mssv.isEmpty() || dob.isEmpty() || description.isEmpty() || phone.isEmpty()) {
                             Toast.makeText(EditScreenActivity.this, "Vui lòng điền đầy đủ thông tin.", Toast.LENGTH_SHORT).show();
                         } else {
                             student.setFullName(name);
-                            student.setDepartmentId(Integer.parseInt(department));
-//                            student.setDescription(description);
+                           student.setDescription(description);
+                           student.setBirthday(dob);
                             student.setStudentNumber(mssv);
+                            student.setPhoneNumber(phone);
 
                             studentAPI.updateStudent(student, new StudentAPI.StudentCallback() {
                                 @Override
@@ -173,6 +186,10 @@ public class EditScreenActivity extends AppCompatActivity {
 
         // Sự kiện click chọn ảnh từ thư viện
         imageEditPersonalSmall.setOnClickListener(v -> {
+            showImageSourceDialog();
+        });
+
+        imageEditBackgroupPersonalSmall.setOnClickListener( v -> {
             showImageSourceDialog();
         });
 
@@ -371,6 +388,8 @@ public class EditScreenActivity extends AppCompatActivity {
                                 Bitmap imageBitmap = (Bitmap) extras.get("data");
                                 imageEditPersonalSmall.setImageBitmap(imageBitmap);
                                 imageEditPersonal.setImageBitmap(imageBitmap);
+                                imageEditBackgroupPersonalBig.setImageBitmap(imageBitmap);
+                                imageEditBackgroupPersonalSmall.setImageBitmap(imageBitmap);
 
                                 // Upload ảnh từ camera lên Firebase Storage
                                // uploadImageFromCamera(imageBitmap, imageBitmap);  // Sử dụng student
@@ -382,6 +401,8 @@ public class EditScreenActivity extends AppCompatActivity {
                                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
                                     imageEditPersonalSmall.setImageBitmap(bitmap);
                                     imageEditPersonal.setImageBitmap(bitmap);
+                                    imageEditBackgroupPersonalBig.setImageBitmap(bitmap);
+                                    imageEditBackgroupPersonalSmall.setImageBitmap(bitmap);
 
                                     // Upload ảnh từ gallery lên Firebase Storage
                                   //  uploadImageToFirebaseStorage(selectedImageUri, student);  // Sử dụng student

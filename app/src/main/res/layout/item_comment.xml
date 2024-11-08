@@ -65,7 +65,7 @@
                         android:background="@drawable/icon_time" />
 
                     <TextView
-                        android:id="@+id/post_create_at"
+                        android:id="@+id/comment_create_at"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="5dp"

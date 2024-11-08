@@ -317,6 +317,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e("CommentListener", "Failed to read comments count.", error.toException());
             }
+
         });
 
         if (!post.getPostImage().isEmpty()) {

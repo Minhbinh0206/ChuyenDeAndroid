@@ -3,8 +3,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
 
+    >
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.8"
+        android:background="@drawable/image_login_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </ImageView>
     <!-- Thêm FrameLayout và giao diện vào đây -->
     <FrameLayout
         android:id="@+id/frameLayout"
@@ -47,29 +60,53 @@
         </LinearLayout>
     </FrameLayout>
 
-    <ImageView
-        android:id="@+id/image_edit_personal"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="100dp"
-        android:src="@drawable/avatar_user"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/anh_nen_big"
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:layout_gravity="center"
+        android:layout_marginVertical="20dp"
+        android:background="@drawable/khung_vuong_goc_40px"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/frameLayout">
+
+        <ImageView
+            android:id="@+id/image_anh_nen_small"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/khung_tron_hinh_anh"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_margin="10dp"/>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <ImageView
+        android:id="@+id/image_edit_personal"
+        android:layout_width="140dp"
+        android:layout_height="140dp"
+        android:layout_margin="5dp"
+        android:src="@drawable/khung_tron_hinh_anh"
+
+        app:layout_constraintBottom_toBottomOf="@+id/anh_nen_big"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/image_edit_personal_small"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="-40dp"
-        android:src="@drawable/avatar_user"
-        app:layout_constraintStart_toStartOf="@+id/image_edit_personal"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="-50dp"
+        android:src="@drawable/khung_tron_hinh_anh"
+        app:layout_constraintEnd_toEndOf="@+id/image_edit_personal"
         app:layout_constraintTop_toBottomOf="@+id/image_edit_personal" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="40dp"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -80,6 +117,10 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:orientation="horizontal"
+            android:background="@drawable/khung_chua_text_view"
+            android:alpha="0.8"
+            android:paddingHorizontal="15dp"
+            android:maxLines="1"
             >
 
             <TextView
@@ -97,10 +138,7 @@
                 android:layout_weight="1"
                 />
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ph_pen" />
+
 
         </LinearLayout>
         <LinearLayout
@@ -108,6 +146,10 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:orientation="horizontal"
+            android:background="@drawable/khung_chua_text_view"
+            android:alpha="0.8"
+            android:paddingHorizontal="15dp"
+            android:maxLines="1"
             >
 
             <TextView
@@ -122,10 +164,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ph_pen" />
+
 
         </LinearLayout>
         <LinearLayout
@@ -133,25 +172,25 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:orientation="horizontal"
+            android:background="@drawable/khung_chua_text_view"
+            android:alpha="0.8"
+            android:paddingHorizontal="15dp"
+            android:maxLines="1"
             >
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Lớp: "
-                android:textSize="20sp"
-                android:layout_marginRight="20dp"/>
+                android:text="DoB:   "
+                android:textSize="20sp" />
 
             <EditText
-                android:id="@+id/editTextLop"
+                android:id="@+id/editTextDoB"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ph_pen" />
+
 
         </LinearLayout>
         <LinearLayout
@@ -159,28 +198,58 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:orientation="horizontal"
+            android:background="@drawable/khung_chua_text_view"
+            android:alpha="0.8"
+            android:paddingHorizontal="15dp"
+            android:maxLines="1"
             >
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Khoa: "
-                android:textSize="20sp"
-                android:layout_marginRight="10dp"/>
+                android:text="Phone:   "
+                android:textSize="20sp" />
 
             <EditText
-                android:id="@+id/editTextKhoa"
+                android:id="@+id/editTextPhone"
                 android:layout_width="0dp"
-                android:inputType="number"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ph_pen" />
+
 
         </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:orientation="horizontal"
+            android:background="@drawable/khung_chua_text_view"
+            android:alpha="0.8"
+            android:paddingHorizontal="15dp"
+            android:maxLines="3"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mô tả: "
+                android:textSize="20sp"
+                android:layout_marginRight="20dp"
+
+               />
+
+            <EditText
+                android:id="@+id/editTextDescription"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="-20dp"
+                android:layout_weight="1" />
+
+
+
+        </LinearLayout>
+
 <!--        <LinearLayout-->
 <!--            android:layout_width="match_parent"-->
 <!--            android:layout_height="wrap_content"-->
@@ -219,12 +288,14 @@
             android:id="@+id/button_club_post"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginHorizontal="100dp"
             android:backgroundTint="@color/defaultBlue"
             android:paddingVertical="15dp"
             android:text="Cập nhật"
             android:textColor="@color/white"
-            android:textSize="20dp"
-            android:layout_marginHorizontal="100dp"/>
+            android:textSize="20dp" />
+
+
 
     </LinearLayout>
 

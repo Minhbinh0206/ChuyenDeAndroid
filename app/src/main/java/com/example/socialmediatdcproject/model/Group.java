@@ -9,6 +9,22 @@ public class Group {
     private int adminUserId;
     private String avatar;
     private boolean isPrivate;
+    //thêm trương cập nhật backgroup
+    private String backgroup;
+
+
+    public Group(String backgroup) {
+        this.backgroup = backgroup;
+    }
+
+    public String getBackgroup() {
+        return backgroup;
+    }
+
+    public void setBackgroup(String backgroup) {
+        this.backgroup = backgroup;
+    }
+
 
     public int getGroupId() {
         return groupId;
