@@ -256,7 +256,6 @@ public class CreateNewPostFragment extends Fragment {
 
         Intent intent = requireActivity().getIntent();
         groupId = intent.getIntExtra("groupId", -1);
-
         TextView textView = view.findViewById(R.id.create_post_action);
         textView.setOnClickListener(v -> showCustomDialog());
     }

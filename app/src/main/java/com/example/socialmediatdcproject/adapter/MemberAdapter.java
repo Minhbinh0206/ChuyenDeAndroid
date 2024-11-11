@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -17,6 +18,7 @@ import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.SharedActivity;
 import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Student;
+import com.example.socialmediatdcproject.shareViewModels.SharedViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,22 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
     private List<Student> memberList;
     private Context context;
     private OnMemberClickListener onMemberClickListener;
+    private boolean isEditMode;
+    private SharedViewModel sharedViewModel;
+    private int groupId;
 
+    public MemberAdapter(List<Student> memberList, Context context, SharedViewModel sharedViewModel) {
+        this.memberList = memberList;
+        this.context = context;
+        this.sharedViewModel = sharedViewModel;
+    }
+
+    public MemberAdapter(List<Student> memberList, Context context, SharedViewModel sharedViewModel, int groupId) {
+        this.memberList = memberList;
+        this.context = context;
+        this.sharedViewModel = sharedViewModel;
+        this.groupId = groupId; // Gán giá trị cho groupId
+    }
     // Constructor
     public MemberAdapter(List<Student> memberList, Context context) {
         this.memberList = memberList;
@@ -43,7 +60,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
     @NonNull
     @Override
     public MemberViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_member_list, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_member_list_remove, parent, false);
         return new MemberViewHolder(view);
     }
 
@@ -65,6 +82,20 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             holder.cardView.setOnClickListener(v -> {
                 openPersonalPage(student.getUserId());
             });
+
+            Log.e("LecturerAdapter", "isEditMode: " + isEditMode );
+
+            holder.removeButton.setVisibility(isEditMode ? View.VISIBLE : View.GONE);
+            holder.removeButton.setOnClickListener(view -> {
+                // Gọi phương thức xóa trong ViewModel và truyền vào groupId và studentId
+                sharedViewModel.removeStudentFromGroup(groupId, student.getUserId());
+
+                // Cập nhật danh sách hiển thị trong Adapter
+                memberList.remove(position);
+                notifyItemRemoved(position);
+            });
+
+
         } else {
             Log.e("MemberAdapter", "User at position " + position + " is null");
         }
@@ -78,12 +109,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
 
     // Hàm lấy chức vụ
     public String getPositionJob(Student student) {
-        if (student.getRoleId() == 0) {
-            return "Học sinh";
-        } else if (student.getRoleId() == 1){
-            return "Giảng viên";
-        }
-        return "Unknown position";  // Xử lý trường hợp không phải Lecturer hoặc Student
+        return "Học sinh";
     }
 
 
@@ -95,6 +121,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
         TextView memberPositionJob;
         TextView memberEmail;
         CardView cardView;
+        Button removeButton;
 
         public MemberViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -103,6 +130,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             memberPositionJob = itemView.findViewById(R.id.member_position_job);
             memberEmail = itemView.findViewById(R.id.member_email);
             cardView = itemView.findViewById(R.id.item_member);
+            removeButton = itemView.findViewById(R.id.button_remove);
         }
     }
 
@@ -110,5 +138,16 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
         Intent intent = new Intent(context, SharedActivity.class);
         intent.putExtra("studentId", userId); // Chuyển userId qua trang cá nhân
         context.startActivity(intent);
+    }
+
+    // Cập nhật chế độ chỉnh sửa và làm mới giao diện
+    public void setEditMode(boolean editMode) {
+        this.isEditMode = editMode;
+        notifyDataSetChanged();
+    }
+
+    private void removeMember(Student student) {
+        sharedViewModel.removeStudent(student);
+        notifyDataSetChanged();
     }
 }
