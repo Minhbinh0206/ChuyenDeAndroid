@@ -8,6 +8,7 @@ public class Group {
     private String groupName;
     private int adminUserId;
     private String avatar;
+    private boolean isGroupDefault;
     private boolean isPrivate;
     //thêm trương cập nhật background
     private String background;
@@ -67,12 +68,21 @@ public class Group {
         isPrivate = aPrivate;
     }
 
-    public Group(int groupId, String groupName, int adminUserId, String avatar, boolean isPrivate) {
+    public boolean isGroupDefault() {
+        return isGroupDefault;
+    }
+
+    public void setGroupDefault(boolean groupDefault) {
+        isGroupDefault = groupDefault;
+    }
+
+    public Group(int groupId, String groupName, int adminUserId, String avatar,boolean isGroupDefault, boolean isPrivate) {
         this.groupId = groupId;
         this.groupName = groupName;
         this.adminUserId = adminUserId;
         this.avatar = avatar;
         this.isPrivate = isPrivate;
+        this.isGroupDefault = isGroupDefault;
     }
 
     public Group() {

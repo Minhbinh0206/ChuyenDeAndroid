@@ -17,41 +17,47 @@ import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.SharedActivity;
 import com.example.socialmediatdcproject.model.Lecturer;
+import com.example.socialmediatdcproject.shareViewModels.SharedViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.LecturerViewHolder> {
 
     private List<Lecturer> lecturerList;
     private Context context;
-    private OnLecturerClickListener onLecturerClickListener;
-    private boolean showRemoveButton;
+    private SharedViewModel sharedViewModel;
+    private boolean isEditMode;
+    private int groupId;
 
-
-    // Constructor
+    public LecturerAdapter(List<Lecturer> lecturerList, Context context, SharedViewModel sharedViewModel , int groupId) {
+        this.lecturerList = lecturerList;
+        this.context = context;
+        this.sharedViewModel = sharedViewModel;
+        this.groupId = groupId;
+    }
     public LecturerAdapter(List<Lecturer> lecturerList, Context context) {
         this.lecturerList = lecturerList;
         this.context = context;
     }
-    public LecturerAdapter(List<Lecturer> lecturerList, Context context , boolean showRemoveButton) {
-        this.lecturerList = lecturerList;
-        this.context = context;
-        this.showRemoveButton = showRemoveButton;
+    public LecturerAdapter() {
+        this.lecturerList = null;
+        this.context = null;
     }
 
-    public interface OnLecturerClickListener {
-        void onLecturerClick(Lecturer lecturer);
+
+    // Cập nhật chế độ chỉnh sửa và làm mới giao diện
+    public void setEditMode(boolean editMode) {
+        this.isEditMode = editMode;
+        notifyDataSetChanged();
     }
 
-    public void setOnLecturerClickListener(OnLecturerClickListener listener) {
-        this.onLecturerClickListener = listener;
-    }
-    public void setShowRemoveButton(boolean show) {
-        this.showRemoveButton = show;
-        notifyDataSetChanged(); // Cập nhật UI nếu cần
+    public void updateData(ArrayList<Lecturer> newLecturerList) {
+        lecturerList.clear();
+        lecturerList.addAll(newLecturerList);
+        notifyDataSetChanged();
     }
 
-    // Tạo ViewHolder
     @NonNull
     @Override
     public LecturerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -59,31 +65,33 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
         return new LecturerViewHolder(view);
     }
 
-    // Bind dữ liệu vào ViewHolder
     @Override
     public void onBindViewHolder(@NonNull LecturerViewHolder holder, int position) {
         Lecturer lecturer = lecturerList.get(position);
 
         if (lecturer != null) {
-            // Set dữ liệu cho các view
             holder.lecturerName.setText(lecturer.getFullName());
             holder.lecturerPositionJob.setText("Chức vụ: " + getPositionJob(lecturer));
             holder.lecturerEmail.setText(lecturer.getEmail());
+
             Glide.with(context)
                     .load(lecturer.getAvatar())
                     .circleCrop()
                     .into(holder.lecturerAvatar);
 
-            holder.cardView.setOnClickListener(v -> openPersonalPage(lecturer.getUserId()));
-            // Hiển thị hoặc ẩn nút 'X' dựa trên tham số showRemoveButton
-            if (showRemoveButton) {
-                holder.removeButton.setVisibility(View.VISIBLE);
-                holder.removeButton.setOnClickListener(v -> {
-                    removeMember(lecturer); // Gọi hàm để loại bỏ thành viên
-                });
-            } else {
-                holder.removeButton.setVisibility(View.GONE);
-            }
+//            holder.cardView.setOnClickListener(v -> openPersonalPage(lecturer.getUserId()));
+
+            Log.e("LecturerAdapter", "isEditMode: " + isEditMode );
+
+            holder.removeButton.setVisibility(isEditMode ? View.VISIBLE : View.GONE);
+            holder.removeButton.setOnClickListener(view -> {
+                // Gọi phương thức xóa trong ViewModel và truyền vào groupId và studentId
+                sharedViewModel.removeLecturerFromGroup(groupId, lecturer.getUserId());
+
+                // Cập nhật danh sách hiển thị trong Adapter
+                lecturerList.remove(position);
+                notifyItemRemoved(position);
+            });
 
         } else {
             Log.e("LecturerAdapter", "Lecturer at position " + position + " is null");
@@ -95,12 +103,10 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
         return lecturerList.size();
     }
 
-    // Hàm lấy chức vụ
     public String getPositionJob(Lecturer lecturer) {
         return "Giảng viên - Nhân Viên";
     }
 
-    // Lớp ViewHolder
     public static class LecturerViewHolder extends RecyclerView.ViewHolder {
         ImageView lecturerAvatar;
         TextView lecturerName;
@@ -120,15 +126,13 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
         }
     }
 
-    private void openPersonalPage(int userId) {
-        Intent intent = new Intent(context, SharedActivity.class);
-        intent.putExtra("lecturerId", userId); // Chuyển userId qua trang cá nhân
-        context.startActivity(intent);
-    }
+//    private void openPersonalPage(int userId) {
+//        Intent intent = new Intent(context, SharedActivity.class);
+//        intent.putExtra("studentId", userId);
+//        context.startActivity(intent);
+//    }
+
     private void removeMember(Lecturer lecturer) {
-        // Xử lý logic để loại bỏ thành viên
-        // Ví dụ: loại bỏ khỏi danh sách và thông báo cho adapter
-        lecturerList.remove(lecturer);
-        notifyDataSetChanged(); // Cập nhật UI
+        sharedViewModel.removeLecturer(lecturer);
     }
 }

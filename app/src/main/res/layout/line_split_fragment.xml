@@ -3,27 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:paddingVertical="10dp"
-    android:paddingHorizontal="30dp"
+    android:paddingHorizontal="5dp"
+    android:paddingVertical="20dp"
     android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/button_group_user_create_new"
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="0dp"
-        android:elevation="10dp"
-        android:background="@drawable/button_19_background"
-        android:gravity="center"
-        android:letterSpacing="0.08"
-        android:padding="13dp"
-        android:text="  Tạo group mới  "
-        android:textColor="@color/defaultBlue"
-        android:textSize="15sp"
-        android:textStyle="bold"
+        android:layout_height="1dp"
+        android:background="@drawable/line_split_post"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

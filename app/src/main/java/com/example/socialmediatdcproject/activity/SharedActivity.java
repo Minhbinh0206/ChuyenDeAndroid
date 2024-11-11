@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminBusinessAPI;
 import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.FilterNotifyAPI;
 import com.example.socialmediatdcproject.API.FilterPostsAPI;
@@ -47,6 +48,7 @@ import com.example.socialmediatdcproject.fragment.Student.NotifyFragment;
 import com.example.socialmediatdcproject.fragment.Student.PersonalScreenFragment;
 import com.example.socialmediatdcproject.fragment.Student.TrainingFragment;
 import com.example.socialmediatdcproject.fragment.Student.YouthFragment;
+import com.example.socialmediatdcproject.model.AdminBusiness;
 import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Notify;
 import com.example.socialmediatdcproject.model.Post;
@@ -112,17 +114,55 @@ public class SharedActivity extends AppCompatActivity {
                         @Override
                         public void onNotificationsReceived(List<Notify> notifications) {
                             ArrayList<Notify> notifyList = new ArrayList<>();
-                            ArrayList<Notify> filteredNotify = new ArrayList<>();
                             int[] processedPostsCount = {0};  // Biến đếm số bài viết đã xử lý
+                            int[] totalNotificationsCount = {notifications.size()}; // Tổng số thông báo cần xử lý
 
                             Log.d("NotifyAPI", "Number of notifications received: " + notifications.size());
 
                             for (Notify n : notifications) {
                                 AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+                                AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+
+                                // Gọi API AdminBusiness
+                                adminBusinessAPI.getAdminBusinessById(n.getUserSendId(), new AdminBusinessAPI.AdminBusinessCallBack() {
+                                    @Override
+                                    public void onUserReceived(AdminBusiness adminBusiness) {
+                                        processedPostsCount[0]++;  // Tăng biến đếm mỗi khi xử lý thông báo
+
+                                        if (!n.isFilter()) {
+                                            notifyList.add(n);
+                                            countNotify.addAll(notifyList);
+                                        } else {
+                                            FilterNotifyAPI filterNotifyAPI = new FilterNotifyAPI();
+                                            filterNotifyAPI.findUserInReceive(n.getNotifyId(), student.getUserId(), new FilterNotifyAPI.UserInReceiveCallback() {
+                                                @Override
+                                                public void onResult(boolean isFound) {
+                                                    if (isFound) {
+                                                        notifyList.add(n);
+                                                        Log.d("NotifyProcess", "Added filtered notify to filteredNotify.");
+                                                    }
+                                                    processedPostsCount[0]++;
+                                                    checkAndSetupRecyclerView(notifyList, processedPostsCount[0], totalNotificationsCount[0]);
+                                                }
+                                            });
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+                                    }
+
+                                    @Override
+                                    public void onError(String s) {
+                                    }
+                                });
+
+                                // Gọi API AdminDepartment
                                 adminDepartmentAPI.getAdminDepartmentById(n.getUserSendId(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
                                     @Override
                                     public void onUserReceived(AdminDepartment adminDepartment) {
                                         processedPostsCount[0]++;  // Tăng biến đếm mỗi khi xử lý thông báo
+
                                         if (!n.isFilter()) {
                                             if (adminDepartment.getDepartmentId() == student.getDepartmentId()) {
                                                 notifyList.add(n);
@@ -138,25 +178,28 @@ public class SharedActivity extends AppCompatActivity {
                                                         Log.d("NotifyProcess", "Added filtered notify to filteredNotify.");
                                                     }
                                                     processedPostsCount[0]++;
-                                                    checkAndSetupRecyclerView(notifyList, processedPostsCount[0], notifications.size());
+                                                    checkAndSetupRecyclerView(notifyList, processedPostsCount[0], totalNotificationsCount[0]);
                                                 }
                                             });
                                         }
 
                                         // Kiểm tra và thiết lập RecyclerView khi đã xử lý tất cả thông báo
-                                        checkAndSetupRecyclerView(notifyList, processedPostsCount[0], notifications.size());
+                                        checkAndSetupRecyclerView(notifyList, processedPostsCount[0], totalNotificationsCount[0]);
+
                                     }
 
                                     @Override
-                                    public void onUsersReceived(List<AdminDepartment> adminDepartments) {}
+                                    public void onUsersReceived(List<AdminDepartment> adminDepartments) {
+                                    }
 
                                     @Override
                                     public void onError(String s) {
                                         Log.e("AdminDepartmentAPI", "Error fetching AdminDepartment: " + s);
                                     }
                                 });
+                                
+                                checkAndSetupRecyclerView(notifyList, processedPostsCount[0], totalNotificationsCount[0]);
                             }
-                            countNotify = notifyList;
                         }
 
                         @Override
@@ -181,10 +224,10 @@ public class SharedActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
 
     }
+
     // Phương thức kiểm tra và thiết lập RecyclerView khi đã xử lý tất cả thông báo
     private void checkAndSetupRecyclerView(ArrayList<Notify> notifyList, int processedCount, int totalNotifications) {
         if (processedCount == totalNotifications) {
-
             // Setup RecyclerView với Adapter sau khi tất cả các bài viết đã được xử lý
             RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
             NotifyAdapter notifyAdapter = new NotifyAdapter(notifyList);
@@ -192,6 +235,25 @@ public class SharedActivity extends AppCompatActivity {
             recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
 
             Log.d("NotifyProcess", "RecyclerView setup complete with " + notifyList.size() + " notifications.");
+        }
+    }
+
+    private void checkCountNotify(ArrayList<Notify> notifyList, int processedCount, int totalNotifications) {
+        if (processedCount == totalNotifications) {
+            int count = 0;
+            for (Notify n : notifyList) {
+                if (n.getIsRead() == 1) {
+                    count++;
+                }
+            }
+            TextView textView = findViewById(R.id.count_notify);
+            textView.setText(count + "");
+            if (count == 0) {
+                textView.setVisibility(View.GONE);
+            }
+            else {
+                textView.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -501,8 +563,6 @@ public class SharedActivity extends AppCompatActivity {
 
         Log.d("TAG", "onResume: " + key);
 
-
-
         if (key != -1) {
             switch (key){
                 case 999:
@@ -555,8 +615,6 @@ public class SharedActivity extends AppCompatActivity {
 
                                                 // Kiểm tra và thiết lập RecyclerView khi đã xử lý tất cả thông báo
                                                 checkAndSetupRecyclerView(notifyList, processedPostsCount[0], notifications.size());
-
-
                                             }
 
                                             @Override
@@ -567,8 +625,44 @@ public class SharedActivity extends AppCompatActivity {
                                                 Log.e("AdminDepartmentAPI", "Error fetching AdminDepartment: " + s);
                                             }
                                         });
+                                        AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+                                        adminBusinessAPI.getAdminBusinessById(n.getUserSendId(), new AdminBusinessAPI.AdminBusinessCallBack() {
+                                            @Override
+                                            public void onUserReceived(AdminBusiness adminBusiness) {
+                                                processedPostsCount[0]++;  // Tăng biến đếm mỗi khi xử lý thông báo
+                                                if (!n.isFilter()){
+                                                    notifyList.add(n);
+                                                }
+                                                else {
+                                                    FilterNotifyAPI filterNotifyAPI = new FilterNotifyAPI();
+                                                    filterNotifyAPI.findUserInReceive(n.getNotifyId(), student.getUserId(), new FilterNotifyAPI.UserInReceiveCallback() {
+                                                        @Override
+                                                        public void onResult(boolean isFound) {
+                                                            if (isFound) {
+                                                                notifyList.add(n);
+                                                                Log.d("NotifyProcess", "Added filtered notify to filteredNotify.");
+                                                            }
+                                                            processedPostsCount[0]++;
+                                                            checkAndSetupRecyclerView(notifyList, processedPostsCount[0], notifications.size());
+                                                        }
+                                                    });
+                                                }
+
+
+                                            }
+
+                                            @Override
+                                            public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                                            }
+
+                                            @Override
+                                            public void onError(String s) {
+
+                                            }
+                                        });
                                     }
-                                    countNotify = notifyList;
+
                                 }
 
                                 @Override
@@ -630,25 +724,110 @@ public class SharedActivity extends AppCompatActivity {
                     loadPostsFromFirebase();
 
                     fragmentTransaction.commit();
-
             }
+
         }
 
-        int count = 0;
-        for (Notify n : countNotify) {
-            if (n.getIsRead() == 0) {
-                count++;
+        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+            @Override
+            public void onStudentReceived(Student student) {
+                notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                    @Override
+                    public void onNotificationReceived(Notify notify) {}
+
+                    @Override
+                    public void onNotificationsReceived(List<Notify> notifications) {
+                        ArrayList<Notify> notifyList = new ArrayList<>();
+                        int[] processedPostsCount = {0};  // Biến đếm số bài viết đã xử lý
+
+                        Log.d("NotifyAPI", "Number of notifications received: " + notifications.size());
+
+                        for (Notify n : notifications) {
+                            AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+                            adminDepartmentAPI.getAdminDepartmentById(n.getUserSendId(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                                @Override
+                                public void onUserReceived(AdminDepartment adminDepartment) {
+                                    processedPostsCount[0]++;  // Tăng biến đếm mỗi khi xử lý thông báo
+                                    if (!n.isFilter()) {
+                                        if (adminDepartment.getDepartmentId() == student.getDepartmentId()) {
+                                            notifyList.add(n);
+                                        }
+                                    } else {
+                                        FilterNotifyAPI filterNotifyAPI = new FilterNotifyAPI();
+                                        filterNotifyAPI.findUserInReceive(n.getNotifyId(), student.getUserId(), new FilterNotifyAPI.UserInReceiveCallback() {
+                                            @Override
+                                            public void onResult(boolean isFound) {
+                                                if (isFound) {
+                                                    notifyList.add(n);
+                                                    Log.d("NotifyProcess", "Added filtered notify to filteredNotify.");
+                                                }
+                                                processedPostsCount[0]++;
+                                            }
+                                        });
+                                    }
+
+                                    // Kiểm tra và thiết lập RecyclerView khi đã xử lý tất cả thông báo
+                                    checkCountNotify(notifyList, processedPostsCount[0], notifications.size());
+                                }
+
+                                @Override
+                                public void onUsersReceived(List<AdminDepartment> adminDepartments) {}
+
+                                @Override
+                                public void onError(String s) {
+                                    Log.e("AdminDepartmentAPI", "Error fetching AdminDepartment: " + s);
+                                }
+                            });
+                            AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+                            adminBusinessAPI.getAdminBusinessById(n.getUserSendId(), new AdminBusinessAPI.AdminBusinessCallBack() {
+                                @Override
+                                public void onUserReceived(AdminBusiness adminBusiness) {
+                                    processedPostsCount[0]++;  // Tăng biến đếm mỗi khi xử lý thông báo
+                                    if (!n.isFilter()){
+                                        notifyList.add(n);
+                                    }
+                                    else {
+                                        FilterNotifyAPI filterNotifyAPI = new FilterNotifyAPI();
+                                        filterNotifyAPI.findUserInReceive(n.getNotifyId(), student.getUserId(), new FilterNotifyAPI.UserInReceiveCallback() {
+                                            @Override
+                                            public void onResult(boolean isFound) {
+                                                if (isFound) {
+                                                    notifyList.add(n);
+                                                    Log.d("NotifyProcess", "Added filtered notify to filteredNotify.");
+                                                }
+                                                processedPostsCount[0]++;
+                                            }
+                                        });
+                                    }
+
+                                    // Kiểm tra và thiết lập RecyclerView khi đã xử lý tất cả thông báo
+                                    checkCountNotify(notifyList, processedPostsCount[0], notifications.size());
+                                }
+
+                                @Override
+                                public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                                }
+
+                                @Override
+                                public void onError(String s) {
+
+                                }
+                            });
+                        }
+
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("NotifyAPI", "Error fetching notifications: " + errorMessage);
+                    }
+                });
             }
-        }
-        TextView textView = findViewById(R.id.count_notify);
-        textView.setText(count + "");
 
-        if (count == 0) {
-            textView.setVisibility(View.GONE);
-        }
-        else {
-            textView.setVisibility(View.VISIBLE);
-        }
+            @Override
+            public void onStudentsReceived(List<Student> students) {}
+        });
     }
 
 }

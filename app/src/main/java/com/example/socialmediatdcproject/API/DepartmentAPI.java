@@ -76,6 +76,25 @@ public class DepartmentAPI {
         });
     }
 
+    public void getDepartmentByName(String departmentName, final DepartmentCallback callback) {
+        databaseReference.orderByChild("departmentName").equalTo(departmentName).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Department department = snapshot.getChildren().iterator().next().getValue(Department.class);
+                    callback.onDepartmentReceived(department);
+                } else {
+                    callback.onDepartmentReceived(null); // Handle case where department not found
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("DepartmentAPI", "Error fetching department", error.toException());
+            }
+        });
+    }
+
     // Update department
     public void updateDepartment(Department department, OnCompleteListener<Void> onCompleteListener) {
         databaseReference.child(String.valueOf(department.getDepartmentId())).setValue(department).addOnCompleteListener(onCompleteListener);
