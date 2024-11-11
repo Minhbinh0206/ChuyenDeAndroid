@@ -11,9 +11,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -30,16 +34,20 @@ import androidx.core.content.ContextCompat;
 
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
+import com.example.socialmediatdcproject.API.QuestionAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.dataModels.GroupUser;
+import com.example.socialmediatdcproject.dataModels.Question;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class CreateNewGroupActivity extends AppCompatActivity {
     private int adminUserId;
@@ -178,6 +186,7 @@ public class CreateNewGroupActivity extends AppCompatActivity {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         mActivityResultLauncher.launch(intent);
     }
+
     private Uri getImageUriFromBitmap(Context context, Bitmap bitmap) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
@@ -185,15 +194,15 @@ public class CreateNewGroupActivity extends AppCompatActivity {
         return Uri.parse(path);
     }
 
-
-
-    ///////////
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.create_new_group_layout);
 
+        LinearLayout linearLayout = findViewById(R.id.parent_survey_group);
+        ImageButton swapQuestion = findViewById(R.id.button_change_question);
+        EditText fieldQuestion = findViewById(R.id.content_question_group);
         Button cancleAction = findViewById(R.id.cancle_create);
         Button submitAction = findViewById(R.id.submit_create);
         EditText fieldNameGroup = findViewById(R.id.content_name_group);
@@ -202,6 +211,28 @@ public class CreateNewGroupActivity extends AppCompatActivity {
 
         // Khi nhấn vào ảnh, chọn ảnh từ Gallery hoặc chụp ảnh bằng Camera
         imgFromGallery.setOnClickListener(v -> showImageSourceDialog());
+
+        ArrayList<String> optionQuestionDefault = new ArrayList<>();
+        String q1 = "Bạn biết đến nhóm này từ đâu ?";
+        String q2 = "Mục đích bạn muốn tham gia nhóm này là gì ?";
+        String q3 = "Bạn có kinh nghiệm hoặc kiến thức gì liên quan đến chủ đề của nhóm không ?";
+        String q4 = "Bạn có đồng ý tuân thủ các quy định của nhóm không ?";
+        String q5 = "Bạn có tham gia nhóm hoặc cộng đồng trực tuyến nào khác tương tự không? Nếu có, là nhóm nào?";
+        String q6 = "Bạn sẽ đóng góp như thế nào vào nhóm nếu được chấp nhận ?";
+        String q7 = "Bạn có thể giữ sự riêng tư và bảo mật trong nhóm không ?";
+        String q8 = "Bạn có từng vi phạm các quy định trong các nhóm trước đây không ?Nếu có, bạn có thể chia sẻ lý do ?";
+        String q9 = "Bạn sẵn sàng tham gia các cuộc thảo luận và hoạt động nhóm không ?";
+        String q10 = "Bạn có câu hỏi hoặc điều gì cần làm rõ về nhóm này không ?";
+        optionQuestionDefault.add(q1);
+        optionQuestionDefault.add(q2);
+        optionQuestionDefault.add(q3);
+        optionQuestionDefault.add(q4);
+        optionQuestionDefault.add(q5);
+        optionQuestionDefault.add(q6);
+        optionQuestionDefault.add(q7);
+        optionQuestionDefault.add(q8);
+        optionQuestionDefault.add(q9);
+        optionQuestionDefault.add(q10);
 
         // Lấy user từ Firebase
         String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -216,8 +247,24 @@ public class CreateNewGroupActivity extends AppCompatActivity {
             public void onStudentsReceived(List<Student> students) {}
         });
 
+        fieldIsPrivate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b){
+                    linearLayout.setVisibility(View.VISIBLE);
+                }
+                else {
+                    linearLayout.setVisibility(View.GONE);
+                }
+            }
+        });
+
         // Hủy tạo nhóm
         cancleAction.setOnClickListener(v -> finish());
+
+        swapQuestion.setOnClickListener(v -> {
+            fieldQuestion.setText(optionQuestionDefault.get(getRandomNumber()));
+        });
 
         // Xác nhận tạo nhóm
         submitAction.setOnClickListener(v -> {
@@ -242,11 +289,33 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                     g.setGroupId(lastId);
                     g.setGroupName(nameGroup);
                     g.setAdminUserId(adminUserId);
+                    g.setGroupDefault(false);
                     g.setPrivate(isPrivate);
                     g.setAvatar(avatar); // Đặt URI ảnh làm avatar của nhóm
 
                     // Thêm nhóm vào cơ sở dữ liệu
                     groupAPI.addGroup(g);
+
+                    if (isPrivate){
+                        Question question = new Question();
+                        QuestionAPI questionAPI = new QuestionAPI();
+                        questionAPI.getAllQuestions(new QuestionAPI.QuestionCallback() {
+                            @Override
+                            public void onQuestionReceived(Question question) {
+
+                            }
+
+                            @Override
+                            public void onQuestionsReceived(List<Question> questions) {
+                                question.setQuestionId(questions.size());
+                                question.setGroupId(g.getGroupId());
+                                question.setGroupQuestion(fieldQuestion.getText().toString());
+
+                                questionAPI.addQuestion(question);
+                            }
+                        });
+                    }
+
                     groupUser.setUserId(adminUserId);
                     groupUser.setGroupId(g.getGroupId());
                     groupUserAPI.addGroupUser(groupUser);
@@ -261,6 +330,11 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                 }
             });
         });
+    }
+    public static int getRandomNumber() {
+        Random random = new Random();
+        // nextInt(10) sẽ trả về giá trị ngẫu nhiên trong khoảng từ 0 đến 9
+        return random.nextInt(10);
     }
 
 }

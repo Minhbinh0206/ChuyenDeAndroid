@@ -11,9 +11,13 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminBusinessAPI;
+import com.example.socialmediatdcproject.API.AdminDefaultAPI;
 import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.model.AdminBusiness;
+import com.example.socialmediatdcproject.model.AdminDefault;
 import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
@@ -42,7 +46,9 @@ public class LoginActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance(); // Khởi tạo FirebaseAuth
         initUi();
 
-       AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+        AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+        AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
 
         // Xử lý đăng nhập
         Button btnLogin = findViewById(R.id.btnLogin);
@@ -65,79 +71,111 @@ public class LoginActivity extends AppCompatActivity {
             }
 
             // Đăng nhập với Firebase Authentication
-            mAuth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(LoginActivity.this, task -> {
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            if (user != null) {
-                                // Truy vấn để tìm userId và roleId từ bảng Users
-                                DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
-                                usersRef.orderByChild("email").equalTo(email)
-                                        .addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                                if (snapshot.exists()) {
-                                                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                                                        int userId = userSnapshot.child("userId").getValue(Integer.class);
-                                                        int roleId = userSnapshot.child("roleId").getValue(Integer.class);
+            mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(LoginActivity.this, task -> {
+                if (task.isSuccessful()) {
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    if (user != null) {
+                        // Truy vấn để tìm userId và roleId từ bảng Users
+                        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
+                        usersRef.orderByChild("email").equalTo(email)
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        if (snapshot.exists()) {
+                                            for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                                                int userId = userSnapshot.child("userId").getValue(Integer.class);
+                                                int roleId = userSnapshot.child("roleId").getValue(Integer.class);
 
-                                                        // Truy vấn để lấy tên role từ bảng Roles
-                                                        DatabaseReference rolesRef = FirebaseDatabase.getInstance().getReference("Roles");
-                                                        rolesRef.child(String.valueOf(roleId)).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                            @Override
-                                                            public void onDataChange(@NonNull DataSnapshot roleSnapshot) {
-                                                                String roleName = roleSnapshot.child("roleName").getValue(String.class);
-                                                                Set<Integer> adminRoleIds = new HashSet<>(Arrays.asList(2, 3, 4, 5));
-                                                                boolean isAdmin = adminRoleIds.contains(roleId);
+                                                // Truy vấn để lấy tên role từ bảng Roles
+                                                DatabaseReference rolesRef = FirebaseDatabase.getInstance().getReference("Roles");
+                                                rolesRef.child(String.valueOf(roleId)).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(@NonNull DataSnapshot roleSnapshot) {
+                                                        String roleName = roleSnapshot.child("roleName").getValue(String.class);
+                                                        Set<Integer> adminRoleIds = new HashSet<>(Arrays.asList(2, 3, 4, 5));
+                                                        boolean isAdmin = adminRoleIds.contains(roleId);
 
-                                                                if (isAdmin) {
-                                                                    adminDepartmentAPI.getAdminDepartmentById(userId, new AdminDepartmentAPI.AdminDepartmentCallBack() {
-                                                                        @Override
-                                                                        public void onUserReceived(AdminDepartment adminDepartment) {
-                                                                            Intent intent = new Intent(LoginActivity.this, HomeAdminActivity.class);
-                                                                            intent.putExtra("adminDepartmentId", userId);
-                                                                            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                                                                            startActivity(intent);
-                                                                        }
-
-                                                                        @Override
-                                                                        public void onUsersReceived(List<AdminDepartment> adminDepartment) {
-
-                                                                        }
-
-                                                                        @Override
-                                                                        public void onError(String s) {
-
-                                                                        }
-                                                                    });
-                                                                } else {
-                                                                    Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
+                                                        if (isAdmin) {
+                                                            adminDepartmentAPI.getAdminDepartmentById(userId, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                                                                @Override
+                                                                public void onUserReceived(AdminDepartment adminDepartment) {
+                                                                    Intent intent = new Intent(LoginActivity.this, HomeAdminActivity.class);
+                                                                    intent.putExtra("admin", userId);
                                                                     intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                                                                     startActivity(intent);
                                                                 }
-                                                            }
 
-                                                            @Override
-                                                            public void onCancelled(@NonNull DatabaseError error) {
-                                                                Toast.makeText(LoginActivity.this, "Lỗi: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                                                            }
-                                                        });
+                                                                @Override
+                                                                public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+                                                                }
+
+                                                                @Override
+                                                                public void onError(String s) {
+
+                                                                }
+                                                            });
+                                                            adminBusinessAPI.getAdminBusinessById(userId, new AdminBusinessAPI.AdminBusinessCallBack() {
+                                                                @Override
+                                                                public void onUserReceived(AdminBusiness adminBusiness) {
+                                                                    Intent intent = new Intent(LoginActivity.this, HomeAdminActivity.class);
+                                                                    intent.putExtra("admin", userId);
+                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                                                    startActivity(intent);
+                                                                }
+
+                                                                @Override
+                                                                public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                                                                }
+
+                                                                @Override
+                                                                public void onError(String s) {
+
+                                                                }
+                                                            });
+                                                            adminDefaultAPI.getAdminDefaultById(userId, new AdminDefaultAPI.AdminDefaultCallBack() {
+                                                                @Override
+                                                                public void onUserReceived(AdminDefault adminDefault) {
+                                                                    Intent intent = new Intent(LoginActivity.this, HomeAdminActivity.class);
+                                                                    intent.putExtra("admin", userId);
+                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                                                    startActivity(intent);
+                                                                }
+
+                                                                @Override
+                                                                public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+                                                                }
+                                                            });
+                                                        } else {
+                                                            Intent intent = new Intent(LoginActivity.this, SharedActivity.class);
+                                                            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                                            startActivity(intent);
+                                                        }
                                                     }
-                                                } else {
-                                                    Toast.makeText(LoginActivity.this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
-                                                }
-                                            }
 
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError error) {
-                                                Toast.makeText(LoginActivity.this, "Lỗi: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                    @Override
+                                                    public void onCancelled(@NonNull DatabaseError error) {
+                                                        Toast.makeText(LoginActivity.this, "Lỗi: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
                                             }
-                                        });
-                            }
-                        } else {
-                            Toast.makeText(LoginActivity.this, "Đăng nhập thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                                        } else {
+                                            Toast.makeText(LoginActivity.this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+                                        Toast.makeText(LoginActivity.this, "Lỗi: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                } else {
+                    Toast.makeText(LoginActivity.this, "Đăng nhập thất bại: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
     }
 

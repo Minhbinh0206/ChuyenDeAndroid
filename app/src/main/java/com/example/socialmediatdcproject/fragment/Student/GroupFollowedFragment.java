@@ -75,18 +75,6 @@ public class GroupFollowedFragment extends Fragment {
         Intent intent = requireActivity().getIntent();
         groupId = intent.getIntExtra("groupId", -1);
 
-        if (groupId <= 20) {
-            frameLayout.setVisibility(View.GONE);
-        }
-        else {
-            frameLayout.setVisibility(View.VISIBLE);
-            // Chuyển sang GroupFollowedFragment sau khi thêm thành công
-            Fragment searchGroupFragment = new CreateNewPostFragment();
-            FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
-            fragmentTransaction.commit();
-        }
-
         String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         loadPostFromFirebase(groupId, 1);
@@ -107,6 +95,19 @@ public class GroupFollowedFragment extends Fragment {
                             .circleCrop()
                             .into(avatarGroup);
                 }
+
+                if (group.isGroupDefault()) {
+                    frameLayout.setVisibility(View.GONE);
+                }
+                else {
+                    frameLayout.setVisibility(View.VISIBLE);
+                    // Chuyển sang GroupFollowedFragment sau khi thêm thành công
+                    Fragment searchGroupFragment = new CreateNewPostFragment();
+                    FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
+                    fragmentTransaction.commit();
+                }
+
                 nameGroup.setText(group.getGroupName());
 
                 StudentAPI studentAPI = new StudentAPI();
@@ -117,6 +118,11 @@ public class GroupFollowedFragment extends Fragment {
                             myselfBtn.setText("Quản lý");
 
                             postBtn.setOnClickListener(v -> {
+                                Fragment searchGroupFragment = new CreateNewPostFragment();
+                                FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
+                                fragmentTransaction.commit();
+
                                 loadPostFromFirebase(groupId, 1);
 
                                 changeColorButtonActive(postBtn);
@@ -125,7 +131,14 @@ public class GroupFollowedFragment extends Fragment {
                             });
 
                             myselfBtn.setOnClickListener(v -> {
-                                loadPostApproveFromFirebase(groupId, 0);
+                                if (group.isPrivate()) {
+                                    Fragment searchGroupFragment = new ManagerGroupFragment();
+                                    FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                    fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
+                                    fragmentTransaction.commit();
+                                }else {
+                                    loadPostApproveFromFirebase(groupId, 0);
+                                }
 
                                 changeColorButtonActive(myselfBtn);
                                 changeColorButtonNormal(memberBtn);
@@ -133,6 +146,11 @@ public class GroupFollowedFragment extends Fragment {
                             });
 
                             memberBtn.setOnClickListener(v -> {
+                                Fragment searchGroupFragment = new SplitFragment();
+                                FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
+                                fragmentTransaction.commit();
+
                                 loadUsersByGroupId(groupId);
 
                                 changeColorButtonActive(memberBtn);
