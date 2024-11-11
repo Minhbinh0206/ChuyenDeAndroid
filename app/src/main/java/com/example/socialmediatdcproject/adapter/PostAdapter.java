@@ -28,6 +28,7 @@ import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.CommentPostActivity;
 import com.example.socialmediatdcproject.activity.GroupDetaiActivity;
+import com.example.socialmediatdcproject.activity.HomeAdminActivity;
 import com.example.socialmediatdcproject.model.AdminBusiness;
 import com.example.socialmediatdcproject.model.AdminDefault;
 import com.example.socialmediatdcproject.model.AdminDepartment;
@@ -118,10 +119,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             setupPostView(imageViewHolder, post, userAPI);
             imageViewHolder.postCreateAt.setText(getTimeAgo(post.getCreatedAt())); // Hiển thị thời gian đăng bài
 
-        } else {
-            PostTextViewHolder textViewHolder = (PostTextViewHolder) holder;
-            setupPostView(textViewHolder, post, userAPI);
-            textViewHolder.postCreateAt.setText(getTimeAgo(post.getCreatedAt())); // Hiển thị thời gian đăng bài
         }
     }
 
@@ -151,69 +148,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return "";
         }
     }
-
-    private void setupPostView(PostTextViewHolder holder, Post post, UserAPI userAPI) {
-        holder.postcontent.setText(post.getContent());
-        holder.postLike.setText(String.valueOf(post.getPostLike()));
-        userAPI.getAllUsers(new UserAPI.UserCallback() {
-            @Override
-            public void onUserReceived(User user) {}
-
-            @Override
-            public void onUsersReceived(List<User> users) {
-                for (User u : users) {
-                    StudentAPI studentAPI = new StudentAPI();
-                    studentAPI.getStudentById(u.getUserId(), new StudentAPI.StudentCallback() {
-                        @Override
-                        public void onStudentReceived(Student student) {
-                            if (student.getUserId() == post.getUserId()) {
-                                holder.postAdminUserId.setText(student.getFullName());
-                                Glide.with(context)
-                                        .load(u.getAvatar())
-                                        .circleCrop()
-                                        .into(holder.postAvatar);
-                            }
-                        }
-
-                        @Override
-                        public void onStudentsReceived(List<Student> students) {
-
-                        }
-                    });
-
-                    AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
-                    adminDepartmentAPI.getAdminDepartmentById(u.getUserId(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
-                        @Override
-                        public void onUserReceived(AdminDepartment adminDepartment) {
-                            if (adminDepartment.getUserId() == post.getUserId()) {
-                                holder.postAdminUserId.setText(adminDepartment.getFullName());
-                                Glide.with(context)
-                                        .load(u.getAvatar())
-                                        .circleCrop()
-                                        .into(holder.postAvatar);
-                            }
-                        }
-
-                        @Override
-                        public void onUsersReceived(List<AdminDepartment> adminDepartment) {
-
-                        }
-
-                        @Override
-                        public void onError(String s) {
-
-                        }
-                    });
-                }
-            }
-        });
-
-        setupLikeButton(holder, post);
-        holder.buttonComment.setOnClickListener(v -> {
-
-        });
-    }
-
     private void setupPostView(PostImageViewHolder holder, Post post, UserAPI userAPI) {
         holder.postcontent.setText(post.getContent());
         holder.postLike.setText(String.valueOf(post.getPostLike()));
@@ -360,7 +294,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 public void onGroupReceived(Group group) {
                     Intent intent = new Intent(v.getContext(), GroupDetaiActivity.class);
                     intent.putExtra("groupId", group.getGroupId());
-                    if (v.getContext() instanceof GroupDetaiActivity) {
+                    if (v.getContext() instanceof GroupDetaiActivity || v.getContext() instanceof HomeAdminActivity) {
 
                     }else {
                         v.getContext().startActivity(intent);
@@ -381,7 +315,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 public void onGroupReceived(Group group) {
                     Intent intent = new Intent(v.getContext(), GroupDetaiActivity.class);
                     intent.putExtra("groupId", group.getGroupId());
-                    if (v.getContext() instanceof GroupDetaiActivity) {
+                    if (v.getContext() instanceof GroupDetaiActivity || v.getContext() instanceof HomeAdminActivity) {
 
                     }else {
                         v.getContext().startActivity(intent);

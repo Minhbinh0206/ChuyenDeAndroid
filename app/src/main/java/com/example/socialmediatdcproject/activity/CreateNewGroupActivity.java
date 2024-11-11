@@ -32,6 +32,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.QuestionAPI;
@@ -95,10 +96,9 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                             try {
                                 // Hiển thị ảnh chọn từ Gallery
                                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
-                                imgFromGallery.setImageBitmap(bitmap);
-
-                                // Upload ảnh lên Firebase Storage
-//                                uploadImageToFirebaseStorage(selectedImageUri, userId, student); // Gọi hàm upload ảnh với userId và student
+                                Glide.with(CreateNewGroupActivity.this)
+                                        .load(bitmap)
+                                        .into(imgFromGallery);
                             } catch (IOException e) {
                                 e.printStackTrace();
 
@@ -110,13 +110,14 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                             if (extras != null) {
                                 Bitmap imageBitmap = (Bitmap) extras.get("data");
                                 if (imageBitmap != null) {
-                                    imgFromGallery.setImageBitmap(imageBitmap);
+                                    Glide.with(CreateNewGroupActivity.this)
+                                            .load(imageBitmap)
+                                            .into(imgFromGallery);
 
                                     // Chuyển Bitmap thành Uri
                                     selectedImageUri = getImageUriFromBitmap(CreateNewGroupActivity.this, imageBitmap);
 
                                     // Upload ảnh lên Firebase Storage
-//                                    uploadImageToFirebaseStorage(imageUri, userId, student); // Gọi hàm upload ảnh với userId và student
                                 }
                             }
                         }
@@ -323,7 +324,7 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                     boolean isJoin = true;
 
                     // Chuyển sang GroupDetailActivity với groupId
-                    Intent intent = new Intent(CreateNewGroupActivity.this, SharedActivity.class);
+                    Intent intent = new Intent(CreateNewGroupActivity.this, GroupDetaiActivity.class);
                     intent.putExtra("groupId", g.getGroupId());
                     intent.putExtra("isJoin", isJoin);
                     startActivity(intent);
