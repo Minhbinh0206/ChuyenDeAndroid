@@ -2,30 +2,30 @@ package com.example.socialmediatdcproject.model;
 
 public class AdminDepartment extends User{
     private int departmentId;
-    //thêm trương cập nhật backgroup
-    private String backgroup;
+    //thêm trương cập nhật background
+    private String background;
 
 
-    public AdminDepartment(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String backgroup) {
+    public AdminDepartment(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String background) {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
-        this.backgroup = backgroup;
+        this.background = background;
     }
 
-    public AdminDepartment(String backgroup) {
-        this.backgroup = backgroup;
+    public AdminDepartment(String background) {
+        this.background = background;
     }
 
-    public AdminDepartment(String fullName, String email, String password, String backgroup) {
+    public AdminDepartment(String fullName, String email, String password, String background) {
         super(fullName, email, password);
-        this.backgroup = backgroup;
+        this.background = background;
     }
 
-    public String getBackgroup() {
-        return backgroup;
+    public String getBackground() {
+        return background;
     }
 
-    public void setBackgroup(String backgroup) {
-        this.backgroup = backgroup;
+    public void setBackground(String background) {
+        this.background = background;
     }
 
 

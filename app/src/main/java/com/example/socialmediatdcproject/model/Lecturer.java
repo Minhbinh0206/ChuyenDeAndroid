@@ -9,28 +9,28 @@ public class Lecturer extends User {
 
 
 
-    //thêm trương cập nhật backgroup
-    private String backgroup;
+    //thêm trương cập nhật background
+    private String background;
 
-    public Lecturer(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String backgroup) {
+    public Lecturer(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String background) {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
-        this.backgroup = backgroup;
+        this.background = background;
     }
 
-    public Lecturer(String backgroup) {
-        this.backgroup = backgroup;
+    public Lecturer(String background) {
+        this.background = background;
     }
 
-    public Lecturer(String fullName, String email, String password, String backgroup) {
+    public Lecturer(String fullName, String email, String password, String background) {
         super(fullName, email, password);
-        this.backgroup = backgroup;
+        this.background = background;
     }
-    public String getBackgroup() {
-        return backgroup;
+    public String getBackground() {
+        return background;
     }
 
-    public void setBackgroup(String backgroup) {
-        this.backgroup = backgroup;
+    public void setBackground(String background) {
+        this.background = background;
     }
 
 

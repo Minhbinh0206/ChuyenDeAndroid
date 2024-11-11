@@ -11,24 +11,24 @@ public class Student extends User {
     // Thêm trường cập nhật Avatar
     private String avatar;
 
-    //thêm trương cập nhật backgroup
-    private String backgroup;
+    //thêm trương cập nhật background
+    private String background;
 
 
     //
 
-    public Student(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String backgroup) {
+    public Student(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String background) {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
-        this.backgroup = backgroup;
+        this.background = background;
     }
 
 
-    public String getBackgroup() {
-        return backgroup;
+    public String getBackground() {
+        return background;
     }
 
-    public void setBackgroup(String backgroup) {
-        this.backgroup = backgroup;
+    public void setBackground(String background) {
+        this.background = background;
     }
 
 
@@ -103,7 +103,7 @@ public class Student extends User {
         this.majorId = majorId;
         this.classId = studentClass;
         this.description = description;
-        this.backgroup = backgroup;
+        this.background = background;
     }
 
     public Student() {
@@ -114,9 +114,9 @@ public class Student extends User {
         this.avatar = avatar;
     }
 
-    public Student(String fullName, String email, String password, String backgroup) {
+    public Student(String fullName, String email, String password, String background) {
         super(fullName, email, password);
-        this.backgroup = backgroup;
+        this.background = background;
     }
 
 }

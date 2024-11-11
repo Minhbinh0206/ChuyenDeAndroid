@@ -61,15 +61,26 @@
     </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/anh_nen_big"
+        android:id="@+id/khung_hinh_nen"
         android:layout_width="match_parent"
         android:layout_height="220dp"
         android:layout_gravity="center"
         android:layout_marginVertical="20dp"
-        android:background="@drawable/khung_vuong_goc_40px"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/frameLayout">
+
+
+        <ImageView
+            android:id="@+id/image_anh_nen_big"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/khung_vuong_goc_40px"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/image_anh_nen_small"
@@ -90,8 +101,7 @@
         android:layout_height="140dp"
         android:layout_margin="5dp"
         android:src="@drawable/khung_tron_hinh_anh"
-
-        app:layout_constraintBottom_toBottomOf="@+id/anh_nen_big"
+        app:layout_constraintBottom_toBottomOf="@+id/khung_hinh_nen"
         app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView

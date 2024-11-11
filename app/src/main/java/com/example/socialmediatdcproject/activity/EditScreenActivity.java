@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -29,6 +30,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -57,48 +59,61 @@ public class EditScreenActivity extends AppCompatActivity {
     private EditText editTextName, editTextMSSV, editTextClass, editTextDepartment, editTextDescription, editTextDoB , editTextPhone;
     private Button buttonUpdate;
     private Uri selectedImageUri;
-    private ImageView imageEditPersonal, imageEditPersonalSmall, imageEditBackgroupPersonalBig, imageEditBackgroupPersonalSmall ;
+    private Uri selectedBackgroup;
+    private ImageView imageEditPersonal, imageEditPersonalSmall, imageEditBackgroupPersonalSmall, imageEditBackgroupPersonalBig ;
     private ImageButton btnBack;
     private String userId;
-//    private Student student;  // Khai báo student ở đây
+    private Student student;  // Khai báo student ở đây
 
     private static final int MY_CAMERA_REQUEST_CODE = 110;
+    private static boolean MY_REQUEST_CODE_AVATAR = false;
+    private static final int MY_CAMERA_REQUEST_CODE_Backgroud = 110;
 
     //Kiểm tra và yêu cầu quyền camera
-    private void onClickRequestCameraPermission() {
+    private void onClickRequestCameraPermission( ) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            openCamera();
+            if (MY_REQUEST_CODE_AVATAR) {
+                openCameraAvatar();
+            }
+            else {
+                openCameraBackround();
+            }
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
         }
     }
     //Mở camera
-    private void openCamera() {
+    private void openCameraAvatar() {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         mActivityResultLauncher.launch(cameraIntent);
-    }
 
+    }
+    //Mở camera
+    private void openCameraBackround() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        mActivityResultLauncherBackground.launch(cameraIntent);
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_screen_layout);
-
         mAuth = FirebaseAuth.getInstance();
         userId = mAuth.getCurrentUser().getUid(); // Lấy userId dạng chuỗi
 
         // Tìm các view từ layout
         imageEditPersonal = findViewById(R.id.image_edit_personal);
         imageEditPersonalSmall = findViewById(R.id.image_edit_personal_small);
-        imageEditBackgroupPersonalBig = findViewById(R.id.anh_nen_big);
-        imageEditBackgroupPersonalBig = findViewById(R.id.image_anh_nen_small);
+
+        imageEditBackgroupPersonalBig = findViewById(R.id.image_anh_nen_big);
+        imageEditBackgroupPersonalSmall = findViewById(R.id.image_anh_nen_small);
+
         editTextName = findViewById(R.id.editTextName);
         editTextMSSV = findViewById(R.id.editTextMSSV);
         editTextDoB = findViewById(R.id.editTextDoB);
         editTextPhone = findViewById(R.id.editTextPhone);
 
-      //  editTextClass = findViewById(R.id.editTextLop);
-       // editTextDepartment = findViewById(R.id.editTextKhoa);
          editTextDescription = findViewById(R.id.editTextDescription);
         buttonUpdate = findViewById(R.id.button_club_post);
          btnBack = findViewById(R.id.icon_back);
@@ -111,7 +126,7 @@ public class EditScreenActivity extends AppCompatActivity {
         studentAPI.getStudentByKey(userId, new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
-                if (student != null && student.getAvatar() != null) {
+                if (student != null) {
                     // Hiển thị dữ liệu lên các EditText
                     editTextName.setText(student.getFullName());
                     editTextMSSV.setText(student.getStudentNumber());
@@ -124,18 +139,22 @@ public class EditScreenActivity extends AppCompatActivity {
                                 .circleCrop()
                                 .into(imageEditPersonal);
 
+                    Log.d("Student", "onStudentReceived: " + student.getAvatar());
+
                         Glide.with(EditScreenActivity.this)
                                 .load(student.getAvatar())
                                 .circleCrop()
                                 .into(imageEditPersonalSmall);
-                    Glide.with(EditScreenActivity.this)
-                            .load(student.getAvatar())
-                            .circleCrop()
-                            .into(imageEditBackgroupPersonalBig);
-                    Glide.with(EditScreenActivity.this)
-                            .load(student.getAvatar())
-                            .circleCrop()
-                            .into(imageEditBackgroupPersonalSmall);
+
+//                    Glide.with(EditScreenActivity.this)
+//                            .load(student.getBackgroup())
+//                            .into(imageEditBackgroupPersonalBig);
+//
+//                    Glide.with(EditScreenActivity.this)
+//                            .load(student.getBackgroup())
+//                            .circleCrop()
+//                            .into(imageEditBackgroupPersonalSmall);
+
                     // Sự kiện click cập nhật thông tin
                     buttonUpdate.setOnClickListener(v -> {
                         String name = editTextName.getText().toString().trim();
@@ -151,7 +170,7 @@ public class EditScreenActivity extends AppCompatActivity {
                            student.setDescription(description);
                            student.setBirthday(dob);
                             student.setStudentNumber(mssv);
-                            student.setPhoneNumber(phone);  
+                            student.setPhoneNumber(phone);
 
                             studentAPI.updateStudent(student, new StudentAPI.StudentCallback() {
                                 @Override
@@ -165,14 +184,32 @@ public class EditScreenActivity extends AppCompatActivity {
                                 }
                             });
 
+                            Log.d("TAG", "onStudentReceived: "  + selectedImageUri);
                             // Nếu người dùng đã chọn ảnh mới
                             if (selectedImageUri != null) {
-                                uploadImageToFirebaseStorage(selectedImageUri, student);
+                                if (MY_REQUEST_CODE_AVATAR) {
+                                    uploadImageToFirebaseStorage(selectedImageUri, student);
 
+                                }else {
+                                    uploadImageToFirebaseStorageBackground(selectedImageUri, student);
+                                }
                             } else {
                                 // Cập nhật thông tin người dùng mà không cần đổi ảnh
                                 saveStudentDataToDatabase(student);
                             }
+
+                            //Nếu người dùng chon backgroud mới
+//                            if (selectedBackgroup != null) {
+//                                uploadImageToFirebaseStorage(selectedBackgroup, student);
+//
+//                            } else {
+//                                // Cập nhật thông tin người dùng mà không cần đổi ảnh
+//                                saveStudentDataToDatabase(student);
+//                            }
+
+
+                            // Nếu người dùng chọn backgroud mới
+
                         }
                         //Hàm xử lý ảnh từ cam
                       //  uploadImageFromCamera( bitmap, student);
@@ -187,10 +224,12 @@ public class EditScreenActivity extends AppCompatActivity {
         // Sự kiện click chọn ảnh từ thư viện
         imageEditPersonalSmall.setOnClickListener(v -> {
             showImageSourceDialog();
+            MY_REQUEST_CODE_AVATAR = true;
         });
 
         imageEditBackgroupPersonalSmall.setOnClickListener( v -> {
             showImageSourceDialog();
+            MY_REQUEST_CODE_AVATAR = false;
         });
 
     }
@@ -223,7 +262,9 @@ public class EditScreenActivity extends AppCompatActivity {
                 avatarRef.putFile(filePath)
                         .addOnSuccessListener(taskSnapshot -> {
                             avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                                student.setAvatar(uri.toString());  // Cập nhật URL ảnh mới vào student object
+                                student.setAvatar(uri.toString());
+                            //    student.setBackgroup(uri.toString());
+                                // Cập nhật URL ảnh mới vào student object
                                 saveStudentDataToDatabase(student);
                             });
                         })
@@ -236,6 +277,49 @@ public class EditScreenActivity extends AppCompatActivity {
                         .addOnSuccessListener(taskSnapshot -> {
                             avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
                                 student.setAvatar(uri.toString());  // Cập nhật URL ảnh mới vào student object
+                            //    student.setBackgroup(uri.toString());
+                                saveStudentDataToDatabase(student);
+                            });
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(EditScreenActivity.this, "Upload Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
+            });
+        }
+    }
+
+    //
+    //Xử lí ảnh từ thư viện
+    private void uploadImageToFirebaseStorageBackground(Uri filePath, Student student) {
+        if (filePath != null) {
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference();
+
+            String imageName = "background" + student.getStudentNumber() + ".jpg";
+            StorageReference avatarRef = storageRef.child("background/" + imageName);
+
+            // Xóa ảnh cũ nếu tồn tại trước khi upload ảnh mới
+            avatarRef.delete().addOnSuccessListener(aVoid -> {
+                // Sau khi ảnh cũ đã bị xóa, tải ảnh mới lên
+                avatarRef.putFile(filePath)
+                        .addOnSuccessListener(taskSnapshot -> {
+                            avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                student.setBackground(uri.toString());
+                                //    student.setBackgroup(uri.toString());
+                                // Cập nhật URL ảnh mới vào student object
+                                saveStudentDataToDatabase(student);
+                            });
+                        })
+                        .addOnFailureListener(exception -> {
+                            Toast.makeText(EditScreenActivity.this, "Upload Failed: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
+            }).addOnFailureListener(exception -> {
+                // Nếu không có ảnh cũ hoặc xóa ảnh cũ thất bại, tiến hành upload ảnh mới luôn
+                avatarRef.putFile(filePath)
+                        .addOnSuccessListener(taskSnapshot -> {
+                            avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                student.setBackground(uri.toString());  // Cập nhật URL ảnh mới vào student object
+                                //    student.setBackgroup(uri.toString());
                                 saveStudentDataToDatabase(student);
                             });
                         })
@@ -247,13 +331,24 @@ public class EditScreenActivity extends AppCompatActivity {
     }
 
     //Xử lí ảnh từ cam
-    private void uploadImageFromCamera(Bitmap bitmap, Student student) {
+    private void uploadImageFromCamera(Bitmap bitmap) {
         // Lưu tạm ảnh vào bộ nhớ và chuyển thành Uri
         Uri tempUri = getImageUriFromBitmap(this, bitmap);
 
         // Gọi hàm upload lên Firebase Storage
         if (tempUri != null) {
-            uploadImageToFirebaseStorage(tempUri, student);
+            StudentAPI studentAPI = new StudentAPI();
+            studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                @Override
+                public void onStudentReceived(Student student1) {
+                    uploadImageToFirebaseStorage(tempUri, student1);
+                }
+
+                @Override
+                public void onStudentsReceived(List<Student> students) {
+
+                }
+            });
         } else {
             Toast.makeText(EditScreenActivity.this, "Failed to get image URI from camera", Toast.LENGTH_SHORT).show();
         }
@@ -264,7 +359,6 @@ public class EditScreenActivity extends AppCompatActivity {
         String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, "CameraImage", null);
         return Uri.parse(path);
     }
-
 
     private void saveStudentDataToDatabase(Student student) {
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Students").child(userId);
@@ -284,7 +378,13 @@ public class EditScreenActivity extends AppCompatActivity {
         SharedPreferences preferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
         boolean isPermissionGranted = preferences.getBoolean("GalleryPermissionGranted", false);
         if (isPermissionGranted == true) {
-            openGallery();
+            if (MY_REQUEST_CODE_AVATAR) {
+                openGalleryAvatar();
+            }
+            ///Không dùng else, tạo 1 biến như trên ìf để làm
+            else {
+                openGalleryBackground();
+            }
         }
         else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CUR_DEVELOPMENT) {
             showPermissionDialog();
@@ -298,31 +398,48 @@ public class EditScreenActivity extends AppCompatActivity {
         }
     }
 
+    //Hàm xử lý quyền để mở cam và thư viện
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         // Xử lý quyền đọc bộ nhớ
         if (requestCode == MY_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openGallery();
-            } else {
-                Toast.makeText(this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+            if (MY_REQUEST_CODE_AVATAR){
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    openGalleryAvatar();
+                } else {
+                    Toast.makeText(this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+                }
+            }else {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    openGalleryBackground();
+                } else {
+                    Toast.makeText(this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+                }
             }
+
         }
 
         // Xử lý quyền camera
         if (requestCode == MY_CAMERA_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openCamera();
+                if (MY_REQUEST_CODE_AVATAR) {
+                    openCameraAvatar();
+                }
+                else {
+                    openCameraBackround();
+                }
             } else {
                 Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show();
             }
         }
+
+        //Xử lí quyền camera cập nhật ảnh cho bâckgroud
     }
 
     // Hàm hiển thị bảng thông báo
-    private void showPermissionDialog() {
+    private void showPermissionDialog( ) {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(R.layout.dialog_permission)
                 .setCancelable(false) // Không cho phép đóng bằng cách chạm ra ngoài
@@ -341,35 +458,70 @@ public class EditScreenActivity extends AppCompatActivity {
         //
         SharedPreferences preferences = getSharedPreferences("AppPreferences", MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
+        if (MY_REQUEST_CODE_AVATAR) {
+            btnAllow.setOnClickListener(v -> {
+                //Nếu người dùng nhấn nó thì thiết bị sẽ mở quyền gallery và không hỏi lại nữa
 
-        btnAllow.setOnClickListener(v -> {
-            //Nếu người dùng nhấn nó thì thiết bị sẽ mở quyền gallery và không hỏi lại nữa
-            editor.putBoolean("GalleryPermissionGranted", true);
-            editor.apply();
-            openGallery();
-            dialog.dismiss();
+                editor.putBoolean("GalleryPermissionGranted", true);
+                editor.apply();
+                openGalleryAvatar();
+                dialog.dismiss();
 
-        });
+            });
 
-        btnOneOfTime.setOnClickListener(v -> {
-            // Nếu người dùng chọn cho phép, mở thư viện ảnh
-            openGallery();
-            dialog.dismiss();
-        });
+            btnOneOfTime.setOnClickListener(v -> {
+                // Nếu người dùng chọn cho phép, mở thư viện ảnh
+                openGalleryAvatar();
+                dialog.dismiss();
+            });
 
-        btnDeny.setOnClickListener(v -> {
-            // Nếu người dùng chọn không cho phép, hiển thị thông báo
-            Toast.makeText(this, "Permission not granted. You can't access the gallery.", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-        });
+            btnDeny.setOnClickListener(v -> {
+                // Nếu người dùng chọn không cho phép, hiển thị thông báo
+                Toast.makeText(this, "Permission not granted. You can't access the gallery.", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            });
+        }
+        else {
+            btnAllow.setOnClickListener(v -> {
+                //Nếu người dùng nhấn nó thì thiết bị sẽ mở quyền gallery và không hỏi lại nữa
+
+                editor.putBoolean("GalleryPermissionGranted", true);
+                editor.apply();
+                openGalleryBackground();
+                dialog.dismiss();
+
+            });
+
+            btnOneOfTime.setOnClickListener(v -> {
+                // Nếu người dùng chọn cho phép, mở thư viện ảnh
+                openGalleryBackground();
+
+                dialog.dismiss();
+            });
+
+            btnDeny.setOnClickListener(v -> {
+                // Nếu người dùng chọn không cho phép, hiển thị thông báo
+                Toast.makeText(this, "Permission not granted. You can't access the gallery.", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+            });
+        }
+
     }
 
+
 //Mở thư viện ảnh
-    private void openGallery() {
+    private void openGalleryAvatar() {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
+
+    }
+    private void openGalleryBackground() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        mActivityResultLauncherBackground.launch(Intent.createChooser(intent, "Select Picture"));
     }
 
     // Hàm xử lý kết quả từ camera hoặc gallery
@@ -386,26 +538,46 @@ public class EditScreenActivity extends AppCompatActivity {
                                 // Nhận ảnh từ camera
                                 Bundle extras = data.getExtras();
                                 Bitmap imageBitmap = (Bitmap) extras.get("data");
-                                imageEditPersonalSmall.setImageBitmap(imageBitmap);
-                                imageEditPersonal.setImageBitmap(imageBitmap);
-                                imageEditBackgroupPersonalBig.setImageBitmap(imageBitmap);
-                                imageEditBackgroupPersonalSmall.setImageBitmap(imageBitmap);
 
-                                // Upload ảnh từ camera lên Firebase Storage
-                               // uploadImageFromCamera(imageBitmap, imageBitmap);  // Sử dụng student
+                                Glide.with(EditScreenActivity.this)
+                                        .load(imageBitmap)
+                                        .circleCrop()
+                                        .into(imageEditPersonalSmall);
+
+                                Glide.with(EditScreenActivity.this)
+                                        .load(imageBitmap)
+                                        .circleCrop()
+                                        .into(imageEditPersonal);
+                                // Chuyển đổi Bitmap thành Uri tạm
+                                selectedImageUri = getImageUriFromBitmap(EditScreenActivity.this, imageBitmap);
+
+                                // imageEditBackgroupPersonalBig.setImageBitmap(imageBitmap);
+                              //  imageEditBackgroupPersonalSmall.setImageBitmap(imageBitmap);
+
                             } else {
                                 // Nhận ảnh từ gallery
                                 selectedImageUri = data.getData();
+                              //  selectedBackgroup = data.getData();
                                 try {
                                     // Hiển thị ảnh chọn từ Gallery
                                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
-                                    imageEditPersonalSmall.setImageBitmap(bitmap);
-                                    imageEditPersonal.setImageBitmap(bitmap);
-                                    imageEditBackgroupPersonalBig.setImageBitmap(bitmap);
-                                    imageEditBackgroupPersonalSmall.setImageBitmap(bitmap);
+//                                    imageEditPersonalSmall.setImageBitmap(bitmap);
+                                    Glide.with(EditScreenActivity.this)
+                                            .load(bitmap)
+                                            .circleCrop()
+                                            .into(imageEditPersonalSmall);
 
-                                    // Upload ảnh từ gallery lên Firebase Storage
-                                  //  uploadImageToFirebaseStorage(selectedImageUri, student);  // Sử dụng student
+                                    Glide.with(EditScreenActivity.this)
+                                            .load(bitmap)
+                                            .circleCrop()
+                                            .into(imageEditPersonal);
+
+
+                                    //Hiển thị hình cho Backgroud
+//                                    Bitmap bitmap1 = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedBackgroup);
+//                                    imageEditBackgroupPersonalBig.setImageBitmap(bitmap1);
+//                                   imageEditBackgroupPersonalSmall.setImageBitmap(bitmap1);
+
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -416,6 +588,61 @@ public class EditScreenActivity extends AppCompatActivity {
 
             }
     );
+
+
+//
+private ActivityResultLauncher<Intent> mActivityResultLauncherBackground = registerForActivityResult(
+        new ActivityResultContracts.StartActivityForResult(),
+        new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    if (data != null) {
+                        // Kiểm tra nếu ảnh đến từ camera
+                        if (data.hasExtra("data")) {
+                            // Nhận ảnh từ camera
+                            Bundle extras = data.getExtras();
+                            Bitmap imageBitmap = (Bitmap) extras.get("data");
+
+                            Glide.with(EditScreenActivity.this)
+                                    .load(imageBitmap)
+                                    .circleCrop()
+                                    .into(imageEditBackgroupPersonalBig);
+
+                            Glide.with(EditScreenActivity.this)
+                                    .load(imageBitmap)
+                                    .circleCrop()
+                                    .into(imageEditBackgroupPersonalSmall);
+                            // Chuyển đổi Bitmap thành Uri tạm
+                            selectedImageUri = getImageUriFromBitmap(EditScreenActivity.this, imageBitmap);
+                        } else {
+                            // Nhận ảnh từ gallery
+                            selectedImageUri = data.getData();
+                            //  selectedBackgroup = data.getData();
+                            try {
+                                // Hiển thị ảnh chọn từ Gallery
+                                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+//                                    imageEditPersonalSmall.setImageBitmap(bitmap);
+                                Glide.with(EditScreenActivity.this)
+                                        .load(bitmap)
+                                        .into(imageEditBackgroupPersonalBig);
+
+                                Glide.with(EditScreenActivity.this)
+                                        .load(bitmap)
+                                        .circleCrop()
+                                        .into(imageEditBackgroupPersonalSmall);
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+);
 
     private void showNotifyQuicklyPopup(int id ,List<NotifyQuickly> notifications) {
         if (notifications == null || notifications.isEmpty()) {

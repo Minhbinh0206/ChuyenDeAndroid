@@ -9,20 +9,20 @@ public class Group {
     private int adminUserId;
     private String avatar;
     private boolean isPrivate;
-    //thêm trương cập nhật backgroup
-    private String backgroup;
+    //thêm trương cập nhật background
+    private String background;
 
 
-    public Group(String backgroup) {
-        this.backgroup = backgroup;
+    public Group(String background) {
+        this.background = background;
     }
 
-    public String getBackgroup() {
-        return backgroup;
+    public String getBackground() {
+        return background;
     }
 
-    public void setBackgroup(String backgroup) {
-        this.backgroup = backgroup;
+    public void setBackground(String background) {
+        this.background = background;
     }
 
 

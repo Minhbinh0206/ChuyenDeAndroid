@@ -5,6 +5,6 @@
     <solid android:color="@android:color/white"/> <!-- Màu nền của khung tròn -->
     <size android:width="150dp" android:height="150dp"/> <!-- Kích thước khung tròn -->
     <stroke
-        android:width="4dp"
+        android:width="2dp"
     android:color="@android:color/darker_gray"/> <!-- Màu viền -->
 </shape>
