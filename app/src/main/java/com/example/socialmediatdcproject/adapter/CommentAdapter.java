@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.dynamicanimation.animation.SpringAnimation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -18,10 +19,18 @@ import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Comment;
+import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
 
@@ -32,6 +41,26 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     public CommentAdapter(List<Comment> commentList, Context context) {
         this.commentsList = commentList;
         this.context = context;
+        sortCommentByDate();
+    }
+
+    //Hàm sắp xếp
+    private void sortCommentByDate(){
+        Collections.sort(commentsList, new Comparator<Comment>() {
+            @Override
+            public int compare(Comment comment1, Comment comment2) {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                try {
+                    Date date1 = format.parse(comment1.getCommentCreateAt());
+                    Date date2 = format.parse(comment2.getCommentCreateAt());
+                    return  date2.compareTo(date1);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    return 0;
+
+                }
+            }
+        });
     }
 
     // Tạo ViewHolder
@@ -48,12 +77,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         StudentAPI studentAPI = new StudentAPI();
         AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
         if (comment != null) {
-            // Set dữ liệu cho các view
+
+            // Gán dữ liệu cho các view
             studentAPI.getAllStudents(new StudentAPI.StudentCallback() {
                 @Override
-                public void onStudentReceived(Student student) {
-
-                }
+                public void onStudentReceived(Student student) {}
 
                 @Override
                 public void onStudentsReceived(List<Student> students) {
@@ -68,11 +96,10 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                     }
                 }
             });
+
             adminDepartmentAPI.getAllAdminDepartments(new AdminDepartmentAPI.AdminDepartmentCallBack() {
                 @Override
-                public void onUserReceived(AdminDepartment adminDepartment) {
-
-                }
+                public void onUserReceived(AdminDepartment adminDepartment) {}
 
                 @Override
                 public void onUsersReceived(List<AdminDepartment> adminDepartments) {
@@ -88,17 +115,51 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                 }
 
                 @Override
-                public void onError(String s) {
-
-                }
+                public void onError(String s) {}
             });
 
-            holder.commentLike.setText(comment.getCommentLike() + "");
+            holder.commentLike.setText(String.valueOf(comment.getCommentLike()));
             holder.commentContent.setText(comment.getContent());
+
+            // Gán dữ liệu hiển thị thời gian cho comment
+            holder.commentCreateAt.setText(getTimeAgo(comment.getCommentCreateAt()));
+
+            //imageViewHolder.postCreateAt.setText(getTimeAgo(post.getCreatedAt())); // Hiển thị thời gian đăng bài
+
+            Log.d("comment time create", "onBindViewHolder: ");
+
             setupLikeButton(holder, comment);
 
         } else {
-            Log.e("MemberAdapter", "User at position " + position + " is null");
+            Log.e("CommentAdapter", "User at position " + position + " is null");
+        }
+    }
+
+
+    // Hàm tính thời gian hiển thị bài viết
+    private String getTimeAgo(String createdAt) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        try {
+            Date createdDate = sdf.parse(createdAt);
+            Date currentDate = new Date();
+
+            long diffInMillis = currentDate.getTime() - createdDate.getTime();
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis);
+            long hours = TimeUnit.MILLISECONDS.toHours(diffInMillis);
+            long days = TimeUnit.MILLISECONDS.toDays(diffInMillis);
+
+            if (minutes == 0) {
+                return "Vừa xong";
+            } else if (minutes < 60) {
+                return minutes + " phút trước";
+            } else if (hours < 24) {
+                return hours + " giờ trước";
+            } else {
+                return days + " ngày trước";
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return "";
         }
     }
 
@@ -164,6 +225,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                                     ? context.getResources().getDrawable(R.drawable.icon_tym_red)
                                     : context.getResources().getDrawable(R.drawable.icon_tym));
                             holder.commentLike.setText(String.valueOf(comment.getCommentLike()));
+                           // holder.commentCreateAt.setText(getTimeAgo(comment.getCommentCreateAt()));
 
                             // Cập nhật comment trong cơ sở dữ liệu
                             CommentAPI commentAPI = new CommentAPI();
@@ -267,6 +329,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         TextView commentLike;
         ImageView avatar;
         ImageView commentLikeImage;
+        TextView commentCreateAt;
 
 
         public CommentViewHolder(@NonNull View itemView) {
@@ -276,6 +339,8 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             commentLike = itemView.findViewById(R.id.comment_like);
             avatar = itemView.findViewById(R.id.comment_avatar);
             commentLikeImage = itemView.findViewById(R.id.comment_like_image);
+            commentCreateAt = itemView.findViewById(R.id.comment_create_at);
+
         }
 
     }

@@ -10,6 +10,22 @@ public class Group {
     private String avatar;
     private boolean isGroupDefault;
     private boolean isPrivate;
+    //thêm trương cập nhật background
+    private String background;
+
+
+    public Group(String background) {
+        this.background = background;
+    }
+
+    public String getBackground() {
+        return background;
+    }
+
+    public void setBackground(String background) {
+        this.background = background;
+    }
+
 
     public int getGroupId() {
         return groupId;
