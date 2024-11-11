@@ -151,7 +151,7 @@ public class EditScreenActivity extends AppCompatActivity {
                            student.setDescription(description);
                            student.setBirthday(dob);
                             student.setStudentNumber(mssv);
-                            student.setPhoneNumber(phone);
+                            student.setPhoneNumber(phone);  
 
                             studentAPI.updateStudent(student, new StudentAPI.StudentCallback() {
                                 @Override
