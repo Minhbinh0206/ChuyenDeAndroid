@@ -67,17 +67,21 @@ public class EditScreenActivity extends AppCompatActivity {
 
     private static final int MY_CAMERA_REQUEST_CODE = 110;
     private static boolean MY_REQUEST_CODE_AVATAR = false;
+    private static boolean MY_REQUEST_CODE_BACKGROUND = false;
     private static final int MY_CAMERA_REQUEST_CODE_Backgroud = 110;
 
     //Kiểm tra và yêu cầu quyền camera
     private void onClickRequestCameraPermission( ) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+
             if (MY_REQUEST_CODE_AVATAR) {
                 openCameraAvatar();
             }
-            else {
+
+            if (MY_REQUEST_CODE_BACKGROUND) {
                 openCameraBackround();
             }
+
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
         }
@@ -131,29 +135,31 @@ public class EditScreenActivity extends AppCompatActivity {
                     editTextName.setText(student.getFullName());
                     editTextMSSV.setText(student.getStudentNumber());
                     editTextDoB.setText(student.getBirthday());
-                   editTextDescription.setText(student.getDescription());
-                   editTextPhone.setText(student.getPhoneNumber());
-                        // Hiển thị ảnh sử dụng Glide
-                        Glide.with(EditScreenActivity.this)
-                                .load(student.getAvatar())
-                                .circleCrop()
-                                .into(imageEditPersonal);
+                    editTextDescription.setText(student.getDescription());
+                    editTextPhone.setText(student.getPhoneNumber());
+
+                    // Hiển thị ảnh sử dụng Glide
+                    Glide.with(EditScreenActivity.this)
+                            .load(student.getAvatar())
+                            .circleCrop()
+                            .into(imageEditPersonal);
 
                     Log.d("Student", "onStudentReceived: " + student.getAvatar());
 
-                        Glide.with(EditScreenActivity.this)
-                                .load(student.getAvatar())
-                                .circleCrop()
-                                .into(imageEditPersonalSmall);
+                    Glide.with(EditScreenActivity.this)
+                            .load(student.getAvatar())
+                            .circleCrop()
+                            .into(imageEditPersonalSmall);
 
-//                    Glide.with(EditScreenActivity.this)
-//                            .load(student.getBackgroup())
-//                            .into(imageEditBackgroupPersonalBig);
-//
-//                    Glide.with(EditScreenActivity.this)
-//                            .load(student.getBackgroup())
-//                            .circleCrop()
-//                            .into(imageEditBackgroupPersonalSmall);
+                    Glide.with(EditScreenActivity.this)
+                            .load(student.getBackground())
+                            .optionalFitCenter()
+                            .into(imageEditBackgroupPersonalBig);
+
+                    Glide.with(EditScreenActivity.this)
+                            .load(student.getBackground())
+                            .circleCrop()
+                            .into(imageEditBackgroupPersonalSmall);
 
                     // Sự kiện click cập nhật thông tin
                     buttonUpdate.setOnClickListener(v -> {
@@ -167,8 +173,8 @@ public class EditScreenActivity extends AppCompatActivity {
                             Toast.makeText(EditScreenActivity.this, "Vui lòng điền đầy đủ thông tin.", Toast.LENGTH_SHORT).show();
                         } else {
                             student.setFullName(name);
-                           student.setDescription(description);
-                           student.setBirthday(dob);
+                            student.setDescription(description);
+                            student.setBirthday(dob);
                             student.setStudentNumber(mssv);
                             student.setPhoneNumber(phone);
 
@@ -189,30 +195,16 @@ public class EditScreenActivity extends AppCompatActivity {
                             if (selectedImageUri != null) {
                                 if (MY_REQUEST_CODE_AVATAR) {
                                     uploadImageToFirebaseStorage(selectedImageUri, student);
+                                }
 
-                                }else {
+                                if (MY_REQUEST_CODE_BACKGROUND)  {
                                     uploadImageToFirebaseStorageBackground(selectedImageUri, student);
                                 }
                             } else {
                                 // Cập nhật thông tin người dùng mà không cần đổi ảnh
                                 saveStudentDataToDatabase(student);
                             }
-
-                            //Nếu người dùng chon backgroud mới
-//                            if (selectedBackgroup != null) {
-//                                uploadImageToFirebaseStorage(selectedBackgroup, student);
-//
-//                            } else {
-//                                // Cập nhật thông tin người dùng mà không cần đổi ảnh
-//                                saveStudentDataToDatabase(student);
-//                            }
-
-
-                            // Nếu người dùng chọn backgroud mới
-
                         }
-                        //Hàm xử lý ảnh từ cam
-                      //  uploadImageFromCamera( bitmap, student);
                     });
                 }
             }
@@ -229,7 +221,7 @@ public class EditScreenActivity extends AppCompatActivity {
 
         imageEditBackgroupPersonalSmall.setOnClickListener( v -> {
             showImageSourceDialog();
-            MY_REQUEST_CODE_AVATAR = false;
+            MY_REQUEST_CODE_BACKGROUND = true;
         });
 
     }
@@ -247,7 +239,7 @@ public class EditScreenActivity extends AppCompatActivity {
                 .show();
     }
 
-//Xử lí ảnh từ thư viện
+    //Xử lí ảnh từ thư viện
     private void uploadImageToFirebaseStorage(Uri filePath, Student student) {
         if (filePath != null) {
             FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -288,14 +280,13 @@ public class EditScreenActivity extends AppCompatActivity {
         }
     }
 
-    //
     //Xử lí ảnh từ thư viện
     private void uploadImageToFirebaseStorageBackground(Uri filePath, Student student) {
         if (filePath != null) {
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReference();
 
-            String imageName = "background" + student.getStudentNumber() + ".jpg";
+            String imageName = "background_" + student.getStudentNumber() + ".jpg";
             StorageReference avatarRef = storageRef.child("background/" + imageName);
 
             // Xóa ảnh cũ nếu tồn tại trước khi upload ảnh mới
@@ -381,8 +372,8 @@ public class EditScreenActivity extends AppCompatActivity {
             if (MY_REQUEST_CODE_AVATAR) {
                 openGalleryAvatar();
             }
-            ///Không dùng else, tạo 1 biến như trên ìf để làm
-            else {
+
+            if (MY_REQUEST_CODE_BACKGROUND) {
                 openGalleryBackground();
             }
         }
@@ -411,7 +402,9 @@ public class EditScreenActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
                 }
-            }else {
+            }
+
+            if (MY_REQUEST_CODE_BACKGROUND){
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     openGalleryBackground();
                 } else {
@@ -427,7 +420,8 @@ public class EditScreenActivity extends AppCompatActivity {
                 if (MY_REQUEST_CODE_AVATAR) {
                     openCameraAvatar();
                 }
-                else {
+
+                if (MY_REQUEST_CODE_BACKGROUND) {
                     openCameraBackround();
                 }
             } else {
@@ -481,7 +475,8 @@ public class EditScreenActivity extends AppCompatActivity {
                 dialog.dismiss();
             });
         }
-        else {
+
+        if (MY_REQUEST_CODE_BACKGROUND) {
             btnAllow.setOnClickListener(v -> {
                 //Nếu người dùng nhấn nó thì thiết bị sẽ mở quyền gallery và không hỏi lại nữa
 
@@ -508,8 +503,7 @@ public class EditScreenActivity extends AppCompatActivity {
 
     }
 
-
-//Mở thư viện ảnh
+    //Mở thư viện ảnh
     private void openGalleryAvatar() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -551,9 +545,6 @@ public class EditScreenActivity extends AppCompatActivity {
                                 // Chuyển đổi Bitmap thành Uri tạm
                                 selectedImageUri = getImageUriFromBitmap(EditScreenActivity.this, imageBitmap);
 
-                                // imageEditBackgroupPersonalBig.setImageBitmap(imageBitmap);
-                              //  imageEditBackgroupPersonalSmall.setImageBitmap(imageBitmap);
-
                             } else {
                                 // Nhận ảnh từ gallery
                                 selectedImageUri = data.getData();
@@ -572,12 +563,6 @@ public class EditScreenActivity extends AppCompatActivity {
                                             .circleCrop()
                                             .into(imageEditPersonal);
 
-
-                                    //Hiển thị hình cho Backgroud
-//                                    Bitmap bitmap1 = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedBackgroup);
-//                                    imageEditBackgroupPersonalBig.setImageBitmap(bitmap1);
-//                                   imageEditBackgroupPersonalSmall.setImageBitmap(bitmap1);
-
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -591,7 +576,7 @@ public class EditScreenActivity extends AppCompatActivity {
 
 
 //
-private ActivityResultLauncher<Intent> mActivityResultLauncherBackground = registerForActivityResult(
+    private ActivityResultLauncher<Intent> mActivityResultLauncherBackground = registerForActivityResult(
         new ActivityResultContracts.StartActivityForResult(),
         new ActivityResultCallback<ActivityResult>() {
             @Override
@@ -607,7 +592,7 @@ private ActivityResultLauncher<Intent> mActivityResultLauncherBackground = regis
 
                             Glide.with(EditScreenActivity.this)
                                     .load(imageBitmap)
-                                    .circleCrop()
+                                    .centerInside()
                                     .into(imageEditBackgroupPersonalBig);
 
                             Glide.with(EditScreenActivity.this)

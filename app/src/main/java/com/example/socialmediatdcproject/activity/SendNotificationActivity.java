@@ -404,6 +404,8 @@ public class SendNotificationActivity extends AppCompatActivity {
                 // Nếu không dùng bộ lọc, chỉ gọi processCreatePost một lần
                 processCreatePostAdminDepartment(title, content, isFilterNotify[0], receivePostUser);
             }
+
+            finish();
         });
     }
 

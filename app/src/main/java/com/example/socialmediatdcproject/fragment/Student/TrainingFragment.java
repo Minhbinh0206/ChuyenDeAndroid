@@ -62,7 +62,7 @@ public class TrainingFragment extends Fragment {
 
         // Sự kiện khi nhấn vào nút memberButton
         infoButton.setOnClickListener(v -> {
-// Lấy RecyclerView từ layout của Activity (shared_layout)
+        // Lấy RecyclerView từ layout của Activity (shared_layout)
             RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
             recyclerView.setVisibility(View.GONE);
 

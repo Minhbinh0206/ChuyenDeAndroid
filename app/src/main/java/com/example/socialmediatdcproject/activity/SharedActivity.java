@@ -141,11 +141,10 @@ public class SharedActivity extends AppCompatActivity {
                                                         notifyList.add(n);
                                                         Log.d("NotifyProcess", "Added filtered notify to filteredNotify.");
                                                     }
-                                                    processedPostsCount[0]++;
-                                                    checkAndSetupRecyclerView(notifyList, processedPostsCount[0], totalNotificationsCount[0]);
                                                 }
                                             });
                                         }
+                                        processedPostsCount[0]++;
                                     }
 
                                     @Override
@@ -177,12 +176,11 @@ public class SharedActivity extends AppCompatActivity {
                                                         notifyList.add(n);
                                                         Log.d("NotifyProcess", "Added filtered notify to filteredNotify.");
                                                     }
-                                                    processedPostsCount[0]++;
-                                                    checkAndSetupRecyclerView(notifyList, processedPostsCount[0], totalNotificationsCount[0]);
+
                                                 }
                                             });
                                         }
-
+                                        processedPostsCount[0]++;
                                         // Kiểm tra và thiết lập RecyclerView khi đã xử lý tất cả thông báo
                                         checkAndSetupRecyclerView(notifyList, processedPostsCount[0], totalNotificationsCount[0]);
 
@@ -223,38 +221,6 @@ public class SharedActivity extends AppCompatActivity {
         ImageButton backButton = navigationView.getHeaderView(0).findViewById(R.id.icon_back);
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
 
-    }
-
-    // Phương thức kiểm tra và thiết lập RecyclerView khi đã xử lý tất cả thông báo
-    private void checkAndSetupRecyclerView(ArrayList<Notify> notifyList, int processedCount, int totalNotifications) {
-        if (processedCount == totalNotifications) {
-            // Setup RecyclerView với Adapter sau khi tất cả các bài viết đã được xử lý
-            RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-            NotifyAdapter notifyAdapter = new NotifyAdapter(notifyList);
-            recyclerView.setAdapter(notifyAdapter);
-            recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
-
-            Log.d("NotifyProcess", "RecyclerView setup complete with " + notifyList.size() + " notifications.");
-        }
-    }
-
-    private void checkCountNotify(ArrayList<Notify> notifyList, int processedCount, int totalNotifications) {
-        if (processedCount == totalNotifications) {
-            int count = 0;
-            for (Notify n : notifyList) {
-                if (n.getIsRead() == 1) {
-                    count++;
-                }
-            }
-            TextView textView = findViewById(R.id.count_notify);
-            textView.setText(count + "");
-            if (count == 0) {
-                textView.setVisibility(View.GONE);
-            }
-            else {
-                textView.setVisibility(View.VISIBLE);
-            }
-        }
     }
 
     private void loadPostsFromFirebase() {
@@ -767,7 +733,7 @@ public class SharedActivity extends AppCompatActivity {
                                     }
 
                                     // Kiểm tra và thiết lập RecyclerView khi đã xử lý tất cả thông báo
-                                    checkCountNotify(notifyList, processedPostsCount[0], notifications.size());
+                                    checkCountNotify(notifyList);
                                 }
 
                                 @Override
@@ -801,7 +767,7 @@ public class SharedActivity extends AppCompatActivity {
                                     }
 
                                     // Kiểm tra và thiết lập RecyclerView khi đã xử lý tất cả thông báo
-                                    checkCountNotify(notifyList, processedPostsCount[0], notifications.size());
+                                    checkCountNotify(notifyList);
                                 }
 
                                 @Override
@@ -828,6 +794,36 @@ public class SharedActivity extends AppCompatActivity {
             @Override
             public void onStudentsReceived(List<Student> students) {}
         });
+    }
+
+    // Phương thức kiểm tra và thiết lập RecyclerView khi đã xử lý tất cả thông báo
+    private void checkAndSetupRecyclerView(ArrayList<Notify> notifyList, int processedCount, int totalNotifications) {
+        if (processedCount == totalNotifications) {
+            // Setup RecyclerView với Adapter sau khi tất cả các bài viết đã được xử lý
+            RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
+            NotifyAdapter notifyAdapter = new NotifyAdapter(notifyList);
+            recyclerView.setAdapter(notifyAdapter);
+            recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
+
+            Log.d("NotifyProcess", "RecyclerView setup complete with " + notifyList.size() + " notifications.");
+
+            // Gọi checkCountNotify để cập nhật số lượng thông báo chưa đọc
+            checkCountNotify(notifyList);
+        }
+    }
+
+    // Cập nhật checkCountNotify để không yêu cầu processedCount và totalNotifications
+    private void checkCountNotify(ArrayList<Notify> notifyList) {
+        int count = 0;
+        for (Notify n : notifyList) {
+            if (n.getIsRead() == 0) {
+                count++;
+            }
+        }
+
+        TextView textView = findViewById(R.id.count_notify);
+        textView.setText(count + "");
+        textView.setVisibility(count == 0 ? View.GONE : View.VISIBLE);
     }
 
 }
