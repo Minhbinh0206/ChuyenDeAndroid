@@ -21,7 +21,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminBusinessAPI;
+import com.example.socialmediatdcproject.API.AdminDefaultAPI;
 import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
+import com.example.socialmediatdcproject.API.BusinessAPI;
 import com.example.socialmediatdcproject.API.DepartmentAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.NotifyAPI;
@@ -29,12 +32,16 @@ import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
-import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentFragment;
 import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentMemberFragment;
+import com.example.socialmediatdcproject.fragment.Admin.AdminFragment;
+import com.example.socialmediatdcproject.fragment.Admin.AdminGroupFragment;
 import com.example.socialmediatdcproject.fragment.Admin.MainFeatureFragment;
 import com.example.socialmediatdcproject.fragment.Admin.RepairButtonFragment;
 import com.example.socialmediatdcproject.fragment.Student.NotifyFragment;
+import com.example.socialmediatdcproject.model.AdminBusiness;
+import com.example.socialmediatdcproject.model.AdminDefault;
 import com.example.socialmediatdcproject.model.AdminDepartment;
+import com.example.socialmediatdcproject.model.Business;
 import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Notify;
@@ -115,7 +122,6 @@ public class HomeAdminActivity extends AppCompatActivity {
         // Thiết lập sự kiện click cho icon_back
         ImageButton backButton = navigationView.getHeaderView(0).findViewById(R.id.icon_back);
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
-
     }
 
     public void loadPostFromFirebase(int id) {
@@ -159,7 +165,6 @@ public class HomeAdminActivity extends AppCompatActivity {
         });
     }
 
-
     private void addNavigationItems(NavigationView navigationView) {
         LinearLayout navLayout = (LinearLayout) navigationView.getHeaderView(0).findViewById(R.id.nav_container);
 
@@ -185,7 +190,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                 switch (index) {
                     case 0:
                         // Home
-                        fragment = new AdminDepartmentFragment();
+                        fragment = new AdminFragment();
                         break;
                     case 1:
                         // Member
@@ -193,6 +198,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                         break;
                     case 2:
                         // Group
+                        fragment = new AdminGroupFragment();
                         break;
                     case 3:
                         // Setting
@@ -206,7 +212,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                         finish(); // Đóng SharedActivity
                         return;  // Thoát phương thức để không thực hiện fragmentTransaction
                     default:
-                        fragment = new AdminDepartmentFragment();
+                        fragment = new AdminFragment();
                         break;
                 }
 
@@ -244,6 +250,8 @@ public class HomeAdminActivity extends AppCompatActivity {
         super.onResume();
         NotifyAPI notifyAPI = new NotifyAPI();
         AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+        AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+        AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
 
         Intent intent = getIntent();
 
@@ -288,7 +296,6 @@ public class HomeAdminActivity extends AppCompatActivity {
 
                     }
                 });
-
             }
 
             @Override
@@ -302,12 +309,106 @@ public class HomeAdminActivity extends AppCompatActivity {
             }
         });
 
+        adminBusinessAPI.getAdminBusinessByKey(mAuth.getCurrentUser().getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
+            @Override
+            public void onUserReceived(AdminBusiness adminBusiness) {
+                if (adminBusiness.getAvatar() == null) {
+                    ImageView imageView = findViewById(R.id.nav_avatar_user);
+                    Glide.with(HomeAdminActivity.this)
+                            .load(R.drawable.avatar_macdinh)
+                            .circleCrop()
+                            .into(imageView);
+                }else {
+                    // Thiết kế giao diện cho avatar
+                    ImageView imageView = findViewById(R.id.nav_avatar_user);
+                    Glide.with(HomeAdminActivity.this)
+                            .load(adminBusiness.getAvatar())
+                            .circleCrop()
+                            .into(imageView);
+                }
+
+                GroupAPI groupAPI = new GroupAPI();
+                BusinessAPI businessAPI = new BusinessAPI();
+                businessAPI.getBusinessById(adminBusiness.getBusinessId(), new BusinessAPI.BusinessCallback() {
+                    @Override
+                    public void onBusinessReceived(Business business) {
+                        groupAPI.getGroupById(business.getGroupId(), new GroupAPI.GroupCallback() {
+                            @Override
+                            public void onGroupReceived(Group group) {
+                                loadPostFromFirebase(group.getGroupId());
+                            }
+
+                            @Override
+                            public void onGroupsReceived(List<Group> groups) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onBusinessesReceived(List<Business> businesses) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+            }
+
+            @Override
+            public void onError(String s) {
+
+            }
+        });
+
+        adminDefaultAPI.getAdminDefaultByKey(mAuth.getCurrentUser().getUid(), new AdminDefaultAPI.AdminDefaultCallBack() {
+            @Override
+            public void onUserReceived(AdminDefault adminDefault) {
+                if (!adminDefault.getAdminType().equals("Super")) {
+                    if (adminDefault.getAvatar() == null) {
+                        ImageView imageView = findViewById(R.id.nav_avatar_user);
+                        Glide.with(HomeAdminActivity.this)
+                                .load(R.drawable.avatar_macdinh)
+                                .circleCrop()
+                                .into(imageView);
+                    } else {
+                        // Thiết kế giao diện cho avatar
+                        ImageView imageView = findViewById(R.id.nav_avatar_user);
+                        Glide.with(HomeAdminActivity.this)
+                                .load(adminDefault.getAvatar())
+                                .circleCrop()
+                                .into(imageView);
+                    }
+
+                    GroupAPI groupAPI = new GroupAPI();
+                    groupAPI.getGroupById(adminDefault.getUserId(), new GroupAPI.GroupCallback() {
+                        @Override
+                        public void onGroupReceived(Group group) {
+                            loadPostFromFirebase(group.getGroupId());
+                        }
+
+                        @Override
+                        public void onGroupsReceived(List<Group> groups) {
+
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+            }
+        });
+
         // Gán fragment home là mặc định
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         // Nạp HomeFragment vào first_content_fragment
-        fragmentTransaction.replace(R.id.first_content_fragment, new AdminDepartmentFragment());
+        fragmentTransaction.replace(R.id.first_content_fragment, new AdminFragment());
         fragmentTransaction.replace(R.id.third_content_fragment, new MainFeatureFragment());
 
         // Lấy dữ lệu từ firebase

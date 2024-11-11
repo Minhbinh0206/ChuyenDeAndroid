@@ -47,6 +47,10 @@ public class User {
     public static final int ROLE_PHONGDAOTAO = 5;                   // Phòng đào tạo
 
 
+    // Các Admin Type
+    public static final String TYPE_ADMIN_TRAINING = "Training";
+    public static final String TYPE_ADMIN_YOUTH = "Youth";
+    public static final String TYPE_SUPPER_ADMIN = "Super";
 
     // Getter - Setter
     public String getPhoneNumber() {

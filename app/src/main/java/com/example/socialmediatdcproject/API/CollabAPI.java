@@ -64,6 +64,28 @@ public class CollabAPI {
                 });
     }
 
+    public void getCollabsByBusinessId(int businessId, final CollabCallback callback) {
+        collabRef.orderByChild("businessId").equalTo(businessId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<Collab> collabList = new ArrayList<>();
+                        for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                            Collab collab = dataSnapshot.getValue(Collab.class);
+                            if (collab != null) {
+                                collabList.add(collab);
+                            }
+                        }
+                        callback.onCollabReceived(collabList);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("CollabAPI", "Failed to retrieve collabs by departmentId.", error.toException());
+                    }
+                });
+    }
+
     // Lấy tất cả GroupUser
     public void getAllCollab(final CollabCallback callback) {
         collabRef.addListenerForSingleValueEvent(new ValueEventListener() {
