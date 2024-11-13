@@ -1,28 +1,20 @@
 package com.example.socialmediatdcproject.activity;
 
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.View;
+
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.PopupMenu;
-import android.widget.PopupWindow;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -45,7 +37,9 @@ public class RegisterActivity extends AppCompatActivity {
 
     private EditText studentNumber, emailEditText, passwordEditText, passwordConfirmEditText;
     private FirebaseAuth auth;
-    private ProgressBar progressBar;
+    private Handler handler;
+    private Runnable verificationRunnable;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +48,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         // Khởi tạo FirebaseAuth
         auth = FirebaseAuth.getInstance();
+        handler = new Handler(Looper.getMainLooper());
 
         // Khai báo Firebase Database reference
         DatabaseReference database = FirebaseDatabase.getInstance().getReference("Students");
@@ -95,8 +90,6 @@ public class RegisterActivity extends AppCompatActivity {
                     return;
                 }
 
-
-
                 // Kiểm tra mssv đã tồn tại chưa
                 database.orderByChild("studentNumber").equalTo(sNumber).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -123,6 +116,25 @@ public class RegisterActivity extends AppCompatActivity {
             });
         }
     }
+
+    private void startEmailVerificationChecker(String email, String password, String studentNumber) {
+        verificationRunnable = () -> {
+            FirebaseUser user = auth.getCurrentUser();
+            if (user != null) {
+                user.reload().addOnCompleteListener(reloadTask -> {
+                    if (reloadTask.isSuccessful() && user.isEmailVerified()) {
+                        saveUserDataAndProceed(email, password, studentNumber);
+                    } else {
+                        sendVerificationEmail(user);
+                        Toast.makeText(this, "Email chưa xác thực!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+            handler.postDelayed(verificationRunnable, 30000);  // Tiếp tục kiểm tra sau 30 giây
+        };
+        handler.post(verificationRunnable);  // Bắt đầu chạy kiểm tra lần đầu tiên
+    }
+
 
     // Đăng ký người dùng
     private void registerUser(String email, String password , String sNumber) {
@@ -201,25 +213,7 @@ public class RegisterActivity extends AppCompatActivity {
         builder.setTitle("Xác thực email");
         builder.setMessage("Vui lòng kiểm tra email của bạn để xác thực tài khoản.");
 
-        // Gọi reload() để cập nhật thông tin người dùng
-        user.reload().addOnCompleteListener(reloadTask -> {
-            Log.d("MMM", "showVerificationDialog: " + user.isEmailVerified());
-            if (reloadTask.isSuccessful()) {
-                // Kiểm tra xem email đã được xác thực chưa
-                if (user.isEmailVerified()) {
-                    // Nếu email đã được xác thực, thực hiện hành động cần thiết
-                    saveUserDataAndProceed(email, password, sNumber);
-                } else {
-                    // Nếu email chưa xác thực, yêu cầu người dùng kiểm tra lại sau
-                    Toast.makeText(RegisterActivity.this, "Email chưa được xác thực!", Toast.LENGTH_SHORT).show();
-                    // Có thể yêu cầu gửi lại email xác thực hoặc đợi một lúc và thử lại
-                    sendVerificationEmail(user);
-                }
-            } else {
-                // Nếu reload() thất bại, có thể có lỗi khi lấy lại thông tin người dùng
-                Toast.makeText(RegisterActivity.this, "Không thể kiểm tra trạng thái xác thực.", Toast.LENGTH_SHORT).show();
-            }
-        });
+        startEmailVerificationChecker(email , password , sNumber);
 
         builder.create().show();
     }
@@ -228,8 +222,6 @@ public class RegisterActivity extends AppCompatActivity {
         user.sendEmailVerification().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Toast.makeText(RegisterActivity.this, "Đã gửi lại email xác thực. Vui lòng kiểm tra lại!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(RegisterActivity.this, "Không thể gửi lại email xác thực. Vui lòng thử lại!", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -247,6 +239,7 @@ public class RegisterActivity extends AppCompatActivity {
         textLogIn.setOnClickListener(v -> {
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
             startActivity(intent);
+            finish();
         });
 
         // Lấy dữ liệu
@@ -266,11 +259,19 @@ public class RegisterActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 String mssv = s.toString();
                 if (!mssv.isEmpty()) {
-                    emailEditText.setText(mssv + "@mail.tdc.edu.vn");
-                    emailEditText.setEnabled(false);
+//                    emailEditText.setText(mssv + "@mail.tdc.edu.vn");
+//                    emailEditText.setEnabled(false);
+                    emailEditText.setText(mssv);
                     emailEditText.setSelection(emailEditText.getText().length());
                 }
             }
         });
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Hủy bỏ runnable khi Activity không còn hiển thị
+        handler.removeCallbacks(verificationRunnable);
     }
 }
