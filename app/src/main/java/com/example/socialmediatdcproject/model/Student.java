@@ -1,7 +1,5 @@
 package com.example.socialmediatdcproject.model;
 
-import android.net.Uri;
-
 public class Student extends User {
     private String studentNumber;
     private String birthday;
@@ -9,6 +7,7 @@ public class Student extends User {
     private int majorId;
     private int classId;
     private String description;
+
     // Thêm trường cập nhật Avatar
     private String avatar;
     private String gender;
@@ -21,17 +20,41 @@ public class Student extends User {
         this.gender = gender;
     }
 
-    @Override
+    //thêm trương cập nhật background
+    private String background;
+
+
+    //
+
+    public Student(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String background) {
+        super(userId, email, password, fullName, avatar, phoneNumber, roleId);
+        this.background = background;
+    }
+
+
+    public String getBackground() {
+        return background;
+    }
+
+    public void setBackground(String background) {
+        this.background = background;
+    }
+
+
+
     public String getAvatar() {
         return avatar;
     }
 
-    @Override
     public void setAvatar(String avatar) {
         this.avatar = avatar;
     }
 
+
+
+
     //------------------------------------------
+
 
     public int getDepartmentId() {
         return departmentId;
@@ -89,6 +112,7 @@ public class Student extends User {
         this.majorId = majorId;
         this.classId = studentClass;
         this.description = description;
+        this.background = background;
     }
     public Student(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String studentNumber, String birthday, int departmentId, int majorId, int studentClass, String description , String gender) {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);
@@ -103,7 +127,14 @@ public class Student extends User {
     public Student() {
 
     }
+
     public Student(String avatar){
         this.avatar = avatar;
     }
+
+    public Student(String fullName, String email, String password, String background) {
+        super(fullName, email, password);
+        this.background = background;
+    }
+
 }

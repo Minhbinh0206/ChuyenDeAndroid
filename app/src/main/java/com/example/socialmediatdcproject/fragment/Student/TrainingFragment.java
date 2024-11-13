@@ -15,6 +15,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -45,15 +47,10 @@ public class TrainingFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
 //        frameLayout = requireActivity().findViewById(R.id.second_content_fragment);
-        frameLayout.setVisibility(view.GONE);
-
-
 
         // Tìm các nút
         Button infoButton = view.findViewById(R.id.button_phongdaotao_info);
         Button postButton = view.findViewById(R.id.button_phongdaotao_post);
-
-
 
         // Set màu mặc định cho nút "Bài viết"
         postButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
@@ -61,8 +58,22 @@ public class TrainingFragment extends Fragment {
         infoButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
         infoButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
 
+        loadPostFromFirebase();
+
         // Sự kiện khi nhấn vào nút memberButton
         infoButton.setOnClickListener(v -> {
+        // Lấy RecyclerView từ layout của Activity (shared_layout)
+            RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+            recyclerView.setVisibility(View.GONE);
+
+            // Gán fragment home là mặc định
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+            // Nạp HomeFragment vào first_content_fragment
+            fragmentTransaction.replace(R.id.third_content_fragment, new SearchGroupFragment());
+
+            fragmentTransaction.commit();
 
             // Cập nhật màu cho các nút
             infoButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));

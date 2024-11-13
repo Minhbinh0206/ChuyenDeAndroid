@@ -94,9 +94,11 @@ public class SearchGroupFragment extends Fragment {
             for (Group group : groupList) {
                 if (group.getGroupName().toLowerCase().contains(query.toLowerCase())) { // Tìm kiếm không phân biệt hoa thường
                     filteredGroupList.add(group);
+
+                    adapter.notifyDataSetChanged(); // Cập nhật adapter
                 }
             }
         }
-        adapter.notifyDataSetChanged(); // Cập nhật adapter
+
     }
 }

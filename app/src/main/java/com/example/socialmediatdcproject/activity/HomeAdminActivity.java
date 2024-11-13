@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -21,24 +22,33 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminBusinessAPI;
+import com.example.socialmediatdcproject.API.AdminDefaultAPI;
 import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
+import com.example.socialmediatdcproject.API.BusinessAPI;
 import com.example.socialmediatdcproject.API.DepartmentAPI;
+import com.example.socialmediatdcproject.API.FilterNotifyAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.NotifyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
-import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentFragment;
 import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentMemberFragment;
+import com.example.socialmediatdcproject.fragment.Admin.AdminFragment;
+import com.example.socialmediatdcproject.fragment.Admin.AdminGroupFragment;
 import com.example.socialmediatdcproject.fragment.Admin.MainFeatureFragment;
 import com.example.socialmediatdcproject.fragment.Admin.RepairButtonFragment;
 import com.example.socialmediatdcproject.fragment.Student.NotifyFragment;
+import com.example.socialmediatdcproject.model.AdminBusiness;
+import com.example.socialmediatdcproject.model.AdminDefault;
 import com.example.socialmediatdcproject.model.AdminDepartment;
+import com.example.socialmediatdcproject.model.Business;
 import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Notify;
 import com.example.socialmediatdcproject.model.Post;
+import com.example.socialmediatdcproject.model.Student;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -82,30 +92,6 @@ public class HomeAdminActivity extends AppCompatActivity {
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.first_content_fragment, fragment);
 
-            notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
-                @Override
-                public void onNotificationReceived(Notify notify) {
-
-                }
-
-                @Override
-                public void onNotificationsReceived(List<Notify> notifications) {
-                    // Xử lý danh sách thông báo
-                    // Setup RecyclerView với Adapter
-                    RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-                    NotifyAdapter notifyAdapter = new NotifyAdapter(notifications);
-                    recyclerView.setAdapter(notifyAdapter);
-
-                    // Sử dụng LayoutManager cho RecyclerView
-                    recyclerView.setLayoutManager(new LinearLayoutManager(HomeAdminActivity.this));
-                }
-
-                @Override
-                public void onError(String errorMessage) {
-                    // Xử lý lỗi
-                    System.err.println("Error: " + errorMessage);
-                }
-            });
             fragmentTransaction.commit();
         });
 
@@ -115,7 +101,6 @@ public class HomeAdminActivity extends AppCompatActivity {
         // Thiết lập sự kiện click cho icon_back
         ImageButton backButton = navigationView.getHeaderView(0).findViewById(R.id.icon_back);
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
-
     }
 
     public void loadPostFromFirebase(int id) {
@@ -159,7 +144,6 @@ public class HomeAdminActivity extends AppCompatActivity {
         });
     }
 
-
     private void addNavigationItems(NavigationView navigationView) {
         LinearLayout navLayout = (LinearLayout) navigationView.getHeaderView(0).findViewById(R.id.nav_container);
 
@@ -185,7 +169,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                 switch (index) {
                     case 0:
                         // Home
-                        fragment = new AdminDepartmentFragment();
+                        fragment = new AdminFragment();
                         break;
                     case 1:
                         // Member
@@ -193,6 +177,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                         break;
                     case 2:
                         // Group
+                        fragment = new AdminGroupFragment();
                         break;
                     case 3:
                         // Setting
@@ -206,7 +191,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                         finish(); // Đóng SharedActivity
                         return;  // Thoát phương thức để không thực hiện fragmentTransaction
                     default:
-                        fragment = new AdminDepartmentFragment();
+                        fragment = new AdminFragment();
                         break;
                 }
 
@@ -244,6 +229,8 @@ public class HomeAdminActivity extends AppCompatActivity {
         super.onResume();
         NotifyAPI notifyAPI = new NotifyAPI();
         AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+        AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+        AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
 
         Intent intent = getIntent();
 
@@ -256,7 +243,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                             .load(R.drawable.avatar_macdinh)
                             .circleCrop()
                             .into(imageView);
-                }else {
+                } else {
                     // Thiết kế giao diện cho avatar
                     ImageView imageView = findViewById(R.id.nav_avatar_user);
                     Glide.with(HomeAdminActivity.this)
@@ -289,6 +276,29 @@ public class HomeAdminActivity extends AppCompatActivity {
                     }
                 });
 
+                notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                    @Override
+                    public void onNotificationReceived(Notify notify) {}
+
+                    @Override
+                    public void onNotificationsReceived(List<Notify> notifications) {
+                        ArrayList<Notify> notifyList = new ArrayList<>();
+                        int[] processedPostsCount = {0};  // Biến đếm số bài viết đã xử lý
+                        int totalNotificationsCount = notifications.size(); // Tổng số thông báo cần xử lý
+
+                        Log.d("NotifyAPI", "Number of notifications received: " + notifications.size());
+
+                        for (Notify n : notifications) {
+                            int count = 0;
+                            processNotification(n, adminDepartment.getUserId(), notifyList, processedPostsCount, totalNotificationsCount);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("NotifyAPI", "Error fetching notifications: " + errorMessage);
+                    }
+                });
             }
 
             @Override
@@ -302,41 +312,232 @@ public class HomeAdminActivity extends AppCompatActivity {
             }
         });
 
+        adminBusinessAPI.getAdminBusinessByKey(mAuth.getCurrentUser().getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
+            @Override
+            public void onUserReceived(AdminBusiness adminBusiness) {
+                if (adminBusiness.getAvatar() == null) {
+                    ImageView imageView = findViewById(R.id.nav_avatar_user);
+                    Glide.with(HomeAdminActivity.this)
+                            .load(R.drawable.avatar_macdinh)
+                            .circleCrop()
+                            .into(imageView);
+                } else {
+                    // Thiết kế giao diện cho avatar
+                    ImageView imageView = findViewById(R.id.nav_avatar_user);
+                    Glide.with(HomeAdminActivity.this)
+                            .load(adminBusiness.getAvatar())
+                            .circleCrop()
+                            .into(imageView);
+                }
+
+                GroupAPI groupAPI = new GroupAPI();
+                BusinessAPI businessAPI = new BusinessAPI();
+                businessAPI.getBusinessById(adminBusiness.getBusinessId(), new BusinessAPI.BusinessCallback() {
+                    @Override
+                    public void onBusinessReceived(Business business) {
+                        groupAPI.getGroupById(business.getGroupId(), new GroupAPI.GroupCallback() {
+                            @Override
+                            public void onGroupReceived(Group group) {
+                                loadPostFromFirebase(group.getGroupId());
+                            }
+
+                            @Override
+                            public void onGroupsReceived(List<Group> groups) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onBusinessesReceived(List<Business> businesses) {
+
+                    }
+                });
+
+                notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                    @Override
+                    public void onNotificationReceived(Notify notify) {}
+
+                    @Override
+                    public void onNotificationsReceived(List<Notify> notifications) {
+                        if (notifications.size() != 0) {
+                            ArrayList<Notify> notifyList = new ArrayList<>();
+                            int[] processedPostsCount = {0};  // Biến đếm số bài viết đã xử lý
+                            int totalNotificationsCount = notifications.size(); // Tổng số thông báo cần xử lý
+
+                            Log.d("NotifyAPI", "Number of notifications received: " + notifications.size());
+
+                            for (Notify n : notifications) {
+                                processNotification(n, adminBusiness.getUserId(), notifyList, processedPostsCount, totalNotificationsCount);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        Log.e("NotifyAPI", "Error fetching notifications: " + errorMessage);
+                    }
+                });
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+            }
+
+            @Override
+            public void onError(String s) {
+
+            }
+        });
+
+        adminDefaultAPI.getAdminDefaultByKey(mAuth.getCurrentUser().getUid(), new AdminDefaultAPI.AdminDefaultCallBack() {
+            @Override
+            public void onUserReceived(AdminDefault adminDefault) {
+                if (!adminDefault.getAdminType().equals("Super")) {
+                    if (adminDefault.getAvatar() == null) {
+                        ImageView imageView = findViewById(R.id.nav_avatar_user);
+                        Glide.with(HomeAdminActivity.this)
+                                .load(R.drawable.avatar_macdinh)
+                                .circleCrop()
+                                .into(imageView);
+                    } else {
+                        // Thiết kế giao diện cho avatar
+                        ImageView imageView = findViewById(R.id.nav_avatar_user);
+                        Glide.with(HomeAdminActivity.this)
+                                .load(adminDefault.getAvatar())
+                                .circleCrop()
+                                .into(imageView);
+                    }
+
+                    GroupAPI groupAPI = new GroupAPI();
+                    groupAPI.getGroupById(adminDefault.getGroupId(), new GroupAPI.GroupCallback() {
+                        @Override
+                        public void onGroupReceived(Group group) {
+                            loadPostFromFirebase(group.getGroupId());
+                        }
+
+                        @Override
+                        public void onGroupsReceived(List<Group> groups) {
+
+                        }
+                    });
+
+                    notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                        @Override
+                        public void onNotificationReceived(Notify notify) {}
+
+                        @Override
+                        public void onNotificationsReceived(List<Notify> notifications) {
+                            ArrayList<Notify> notifyList = new ArrayList<>();
+                            int[] processedPostsCount = {0};  // Biến đếm số bài viết đã xử lý
+                            int totalNotificationsCount = notifications.size(); // Tổng số thông báo cần xử lý
+
+                            Log.d("NotifyAPI", "Number of notifications received: " + notifications.size());
+
+                            for (Notify n : notifications) {
+                                int count = 0;
+                                processNotification(n, adminDefault.getUserId(), notifyList, processedPostsCount, totalNotificationsCount);
+                            }
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            Log.e("NotifyAPI", "Error fetching notifications: " + errorMessage);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+            }
+        });
+
         // Gán fragment home là mặc định
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         // Nạp HomeFragment vào first_content_fragment
-        fragmentTransaction.replace(R.id.first_content_fragment, new AdminDepartmentFragment());
+        fragmentTransaction.replace(R.id.first_content_fragment, new AdminFragment());
         fragmentTransaction.replace(R.id.third_content_fragment, new MainFeatureFragment());
 
         // Lấy dữ lệu từ firebase
         fragmentTransaction.commit();
+    }
 
-        notifyAPI.getNotificationsByReadStatus(0, new NotifyAPI.NotificationCallback() {
-            @Override
-            public void onNotificationReceived(Notify notify) {
+    private void processNotification(Notify n, int id, ArrayList<Notify> notifyList, int[] processedPostsCount, int totalNotificationsCount) {
+        processedPostsCount[0]++;
 
-            }
+        // Nếu thông báo không có bộ lọc, trực tiếp thêm vào notifyList
+        if (!n.isFilter()) {
+            // Không thêm thông báo không lọc
+        } else {
+            // Nếu có bộ lọc, kiểm tra qua FilterNotifyAPI
+            FilterNotifyAPI filterNotifyAPI = new FilterNotifyAPI();
+            filterNotifyAPI.findUserInReceive(n.getNotifyId(), id, new FilterNotifyAPI.UserInReceiveCallback() {
+                @Override
+                public void onResult(boolean isFound) {
+                    if (isFound) {
+                        notifyList.add(n);
+                        Log.d("True", "Added filtered notify to filteredNotify.");
+                    }
 
-            @Override
-            public void onNotificationsReceived(List<Notify> notifications) {
-                TextView countNotify = findViewById(R.id.count_notify);
-                countNotify.setText(notifications.size() + "");
-
-                if (notifications.size() == 0) {
-                    countNotify.setVisibility(View.GONE);
+                    // Kiểm tra nếu đã xử lý xong tất cả thông báo
+                    if (processedPostsCount[0] == totalNotificationsCount) {
+                        setCountNotify(notifyList, id);
+                    }
                 }
-                else {
-                    countNotify.setVisibility(View.VISIBLE);
-                }
-            }
+            });
 
-            @Override
-            public void onError(String errorMessage) {
+            return;  // Đảm bảo không gọi setCountNotify ngay sau khi thêm thông báo lọc
+        }
 
+        // Nếu không có bộ lọc, gọi setCountNotify khi tất cả đã được xử lý
+        if (processedPostsCount[0] == totalNotificationsCount) {
+            setCountNotify(notifyList, id);
+        }
+    }
+
+    private void setCountNotify(ArrayList<Notify> notifyList, int id) {
+        if (notifyList != null && !notifyList.isEmpty()) {
+            final int[] countNotify = {0};  // Biến để đếm số lượng thông báo chưa đọc
+            final int[] totalCallbacks = {0};  // Biến đếm số lượng callback đã thực thi
+            final int[] totalNotifications = {notifyList.size()};  // Tổng số thông báo cần kiểm tra
+
+            NotifyAPI notifyAPI = new NotifyAPI();
+            for (Notify n : notifyList) {
+                // Gọi API để kiểm tra xem người dùng đã đọc thông báo này chưa
+                notifyAPI.checkIfUserHasRead(n.getNotifyId(), id, new NotifyAPI.CheckReadStatusCallback() {
+                    @Override
+                    public void onResult(boolean hasRead) {
+                        if (!hasRead) {
+                            countNotify[0]++;  // Tăng đếm nếu thông báo chưa được đọc
+                        }
+
+                        // Tăng biến đếm callback đã thực thi
+                        totalCallbacks[0]++;
+
+                        // Kiểm tra nếu tất cả callback đã được gọi
+                        if (totalCallbacks[0] == totalNotifications[0]) {
+                            // Cập nhật giao diện người dùng trong UI thread
+                            runOnUiThread(() -> {
+                                TextView textView = findViewById(R.id.count_notify);
+                                textView.setText(String.valueOf(countNotify[0]));  // Cập nhật số lượng thông báo chưa đọc
+
+                                // Nếu không có thông báo chưa đọc, ẩn TextView
+                                if (countNotify[0] == 0) {
+                                    textView.setVisibility(View.GONE);
+                                } else {
+                                    textView.setVisibility(View.VISIBLE);
+                                }
+                            });
+                        }
+                    }
+                });
             }
-        });
+        }
     }
 
 }

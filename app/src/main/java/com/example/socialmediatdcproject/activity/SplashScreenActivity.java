@@ -12,9 +12,13 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminBusinessAPI;
+import com.example.socialmediatdcproject.API.AdminDefaultAPI;
 import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.model.AdminBusiness;
+import com.example.socialmediatdcproject.model.AdminDefault;
 import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
@@ -48,6 +52,8 @@ public class SplashScreenActivity extends AppCompatActivity {
                 FirebaseUser currentUser = mAuth.getCurrentUser();
                 StudentAPI studentAPI = new StudentAPI();
                 AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+                AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+                AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
 
                 if (currentUser != null) {
                     checkUserProfile(); // Kiểm tra trạng thái đăng ký trước khi điều hướng
@@ -86,6 +92,48 @@ public class SplashScreenActivity extends AppCompatActivity {
 
                         @Override
                         public void onError(String s) {}
+                    });
+
+                    adminBusinessAPI.getAdminBusinessByKey(currentUser.getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
+                        @Override
+                        public void onUserReceived(AdminBusiness adminBusiness) {
+                            if (adminBusiness.getUserId() != -1) {
+                                Intent intent = new Intent(SplashScreenActivity.this, HomeAdminActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        }
+
+                        @Override
+                        public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                        }
+
+                        @Override
+                        public void onError(String s) {
+
+                        }
+                    });
+
+                    adminDefaultAPI.getAdminDefaultByKey(currentUser.getUid(), new AdminDefaultAPI.AdminDefaultCallBack() {
+                        @Override
+                        public void onUserReceived(AdminDefault adminDefault) {
+                            if (!adminDefault.getAdminType().equals("Super")) {
+                                if (adminDefault.getUserId() != -1) {
+                                    Intent intent = new Intent(SplashScreenActivity.this, HomeAdminActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                                else {
+
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+                        }
                     });
                 } else {
                     Intent intent = new Intent(SplashScreenActivity.this, LoginActivity.class);

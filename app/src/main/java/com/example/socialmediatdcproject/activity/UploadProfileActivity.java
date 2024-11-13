@@ -114,7 +114,7 @@ public class UploadProfileActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
         }
     }
-    //Kiểm tra quyền thư viện
+    //Kiểm tra quyền gallery
     private void onClickRequestGalleryPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             openGallery();
@@ -137,6 +137,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                 })
                 .show();
     }
+
     // Hàm xử lý kết quả từ camera hoặc gallery
     private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -339,10 +340,14 @@ public class UploadProfileActivity extends AppCompatActivity {
                                     GroupUser groupUser = new GroupUser(group.getGroupId(), userId);
                                     GroupUser groupUser1 = new GroupUser(User.ID_ADMIN_PHONGDAOTAO, userId);
                                     GroupUser groupUser2 = new GroupUser(User.ID_ADMIN_DOANTHANHNIEN, userId);
+                                    GroupUser groupUser3 = new GroupUser(2, userId);
+                                    GroupUser groupUser4 = new GroupUser(3, userId);
 
                                     groupUserAPI.addGroupUser(groupUser);
                                     groupUserAPI.addGroupUser(groupUser2);
                                     groupUserAPI.addGroupUser(groupUser1);
+                                    groupUserAPI.addGroupUser(groupUser3);
+                                    groupUserAPI.addGroupUser(groupUser4);
                                 }
 
                                 @Override

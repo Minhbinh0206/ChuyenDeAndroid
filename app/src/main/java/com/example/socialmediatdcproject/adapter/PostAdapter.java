@@ -15,7 +15,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminBusinessAPI;
+import com.example.socialmediatdcproject.API.AdminDefaultAPI;
 import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
+import com.example.socialmediatdcproject.API.BusinessAPI;
+import com.example.socialmediatdcproject.API.DepartmentAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.LikeAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
@@ -24,7 +28,12 @@ import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.CommentPostActivity;
 import com.example.socialmediatdcproject.activity.GroupDetaiActivity;
+import com.example.socialmediatdcproject.activity.HomeAdminActivity;
+import com.example.socialmediatdcproject.model.AdminBusiness;
+import com.example.socialmediatdcproject.model.AdminDefault;
 import com.example.socialmediatdcproject.model.AdminDepartment;
+import com.example.socialmediatdcproject.model.Business;
+import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
@@ -110,10 +119,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             setupPostView(imageViewHolder, post, userAPI);
             imageViewHolder.postCreateAt.setText(getTimeAgo(post.getCreatedAt())); // Hiển thị thời gian đăng bài
 
-        } else {
-            PostTextViewHolder textViewHolder = (PostTextViewHolder) holder;
-            setupPostView(textViewHolder, post, userAPI);
-            textViewHolder.postCreateAt.setText(getTimeAgo(post.getCreatedAt())); // Hiển thị thời gian đăng bài
         }
     }
 
@@ -143,112 +148,145 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return "";
         }
     }
-
-    private void setupPostView(PostTextViewHolder holder, Post post, UserAPI userAPI) {
-        holder.postcontent.setText(post.getContent());
-        holder.postLike.setText(String.valueOf(post.getPostLike()));
-        userAPI.getAllUsers(new UserAPI.UserCallback() {
-            @Override
-            public void onUserReceived(User user) {}
-
-            @Override
-            public void onUsersReceived(List<User> users) {
-                for (User u : users) {
-                    StudentAPI studentAPI = new StudentAPI();
-                    studentAPI.getStudentById(u.getUserId(), new StudentAPI.StudentCallback() {
-                        @Override
-                        public void onStudentReceived(Student student) {
-                            if (student.getUserId() == post.getUserId()) {
-                                holder.postAdminUserId.setText(student.getFullName());
-                                Glide.with(context)
-                                        .load(u.getAvatar())
-                                        .circleCrop()
-                                        .into(holder.postAvatar);
-                            }
-                        }
-
-                        @Override
-                        public void onStudentsReceived(List<Student> students) {
-
-                        }
-                    });
-
-                    AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
-                    adminDepartmentAPI.getAdminDepartmentById(u.getUserId(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
-                        @Override
-                        public void onUserReceived(AdminDepartment adminDepartment) {
-                            if (adminDepartment.getUserId() == post.getUserId()) {
-                                holder.postAdminUserId.setText(adminDepartment.getFullName());
-                                Glide.with(context)
-                                        .load(u.getAvatar())
-                                        .circleCrop()
-                                        .into(holder.postAvatar);
-                            }
-                        }
-
-                        @Override
-                        public void onUsersReceived(List<AdminDepartment> adminDepartment) {
-
-                        }
-
-                        @Override
-                        public void onError(String s) {
-
-                        }
-                    });
-                }
-            }
-        });
-
-        setupLikeButton(holder, post);
-        holder.buttonComment.setOnClickListener(v -> {
-
-        });
-    }
-
     private void setupPostView(PostImageViewHolder holder, Post post, UserAPI userAPI) {
         holder.postcontent.setText(post.getContent());
         holder.postLike.setText(String.valueOf(post.getPostLike()));
-        userAPI.getAllUsers(new UserAPI.UserCallback() {
+
+        StudentAPI studentAPI = new StudentAPI();
+        studentAPI.getStudentById(post.getUserId(), new StudentAPI.StudentCallback() {
             @Override
-            public void onUserReceived(User user) {}
+            public void onStudentReceived(Student student) {
+                holder.postAdminUserId.setText(student.getFullName());
+                Glide.with(context)
+                        .load(student.getAvatar())
+                        .circleCrop()
+                        .into(holder.postAvatar);
+
+            }
 
             @Override
-            public void onUsersReceived(List<User> users) {
-                for (User u : users) {
-                    StudentAPI studentAPI = new StudentAPI();
-                    final boolean[] isStudent = {false};
-                    studentAPI.getStudentById(u.getUserId(), new StudentAPI.StudentCallback() {
-                        @Override
-                        public void onStudentReceived(Student student) {
-                            isStudent[0] = true;
-                            if (student.getUserId() == post.getUserId()) {
-                                holder.postAdminUserId.setText(student.getFullName());
-                                Glide.with(context)
-                                        .load(student.getAvatar())
-                                        .circleCrop()
-                                        .into(holder.postAvatar);
+            public void onStudentsReceived(List<Student> students) {
 
-                            }
-                        }
-
-                        @Override
-                        public void onStudentsReceived(List<Student> students) {
-
-                        }
-                    });
-                    if (isStudent[0] == false) {
-                        if (u.getUserId() == post.getUserId()) {
-                            holder.postAdminUserId.setText(u.getFullName());
-                            Glide.with(context)
-                                    .load(u.getAvatar())
-                                    .circleCrop()
-                                    .into(holder.postAvatar);
-                        }
-                    }
-                }
             }
         });
+
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+        adminDepartmentAPI.getAdminDepartmentById(post.getUserId(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
+            @Override
+            public void onUserReceived(AdminDepartment adminDepartment) {
+                DepartmentAPI departmentAPI = new DepartmentAPI();
+                departmentAPI.getDepartmentById(adminDepartment.getDepartmentId(), new DepartmentAPI.DepartmentCallback() {
+                    @Override
+                    public void onDepartmentReceived(Department department) {
+                        GroupAPI groupAPI = new GroupAPI();
+                        groupAPI.getGroupById(department.getGroupId(), new GroupAPI.GroupCallback() {
+                            @Override
+                            public void onGroupReceived(Group group) {
+                                holder.postAdminUserId.setText(group.getGroupName());
+                                Glide.with(context)
+                                        .load(group.getAvatar())
+                                        .circleCrop()
+                                        .into(holder.postAvatar);
+                            }
+
+                            @Override
+                            public void onGroupsReceived(List<Group> groups) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onDepartmentsReceived(List<Department> departments) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+            }
+
+            @Override
+            public void onError(String s) {
+
+            }
+        });
+
+        AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+        adminBusinessAPI.getAdminBusinessById(post.getUserId(), new AdminBusinessAPI.AdminBusinessCallBack() {
+            @Override
+            public void onUserReceived(AdminBusiness adminBusiness) {
+                BusinessAPI businessAPI = new BusinessAPI();
+                businessAPI.getBusinessById(adminBusiness.getBusinessId(), new BusinessAPI.BusinessCallback() {
+                    @Override
+                    public void onBusinessReceived(Business business) {
+                        GroupAPI groupAPI = new GroupAPI();
+                        groupAPI.getGroupById(business.getGroupId(), new GroupAPI.GroupCallback() {
+                            @Override
+                            public void onGroupReceived(Group group) {
+                                holder.postAdminUserId.setText(group.getGroupName());
+                                Glide.with(context)
+                                        .load(group.getAvatar())
+                                        .circleCrop()
+                                        .into(holder.postAvatar);
+                            }
+
+                            @Override
+                            public void onGroupsReceived(List<Group> groups) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onBusinessesReceived(List<Business> businesses) {
+
+                    }
+                });
+
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+            }
+
+            @Override
+            public void onError(String s) {
+
+            }
+        });
+
+        AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+        adminDefaultAPI.getAdminDefaultById(post.getUserId(), new AdminDefaultAPI.AdminDefaultCallBack() {
+            @Override
+            public void onUserReceived(AdminDefault adminDefault) {
+                GroupAPI groupAPI = new GroupAPI();
+                groupAPI.getGroupById(adminDefault.getUserId(), new GroupAPI.GroupCallback() {
+                    @Override
+                    public void onGroupReceived(Group group) {
+                        holder.postAdminUserId.setText(group.getGroupName());
+                        Glide.with(context)
+                                .load(group.getAvatar())
+                                .circleCrop()
+                                .into(holder.postAvatar);
+                    }
+
+                    @Override
+                    public void onGroupsReceived(List<Group> groups) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+            }
+        });
+
         holder.postAdminUserId.setOnClickListener(v -> {
             GroupAPI groupAPI = new GroupAPI();
             groupAPI.getGroupById(post.getGroupId(), new GroupAPI.GroupCallback() {
@@ -256,7 +294,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 public void onGroupReceived(Group group) {
                     Intent intent = new Intent(v.getContext(), GroupDetaiActivity.class);
                     intent.putExtra("groupId", group.getGroupId());
-                    if (v.getContext() instanceof GroupDetaiActivity) {
+                    if (v.getContext() instanceof GroupDetaiActivity || v.getContext() instanceof HomeAdminActivity) {
 
                     }else {
                         v.getContext().startActivity(intent);
@@ -277,7 +315,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 public void onGroupReceived(Group group) {
                     Intent intent = new Intent(v.getContext(), GroupDetaiActivity.class);
                     intent.putExtra("groupId", group.getGroupId());
-                    if (v.getContext() instanceof GroupDetaiActivity) {
+                    if (v.getContext() instanceof GroupDetaiActivity || v.getContext() instanceof HomeAdminActivity) {
 
                     }else {
                         v.getContext().startActivity(intent);
@@ -317,6 +355,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e("CommentListener", "Failed to read comments count.", error.toException());
             }
+
         });
 
         if (!post.getPostImage().isEmpty()) {

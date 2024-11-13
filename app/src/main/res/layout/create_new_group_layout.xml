@@ -50,6 +50,7 @@
         <EditText
             android:id="@+id/content_name_group"
             android:layout_width="match_parent"
+            android:padding="10dp"
             android:background="@drawable/comment_custom"
             android:layout_height="match_parent" />
 
@@ -60,7 +61,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/parent_avatar_group"
+        app:layout_constraintBottom_toTopOf="@+id/parent_survey_group"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/parent_name_group">
@@ -105,6 +106,39 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/parent_survey_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="10dp"
+        android:visibility="gone"
+        android:orientation="horizontal"
+        android:background="@drawable/comment_custom"
+        app:layout_constraintBottom_toTopOf="@+id/parent_avatar_group"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/parent_private_group">
+
+        <EditText
+            android:id="@+id/content_question_group"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="10"
+            android:background="@android:color/transparent"
+            android:hint="Câu hỏi khảo sát: "
+            android:padding="10dp" />
+
+        <ImageButton
+            android:id="@+id/button_change_question"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:scaleX="0.7"
+            android:scaleY="0.6"
+            android:background="@drawable/icon_swap"
+            android:layout_weight="1.5"
+            />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/parent_avatar_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -112,7 +146,7 @@
         app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/parent_private_group">
+        app:layout_constraintTop_toBottomOf="@+id/parent_survey_group">
 
         <TextView
             android:id="@+id/titlte_avatar_group"
@@ -127,7 +161,7 @@
             android:id="@+id/content_avatar_group"
             android:layout_width="match_parent"
             android:background="@drawable/click"
-            android:layout_height="300dp"
+            android:layout_height="200dp"
 
             />
 
