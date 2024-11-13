@@ -264,6 +264,8 @@ public class SendNotificationActivity extends AppCompatActivity {
             }
         });
 
+        Log.d("KIM", "onCreate: " + isAdminType[0]);
+
         buttonSubmit.setOnClickListener(v -> {
             // Vô hiệu hóa nút để tránh nhấn nhiều lần
             buttonSubmit.setEnabled(false);
@@ -337,6 +339,8 @@ public class SendNotificationActivity extends AppCompatActivity {
                     processCreatePostAdminDepartment(title, content, isFilterNotify[0], receivePostUser);
                 }
                 else if (selectedFilter.get(0).substring(0, 4).equals("Khoa")) {
+                    Log.d("KIM", "onCreate: " + isSendAdminDepartment[0]);
+
                     if (isSendAdminDepartment[0]) {
                         for (String s : selectedFilter) {
                             GroupAPI groupAPI = new GroupAPI();
@@ -782,7 +786,7 @@ public class SendNotificationActivity extends AppCompatActivity {
                             notify.setNotifyTitle(title);
                             notify.setNotifyContent(content);
                             notify.setFilter(isFilter);
-                            notify.setIsRead(0);
+                            notify.setIsReaded(new ArrayList<>());
                             notify.setCreateAt(sdf.format(new Date()));
 
                             if (notifyReceive.size() != 0) {
@@ -831,7 +835,7 @@ public class SendNotificationActivity extends AppCompatActivity {
                             notify.setNotifyTitle(title);
                             notify.setNotifyContent(content);
                             notify.setFilter(isFilter);
-                            notify.setIsRead(0);
+                            notify.setIsReaded(new ArrayList<>());
                             notify.setCreateAt(sdf.format(new Date()));
 
                             if (notifyReceive.size() != 0) {
@@ -880,7 +884,7 @@ public class SendNotificationActivity extends AppCompatActivity {
                             notify.setNotifyTitle(title);
                             notify.setNotifyContent(content);
                             notify.setFilter(isFilter);
-                            notify.setIsRead(0);
+                            notify.setIsReaded(new ArrayList<>());
                             notify.setCreateAt(sdf.format(new Date()));
 
                             if (notifyReceive.size() != 0) {

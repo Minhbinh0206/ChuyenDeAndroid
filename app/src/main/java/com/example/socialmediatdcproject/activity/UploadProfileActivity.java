@@ -308,10 +308,14 @@ public class UploadProfileActivity extends AppCompatActivity {
                                     GroupUser groupUser = new GroupUser(group.getGroupId(), userId);
                                     GroupUser groupUser1 = new GroupUser(User.ID_ADMIN_PHONGDAOTAO, userId);
                                     GroupUser groupUser2 = new GroupUser(User.ID_ADMIN_DOANTHANHNIEN, userId);
+                                    GroupUser groupUser3 = new GroupUser(2, userId);
+                                    GroupUser groupUser4 = new GroupUser(3, userId);
 
                                     groupUserAPI.addGroupUser(groupUser);
                                     groupUserAPI.addGroupUser(groupUser2);
                                     groupUserAPI.addGroupUser(groupUser1);
+                                    groupUserAPI.addGroupUser(groupUser3);
+                                    groupUserAPI.addGroupUser(groupUser4);
                                 }
 
                                 @Override

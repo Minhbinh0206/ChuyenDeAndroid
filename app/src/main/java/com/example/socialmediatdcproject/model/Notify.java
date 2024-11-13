@@ -8,7 +8,7 @@ public class    Notify {
     private int userSendId;
     private String notifyTitle;
     private String notifyContent;
-    private int isRead;
+    private List<Integer> isReaded;
     private boolean isFilter;
     private String createAt;
 
@@ -52,12 +52,12 @@ public class    Notify {
         isFilter = filter;
     }
 
-    public int getIsRead() {
-        return isRead;
+    public List<Integer> getIsReaded() {
+        return isReaded;
     }
 
-    public void setIsRead(int isRead) {
-        this.isRead = isRead;
+    public void setIsReaded(List<Integer> isReaded) {
+        this.isReaded = isReaded;
     }
 
     public String getCreateAt() {
@@ -68,12 +68,12 @@ public class    Notify {
         this.createAt = createAt;
     }
 
-    public Notify(int notifyId, int userSendId, String notifyTitle, String notifyContent, boolean isFilter, int isRead, String createAt) {
+    public Notify(int notifyId, int userSendId, String notifyTitle, String notifyContent, boolean isFilter, List<Integer> isRead, String createAt) {
         this.notifyId = notifyId;
         this.userSendId = userSendId;
         this.notifyTitle = notifyTitle;
         this.notifyContent = notifyContent;
-        this.isRead = isRead;
+        this.isReaded = isRead;
         this.createAt = createAt;
         this.isFilter = isFilter;
     }
@@ -83,6 +83,5 @@ public class    Notify {
         this.userSendId = -1;
         this.notifyTitle = "";
         this.notifyContent = "";
-        this.isRead = 0;
     }
 }

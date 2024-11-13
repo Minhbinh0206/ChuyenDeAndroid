@@ -32,7 +32,7 @@ import com.example.socialmediatdcproject.model.User;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrainingFragment extends Fragment {
+public class TrainingTwoFragment extends Fragment {
     FrameLayout frameLayout;
     @Nullable
     @Override
@@ -62,7 +62,7 @@ public class TrainingFragment extends Fragment {
 
         // Sự kiện khi nhấn vào nút memberButton
         infoButton.setOnClickListener(v -> {
-        // Lấy RecyclerView từ layout của Activity (shared_layout)
+            // Lấy RecyclerView từ layout của Activity (shared_layout)
             RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
             recyclerView.setVisibility(View.GONE);
 
@@ -97,7 +97,6 @@ public class TrainingFragment extends Fragment {
 
 
     }
-
     public void loadPostFromFirebase() {
         // Khởi tạo danh sách bài đăng
         ArrayList<Post> postsTraining = new ArrayList<>();
@@ -107,7 +106,7 @@ public class TrainingFragment extends Fragment {
 
         // Lấy Group của phòng đào tạo
         GroupAPI groupAPI = new GroupAPI();
-        groupAPI.getGroupById(User.ID_ADMIN_PHONGDAOTAO, new GroupAPI.GroupCallback() {
+        groupAPI.getGroupById(2 , new GroupAPI.GroupCallback() {
             @Override
             public void onGroupReceived(Group group) {
                 // Set dữ liệu cho fragment
