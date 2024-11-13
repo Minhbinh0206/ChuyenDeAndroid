@@ -65,6 +65,7 @@ public class GroupFollowedFragment extends Fragment {
         Button memberBtn = view.findViewById(R.id.button_group_user_member);
         Button postBtn = view.findViewById(R.id.button_group_user_post);
         Button myselfBtn = view.findViewById(R.id.button_group_user_me);
+        ImageView iconSetting = view.findViewById(R.id.settingGroup);
 
         int groupId;
 
@@ -78,6 +79,8 @@ public class GroupFollowedFragment extends Fragment {
         String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         loadPostFromFirebase(groupId, 1);
+
+        iconSetting.setVisibility(View.GONE);
 
         GroupAPI groupAPI = new GroupAPI();
         groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
@@ -98,6 +101,7 @@ public class GroupFollowedFragment extends Fragment {
 
                 if (group.isGroupDefault()) {
                     frameLayout.setVisibility(View.GONE);
+                    iconSetting.setVisibility(View.GONE);
                 }
                 else {
                     frameLayout.setVisibility(View.VISIBLE);
@@ -115,6 +119,8 @@ public class GroupFollowedFragment extends Fragment {
                     @Override
                     public void onStudentReceived(Student student) {
                         if (group.getAdminUserId() == student.getUserId()) {
+                            iconSetting.setVisibility(View.VISIBLE);
+
                             myselfBtn.setText("Quản lý");
 
                             postBtn.setOnClickListener(v -> {
@@ -159,6 +165,8 @@ public class GroupFollowedFragment extends Fragment {
                             });
                         }
                         else {
+                            iconSetting.setVisibility(View.GONE);
+
                             myselfBtn.setText("Tôi");
 
                             postBtn.setOnClickListener(v -> {

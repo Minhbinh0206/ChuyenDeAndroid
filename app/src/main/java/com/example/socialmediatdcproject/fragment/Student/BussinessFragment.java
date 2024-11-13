@@ -57,13 +57,13 @@ public class BussinessFragment extends Fragment {
         recyclerView.setAdapter(postAdapter); // Mặc định hiển thị bài viết
 
         List<Integer> list = new ArrayList<>();
-        list.add(14);
-        list.add(15);
         list.add(16);
         list.add(17);
         list.add(18);
         list.add(19);
         list.add(20);
+        list.add(21);
+        list.add(22);
 
         // Lấy dữ liệu bài viết
         loadPostFromFirebase(list);

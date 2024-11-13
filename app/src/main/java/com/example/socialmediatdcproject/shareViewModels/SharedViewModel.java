@@ -35,9 +35,6 @@ public class SharedViewModel extends ViewModel {
     public void setEditMode(boolean editMode) {
         isEditMode.setValue(editMode);
     }
-
-
-
     public void removeStudentFromGroup(int groupId, int studentId) {
         databaseRef.child("UsersInGroup")
                 .orderByChild("groupId")
@@ -75,7 +72,6 @@ public class SharedViewModel extends ViewModel {
                     }
                 });
     }
-
     public void removeLecturerFromGroup(int groupId, int lecturerId) {
         databaseRef.child("UsersInGroup")
                 .orderByChild("groupId")

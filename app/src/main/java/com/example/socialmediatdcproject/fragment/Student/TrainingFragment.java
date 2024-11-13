@@ -46,55 +46,8 @@ public class TrainingFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
-//        frameLayout = requireActivity().findViewById(R.id.second_content_fragment);
-
-        // Tìm các nút
-        Button infoButton = view.findViewById(R.id.button_phongdaotao_info);
-        Button postButton = view.findViewById(R.id.button_phongdaotao_post);
-
-        // Set màu mặc định cho nút "Bài viết"
-        postButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
-        postButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-        infoButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-        infoButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
 
         loadPostFromFirebase();
-
-        // Sự kiện khi nhấn vào nút memberButton
-        infoButton.setOnClickListener(v -> {
-        // Lấy RecyclerView từ layout của Activity (shared_layout)
-            RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
-            recyclerView.setVisibility(View.GONE);
-
-            // Gán fragment home là mặc định
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-            // Nạp HomeFragment vào first_content_fragment
-            fragmentTransaction.replace(R.id.third_content_fragment, new SearchGroupFragment());
-
-            fragmentTransaction.commit();
-
-            // Cập nhật màu cho các nút
-            infoButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-            infoButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
-            postButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
-            postButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-        });
-
-        // Sự kiện khi nhấn vào nút postButton
-        postButton.setOnClickListener(v -> {
-
-            // Hiển thị dữ liệu ra màn hình
-            loadPostFromFirebase();
-
-            // Cập nhật màu cho các nút
-            infoButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
-            infoButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-            postButton.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-            postButton.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
-        });
-
 
     }
 

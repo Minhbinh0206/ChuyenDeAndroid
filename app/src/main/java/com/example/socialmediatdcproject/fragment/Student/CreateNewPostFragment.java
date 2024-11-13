@@ -254,6 +254,10 @@ public class CreateNewPostFragment extends Fragment {
             }
         });
 
+        TextView textView = view.findViewById(R.id.create_post_action);
+        textView.setOnClickListener(v -> {
+            showCustomDialog();
+        });
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -300,7 +304,22 @@ public class CreateNewPostFragment extends Fragment {
                         .into(imageViewAvatar);
                 // Gán sự kiện cho nút "Post"
                 postButtonCreate.setOnClickListener(v -> {
+
+                    postButtonCreate.setEnabled(false);
+
                     String content = postContent.getText().toString();
+
+                    // Kiểm tra xem title hoặc content có null hoặc rỗng không
+                    if (content.isEmpty()) {
+                        // Hiển thị Toast nếu title hoặc content rỗng
+                        Toast.makeText(v.getContext(), "Vui lòng điền đầy đủ các dữ liệu trên", Toast.LENGTH_SHORT).show();
+
+                        // Bật lại nút submit để người dùng có thể thử lại
+                        postButtonCreate.setEnabled(true);
+
+                        return; // Dừng tiếp tục xử lý nếu title hoặc content rỗng
+                    }
+
                     PostAPI postAPI = new PostAPI();
                     final boolean[] isPostAdded = {false};
                     studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {

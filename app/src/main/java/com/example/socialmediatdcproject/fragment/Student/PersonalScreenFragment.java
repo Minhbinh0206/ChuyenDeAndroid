@@ -88,6 +88,8 @@ public class PersonalScreenFragment extends Fragment {
         ImageView imageUser = view.findViewById(R.id.logo_personal_user_image);
         TextView nameUser = view.findViewById(R.id.name_personnal_user);
 
+        TextView des = view.findViewById(R.id.personal_description);
+
         String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
         StudentAPI studentAPI = new StudentAPI();
         studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
@@ -100,6 +102,8 @@ public class PersonalScreenFragment extends Fragment {
                             .load(student.getAvatar())
                             .circleCrop()
                             .into(imageUser);
+
+                    des.setText(student.getDescription());
                 }
             }
 

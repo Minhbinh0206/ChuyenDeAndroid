@@ -58,7 +58,7 @@ public class YouthTwoFragment extends Fragment {
         frameLayout.setVisibility(view.GONE);
 
         GroupAPI groupAPI = new GroupAPI();
-        groupAPI.getGroupById(4, new GroupAPI.GroupCallback() {
+        groupAPI.getGroupById(3, new GroupAPI.GroupCallback() {
             @Override
             public void onGroupReceived(Group group) {
                 if (group != null) {
@@ -78,7 +78,7 @@ public class YouthTwoFragment extends Fragment {
             }
         });
 
-        loadPostFromFirebase(4);
+        loadPostFromFirebase(3);
 
         // Tìm các nút
         Button postButton = view.findViewById(R.id.button_youth_post);
@@ -92,7 +92,7 @@ public class YouthTwoFragment extends Fragment {
 
         // Sự kiện khi nhấn vào nút memberButton
         memberButton.setOnClickListener(v -> {
-            loadUsersByGroupId(4);
+            loadUsersByGroupId(3);
 
             // Cập nhật màu cho các nút
             changeColorButtonActive(memberButton);
@@ -102,7 +102,7 @@ public class YouthTwoFragment extends Fragment {
 
         // Sự kiện khi nhấn vào nút postButton
         postButton.setOnClickListener(v -> {
-            loadPostFromFirebase(4);
+            loadPostFromFirebase(3);
 
             // Cập nhật màu cho các nút
             changeColorButtonActive(postButton);
@@ -111,7 +111,7 @@ public class YouthTwoFragment extends Fragment {
         });
 
         groupButton.setOnClickListener(v -> {
-            loadGroupsInYouth(4);
+            loadGroupsInYouth(3);
 
             // Cập nhật màu cho các nút
 
