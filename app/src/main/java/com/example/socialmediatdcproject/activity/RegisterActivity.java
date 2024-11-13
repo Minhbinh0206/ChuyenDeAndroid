@@ -40,6 +40,7 @@ public class RegisterActivity extends AppCompatActivity {
     private Handler handler;
     private Runnable verificationRunnable;
     private static final int VERIFICATION_CHECK_INTERVAL = 30000;
+    private String tdcEmail = "@mail.tdc.edu.vn";
 
 
     @Override
@@ -127,7 +128,7 @@ public class RegisterActivity extends AppCompatActivity {
                         saveUserDataAndProceed(email, password, studentNumber);
                     } else {
                         sendVerificationEmail(user);
-                        Toast.makeText(this, "Email chưa xác thực!", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(this, "Email chưa xác thực!", Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -214,6 +215,8 @@ public class RegisterActivity extends AppCompatActivity {
         builder.setTitle("Xác thực email");
         builder.setMessage("Vui lòng kiểm tra email của bạn để xác thực tài khoản.");
 
+        Toast.makeText(RegisterActivity.this,"Email này chưa được xác thực , vui lòng xác thực!" , Toast.LENGTH_SHORT).show();
+
         startEmailVerificationChecker(email , password , sNumber);
 
         builder.create().show();
@@ -260,9 +263,9 @@ public class RegisterActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 String mssv = s.toString();
                 if (!mssv.isEmpty()) {
-//                    emailEditText.setText(mssv + "@mail.tdc.edu.vn");
-//                    emailEditText.setEnabled(false);
-                    emailEditText.setText(mssv);
+//                    emailEditText.setText(mssv);
+                    emailEditText.setText(mssv + tdcEmail);
+                    emailEditText.setEnabled(false);
                     emailEditText.setSelection(emailEditText.getText().length());
                 }
             }
