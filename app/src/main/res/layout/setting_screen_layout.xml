@@ -63,7 +63,7 @@
     </TextView>
 
     <LinearLayout
-        android:id="@+id/linearLayout2"
+        android:id="@+id/layout_change_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
@@ -78,11 +78,13 @@
         app:layout_constraintVertical_bias="0.0">
 
         <ImageView
+            android:id="@+id/image_view_change_password"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:background="@drawable/baseline_lock_person_24" />
 
         <TextView
+            android:id="@+id/text_view_change_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"

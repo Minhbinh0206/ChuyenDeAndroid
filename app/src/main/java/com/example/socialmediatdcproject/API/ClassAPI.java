@@ -96,6 +96,27 @@ public class ClassAPI {
         });
     }
 
+    public void getClassesByMajorId(int majorId, final ClassCallback callback) {
+        databaseReference.orderByChild("majorId").equalTo(majorId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Class> classList = new ArrayList<>();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Class classItem = ds.getValue(Class.class);
+                    if (classItem != null) {
+                        classList.add(classItem);
+                    }
+                }
+                callback.onClassesReceived(classList); // Return list of classes with the same departmentId
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("ClassAPI", "Error fetching classes by departmentId", error.toException());
+            }
+        });
+    }
+
 
     // Update class
     public void updateClass(Class classItem, OnCompleteListener<Void> onCompleteListener) {
