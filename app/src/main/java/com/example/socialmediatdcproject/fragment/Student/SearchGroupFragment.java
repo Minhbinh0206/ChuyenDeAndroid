@@ -58,7 +58,6 @@ public class SearchGroupFragment extends Fragment {
                 groupList.addAll(groups);
 
                 filteredGroupList = new ArrayList<>(groupList);
-
                 adapter = new GroupAdapter(filteredGroupList, requireContext());
                 adapter.notifyDataSetChanged();
                 LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
@@ -94,11 +93,9 @@ public class SearchGroupFragment extends Fragment {
             for (Group group : groupList) {
                 if (group.getGroupName().toLowerCase().contains(query.toLowerCase())) { // Tìm kiếm không phân biệt hoa thường
                     filteredGroupList.add(group);
-
-                    adapter.notifyDataSetChanged(); // Cập nhật adapter
                 }
             }
         }
-
+        adapter.notifyDataSetChanged(); // Cập nhật adapter
     }
 }
