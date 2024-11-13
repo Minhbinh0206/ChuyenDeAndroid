@@ -96,9 +96,11 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                             try {
                                 // Hiển thị ảnh chọn từ Gallery
                                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+
                                 Glide.with(CreateNewGroupActivity.this)
                                         .load(bitmap)
                                         .into(imgFromGallery);
+
                             } catch (IOException e) {
                                 e.printStackTrace();
 
@@ -110,6 +112,7 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                             if (extras != null) {
                                 Bitmap imageBitmap = (Bitmap) extras.get("data");
                                 if (imageBitmap != null) {
+
                                     Glide.with(CreateNewGroupActivity.this)
                                             .load(imageBitmap)
                                             .into(imgFromGallery);
@@ -272,6 +275,18 @@ public class CreateNewGroupActivity extends AppCompatActivity {
             String nameGroup = fieldNameGroup.getText().toString();
             String avatar = selectedImageUri != null ? selectedImageUri.toString() : ""; // Lấy URI của ảnh được chọn
             boolean isPrivate = fieldIsPrivate.isChecked();
+
+            submitAction.setEnabled(false);
+
+            if (nameGroup.isEmpty()) {
+                // Hiển thị Toast nếu title hoặc content rỗng
+                Toast.makeText(getApplicationContext(), "Vui lòng điền đầy đủ các dữ liệu trên", Toast.LENGTH_SHORT).show();
+
+                // Bật lại nút submit để người dùng có thể thử lại
+                submitAction.setEnabled(true);
+
+                return; // Dừng tiếp tục xử lý nếu title hoặc content rỗng
+            }
 
             GroupAPI groupAPI = new GroupAPI();
             Group g = new Group();

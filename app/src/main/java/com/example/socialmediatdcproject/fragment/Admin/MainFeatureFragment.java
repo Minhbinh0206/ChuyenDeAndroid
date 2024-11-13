@@ -351,13 +351,22 @@ public class MainFeatureFragment extends Fragment {
             }
         });
 
-
-
         postButtonCreate.setOnClickListener(v -> {
             // Vô hiệu hóa nút để tránh nhấn nhiều lần
             postButtonCreate.setEnabled(false);
 
             String content = postContent.getText().toString();
+
+            // Kiểm tra xem title hoặc content có null hoặc rỗng không
+            if (content.isEmpty()) {
+                // Hiển thị Toast nếu title hoặc content rỗng
+                Toast.makeText(v.getContext(), "Vui lòng điền đầy đủ các dữ liệu trên", Toast.LENGTH_SHORT).show();
+
+                // Bật lại nút submit để người dùng có thể thử lại
+                postButtonCreate.setEnabled(true);
+
+                return; // Dừng tiếp tục xử lý nếu title hoặc content rỗng
+            }
 
             if (isFilterPost[0]) {
                 // Xử lý các bộ lọc như đã đề cập ở trên

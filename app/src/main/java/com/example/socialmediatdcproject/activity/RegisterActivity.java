@@ -8,11 +8,16 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupMenu;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,9 +57,6 @@ public class RegisterActivity extends AppCompatActivity {
 
         // Khai báo Firebase Database reference
         DatabaseReference database = FirebaseDatabase.getInstance().getReference("Students");
-
-        // Khởi tạo ProgressBar
-        progressBar = findViewById(R.id.progress_bar);
 
         SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         boolean isEmailVerificationPending = sharedPreferences.getBoolean("isEmailVerificationPending", false);
@@ -124,10 +126,8 @@ public class RegisterActivity extends AppCompatActivity {
 
     // Đăng ký người dùng
     private void registerUser(String email, String password , String sNumber) {
-        progressBar.setVisibility(View.VISIBLE);
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
-                    progressBar.setVisibility(View.GONE);
                     if (task.isSuccessful()) {
                         FirebaseUser user = auth.getCurrentUser();
                         if (user != null) {
@@ -193,25 +193,45 @@ public class RegisterActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean("isEmailVerificationPending", true); // Đánh dấu trạng thái chờ xác thực email
         editor.putString("registerEmail", email);
-        editor.putString("registerPassword" , password);
+        editor.putString("registerPassword", password);
         editor.putString("registerStudentNumber", sNumber);
         editor.apply();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Xác thực email");
         builder.setMessage("Vui lòng kiểm tra email của bạn để xác thực tài khoản.");
-        builder.setPositiveButton("Đã xác thực", (dialog, which) -> {
-            // Kiểm tra xem email đã được xác thực chưa
-            user.reload().addOnCompleteListener(reloadTask -> {
+
+        // Gọi reload() để cập nhật thông tin người dùng
+        user.reload().addOnCompleteListener(reloadTask -> {
+            Log.d("MMM", "showVerificationDialog: " + user.isEmailVerified());
+            if (reloadTask.isSuccessful()) {
+                // Kiểm tra xem email đã được xác thực chưa
                 if (user.isEmailVerified()) {
+                    // Nếu email đã được xác thực, thực hiện hành động cần thiết
                     saveUserDataAndProceed(email, password, sNumber);
                 } else {
+                    // Nếu email chưa xác thực, yêu cầu người dùng kiểm tra lại sau
                     Toast.makeText(RegisterActivity.this, "Email chưa được xác thực!", Toast.LENGTH_SHORT).show();
+                    // Có thể yêu cầu gửi lại email xác thực hoặc đợi một lúc và thử lại
+                    sendVerificationEmail(user);
                 }
-            });
+            } else {
+                // Nếu reload() thất bại, có thể có lỗi khi lấy lại thông tin người dùng
+                Toast.makeText(RegisterActivity.this, "Không thể kiểm tra trạng thái xác thực.", Toast.LENGTH_SHORT).show();
+            }
         });
-        builder.setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss());
+
         builder.create().show();
+    }
+
+    private void sendVerificationEmail(FirebaseUser user) {
+        user.sendEmailVerification().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(RegisterActivity.this, "Đã gửi lại email xác thực. Vui lòng kiểm tra lại!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(RegisterActivity.this, "Không thể gửi lại email xác thực. Vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void initView(){
@@ -246,7 +266,8 @@ public class RegisterActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {
                 String mssv = s.toString();
                 if (!mssv.isEmpty()) {
-                    emailEditText.setText(mssv);
+                    emailEditText.setText(mssv + "@mail.tdc.edu.vn");
+                    emailEditText.setEnabled(false);
                     emailEditText.setSelection(emailEditText.getText().length());
                 }
             }

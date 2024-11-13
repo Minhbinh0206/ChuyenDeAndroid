@@ -1,6 +1,6 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
-        <shape android:shape="oval">
+        <shape android:shape="ring">
             <solid android:color="@android:color/transparent"/>
             <corners android:radius="16dp"/>
             <stroke android:width="3dp" android:color="@color/defaultBlue"/>

@@ -232,7 +232,6 @@ public class SendNotificationActivity extends AppCompatActivity {
                         loadAllDepartment();
                         isFilterNotify[0] = true;
                         isSendAdminDepartment[0] = true;
-
                     } else if (selected.equals(optionsOfAdminDepartment.get(2))) {
                         // Admin doanh nghiệp
                         recyclerViewFilterNotice.setVisibility(View.VISIBLE);
@@ -272,6 +271,17 @@ public class SendNotificationActivity extends AppCompatActivity {
 
             String title = titleNotice.getText().toString();
             String content = contentNotice.getText().toString();
+
+            // Kiểm tra xem title hoặc content có null hoặc rỗng không
+            if (title.isEmpty() || content.isEmpty()) {
+                // Hiển thị Toast nếu title hoặc content rỗng
+                Toast.makeText(getApplicationContext(), "Vui lòng điền đầy đủ các dữ liệu trên", Toast.LENGTH_SHORT).show();
+
+                // Bật lại nút submit để người dùng có thể thử lại
+                buttonSubmit.setEnabled(true);
+
+                return; // Dừng tiếp tục xử lý nếu title hoặc content rỗng
+            }
 
             if (isFilterNotify[0]) {
                 // Xử lý các bộ lọc như đã đề cập ở trên
