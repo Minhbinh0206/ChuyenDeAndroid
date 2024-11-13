@@ -1,6 +1,7 @@
 package com.example.socialmediatdcproject.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -36,6 +37,7 @@ import java.util.Set;
 public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
     private ImageView avatar;
 
     @Override
@@ -46,9 +48,17 @@ public class LoginActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance(); // Khởi tạo FirebaseAuth
         initUi();
 
+
+        if (mAuth != null) {
+            currentUser = mAuth.getCurrentUser();
+        }
+        // Chuyển hướng sang trang đăng ký thông tin
+        checkUserProfile();
+
         AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
         AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
         AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+
 
         // Xử lý đăng nhập
         Button btnLogin = findViewById(R.id.btnLogin);
@@ -200,5 +210,23 @@ public class LoginActivity extends AppCompatActivity {
             Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
             startActivity(intent);
         });
+    }
+
+    private void checkUserProfile() {
+        // Kiểm tra trạng thái trong SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean isRegistering = sharedPreferences.getBoolean("isRegistering", false);
+
+        if (isRegistering) {
+            // Nếu đang trong quá trình đăng ký, điều hướng đến UploadProfileActivity
+            Intent intent = new Intent(LoginActivity.this, UploadProfileActivity.class);
+            startActivity(intent);
+            finish();
+
+            // Đặt lại trạng thái để không chuyển đến UploadProfileActivity lần nữa
+//            SharedPreferences.Editor editor = sharedPreferences.edit();
+//            editor.putBoolean("isRegistering", false);
+//            editor.apply();
+        }
     }
 }

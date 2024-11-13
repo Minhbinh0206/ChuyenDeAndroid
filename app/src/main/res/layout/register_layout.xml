@@ -5,6 +5,13 @@
     android:background="@drawable/image_login_background"
     android:layout_height="match_parent">
 
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+
     <ImageView
         android:id="@+id/image_logo"
         android:layout_width="200dp"
@@ -44,12 +51,12 @@
             android:background="@drawable/line_custom_login" />
 
         <EditText
-            android:id="@+id/fullName_register"
+            android:id="@+id/studentNumber_first"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginHorizontal="10dp"
             android:background="@drawable/border_radius_field"
-            android:hint="Nguyễn Văn A" />
+            android:hint="MSSV" />
     </LinearLayout>
 
     <!--  Phần Email đăng nhập  -->

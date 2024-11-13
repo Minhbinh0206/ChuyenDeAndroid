@@ -131,8 +131,4 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
 //        intent.putExtra("studentId", userId);
 //        context.startActivity(intent);
 //    }
-
-    private void removeMember(Lecturer lecturer) {
-        sharedViewModel.removeLecturer(lecturer);
-    }
 }

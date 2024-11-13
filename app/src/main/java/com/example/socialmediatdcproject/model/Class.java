@@ -4,17 +4,25 @@ public class Class {
     private int id;
     private String className;
     private int departmentId;
+    private int majorId;
 
-    public Class(int id, String className, int majorId) {
+    public Class(int id, String className, int departmentId) {
         this.id = id;
         this.className = className;
-        this.departmentId = majorId;
+        this.departmentId = departmentId;
+    }
+    public Class(int id, String className, int departmentId , int majorId) {
+        this.id = id;
+        this.className = className;
+        this.departmentId = departmentId;
+        this.majorId = majorId;
     }
 
     public Class() {
         this.id = -1;
         this.className = "";
         this.departmentId = -1;
+        this.majorId = -1;
     }
 
     public int getId() {
@@ -33,11 +41,19 @@ public class Class {
         this.className = className;
     }
 
-    public int getMajorId() {
+    public int getDepartmentId() {
         return departmentId;
     }
 
+    public void setDepartmentId(int departmentId) {
+        this.departmentId = departmentId;
+    }
+
+    public int getMajorId() {
+        return majorId;
+    }
+
     public void setMajorId(int majorId) {
-        this.departmentId = majorId;
+        this.majorId = majorId;
     }
 }

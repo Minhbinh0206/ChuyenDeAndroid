@@ -145,9 +145,4 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
         this.isEditMode = editMode;
         notifyDataSetChanged();
     }
-
-    private void removeMember(Student student) {
-        sharedViewModel.removeStudent(student);
-        notifyDataSetChanged();
-    }
 }

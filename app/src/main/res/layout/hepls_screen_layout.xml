@@ -30,7 +30,7 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
-        android:id="@+id/linearLayout2"
+        android:id="@+id/layout_change_password"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginHorizontal="20dp"
@@ -61,7 +61,7 @@
         android:gravity="center"
         android:layout_marginTop="30dp"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+        app:layout_constraintTop_toBottomOf="@+id/layout_change_password"
         tools:layout_editor_absoluteX="16dp">
 
         <ImageView

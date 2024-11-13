@@ -57,6 +57,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 
                 if (currentUser != null) {
                     checkUserProfile(); // Kiểm tra trạng thái đăng ký trước khi điều hướng
+                    checkUserVerified(); // Kiểm tra trạng thái đăng ký đã xác thực hay chưa
 
                     studentAPI.getStudentByKey(currentUser.getUid(), new StudentAPI.StudentCallback() {
                         @Override
@@ -164,9 +165,26 @@ public class SplashScreenActivity extends AppCompatActivity {
             finish();
 
             // Đặt lại trạng thái để không chuyển đến UploadProfileActivity lần nữa
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putBoolean("isRegistering", false);
-            editor.apply();
+//            SharedPreferences.Editor editor = sharedPreferences.edit();
+//            editor.putBoolean("isRegistering", false);
+//            editor.apply();
+        }
+    }
+    private void checkUserVerified() {
+        // Kiểm tra trạng thái trong SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean isVerified = sharedPreferences.getBoolean("isEmailVerificationPending", false);
+
+        if (isVerified) {
+            // Nếu đang trong quá trình đăng ký, điều hướng đến RegisterActivity
+            Intent intent = new Intent(SplashScreenActivity.this, RegisterActivity.class);
+            startActivity(intent);
+            finish();
+
+            // Đặt lại trạng thái để không chuyển đến UploadProfileActivity lần nữa
+//            SharedPreferences.Editor editor = sharedPreferences.edit();
+//            editor.putBoolean("isEmailVerificationPending", false);
+//            editor.apply();
         }
     }
 }

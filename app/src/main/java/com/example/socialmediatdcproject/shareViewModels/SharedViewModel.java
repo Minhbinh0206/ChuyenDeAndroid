@@ -23,9 +23,10 @@ public class SharedViewModel extends ViewModel {
 
     private DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference();
 
-    // Chưa cần 2 dòng dưới
+    // không dùng nữa
     private final MutableLiveData<List<Lecturer>> lecturerListLiveData = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<Student>> studentListLiveData = new MutableLiveData<>(new ArrayList<>());
+    //----------------
 
     public LiveData<Boolean> getIsEditMode() {
         return isEditMode;
@@ -35,34 +36,9 @@ public class SharedViewModel extends ViewModel {
         isEditMode.setValue(editMode);
     }
 
-    public LiveData<List<Lecturer>> getLecturerList() {
-        return lecturerListLiveData;
-    }
 
-    public void removeLecturer(Lecturer lecturer) {
-        List<Lecturer> currentList = lecturerListLiveData.getValue();
-        if (currentList != null) {
-            currentList.remove(lecturer);
-            lecturerListLiveData.setValue(new ArrayList<>(currentList)); // Cập nhật LiveData sau khi xóa
-        }
-    }
-    public void removeStudent(Student student) {
-        List<Student> currentList = studentListLiveData.getValue();
-        if (currentList != null) {
-            currentList.remove(student);
-            Log.d("ShareViewModel" , "Đã xóa học sinh" + student);
-//            Toast.makeText("","Đã xóa thành công", Toast.LENGTH_SHORT).show();
-            studentListLiveData.setValue(new ArrayList<>(currentList)); // Cập nhật LiveData sau khi xóa
-        }
-        Log.d("ShareViewModel" , "Đang xóa học sinh");
-    }
-
-    public void setLecturerList(List<Lecturer> lecturers) {
-        lecturerListLiveData.setValue(lecturers);
-    }
 
     public void removeStudentFromGroup(int groupId, int studentId) {
-        // Truy vấn đến UserInGroup để tìm bản ghi có groupId và studentId tương ứng
         databaseRef.child("UsersInGroup")
                 .orderByChild("groupId")
                 .equalTo(groupId)
@@ -100,8 +76,7 @@ public class SharedViewModel extends ViewModel {
                 });
     }
 
-    public void removeLecturerFromGroup(int groupId, int studentId) {
-        // Truy vấn đến UserInGroup để tìm bản ghi có groupId và studentId tương ứng
+    public void removeLecturerFromGroup(int groupId, int lecturerId) {
         databaseRef.child("UsersInGroup")
                 .orderByChild("groupId")
                 .equalTo(groupId)
@@ -109,11 +84,11 @@ public class SharedViewModel extends ViewModel {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         for (DataSnapshot entrySnapshot : snapshot.getChildren()) {
-                            Integer entryStudentId = entrySnapshot.child("userId").getValue(Integer.class);
+                            Integer entryLecturerId = entrySnapshot.child("userId").getValue(Integer.class);
 
-                            // Kiểm tra nếu entry này có studentId khớp
-                            if (entryStudentId != null && entryStudentId.equals(studentId)) {
-                                // Xóa bản ghi nếu khớp cả groupId và studentId
+                            // Kiểm tra nếu entry này có lecturerId khớp
+                            if (entryLecturerId != null && entryLecturerId.equals(lecturerId)) {
+                                // Xóa bản ghi nếu khớp cả groupId và lecturerId
                                 entrySnapshot.getRef().removeValue()
                                         .addOnCompleteListener(task -> {
                                             if (task.isSuccessful()) {
@@ -134,6 +109,35 @@ public class SharedViewModel extends ViewModel {
 //                        Toast.makeText(context, "Lỗi khi truy vấn dữ liệu", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+
+    // Hảm không còn dùng
+    public LiveData<List<Lecturer>> getLecturerList() {
+        return lecturerListLiveData;
+    }
+
+    public void removeLecturer(Lecturer lecturer) {
+        List<Lecturer> currentList = lecturerListLiveData.getValue();
+        if (currentList != null) {
+            currentList.remove(lecturer);
+            lecturerListLiveData.setValue(new ArrayList<>(currentList)); // Cập nhật LiveData sau khi xóa
+        }
+    }
+
+    public void removeStudent(Student student) {
+        List<Student> currentList = studentListLiveData.getValue();
+        if (currentList != null) {
+            currentList.remove(student);
+            Log.d("ShareViewModel" , "Đã xóa học sinh" + student);
+//            Toast.makeText("","Đã xóa thành công", Toast.LENGTH_SHORT).show();
+            studentListLiveData.setValue(new ArrayList<>(currentList)); // Cập nhật LiveData sau khi xóa
+        }
+        Log.d("ShareViewModel" , "Đang xóa học sinh");
+    }
+
+    public void setLecturerList(List<Lecturer> lecturers) {
+        lecturerListLiveData.setValue(lecturers);
     }
 
 }

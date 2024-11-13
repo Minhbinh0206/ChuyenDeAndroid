@@ -10,6 +10,15 @@ public class Student extends User {
 
     // Thêm trường cập nhật Avatar
     private String avatar;
+    private String gender;
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
 
     //thêm trương cập nhật background
     private String background;
@@ -105,7 +114,16 @@ public class Student extends User {
         this.description = description;
         this.background = background;
     }
-
+    public Student(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String studentNumber, String birthday, int departmentId, int majorId, int studentClass, String description , String gender) {
+        super(userId, email, password, fullName, avatar, phoneNumber, roleId);
+        this.studentNumber = studentNumber;
+        this.birthday = birthday;
+        this.departmentId = departmentId;
+        this.majorId = majorId;
+        this.classId = studentClass;
+        this.description = description;
+        this.gender = gender;
+    }
     public Student() {
 
     }
