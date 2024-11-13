@@ -16,12 +16,21 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.socialmediatdcproject.API.AdminBusinessAPI;
+import com.example.socialmediatdcproject.API.AdminDefaultAPI;
+import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.NotifyAPI;
+import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.NotifyDetailActivity;
+import com.example.socialmediatdcproject.model.AdminBusiness;
+import com.example.socialmediatdcproject.model.AdminDefault;
+import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Notify;
+import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
@@ -42,6 +51,15 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
     public NotifyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_notify_list, parent, false);
         return new NotifyViewHolder(view);
+    }
+
+    // Phương thức cập nhật danh sách Notify trong adapter
+    public void updateList(List<Notify> newNotifyList) {
+        if (newNotifyList != null) {
+            this.notifyList.clear();  // Xóa tất cả phần tử cũ trong danh sách
+            this.notifyList.addAll(newNotifyList);  // Thêm phần tử mới vào danh sách
+            notifyDataSetChanged();  // Cập nhật dữ liệu cho RecyclerView
+        }
     }
 
     @Override
@@ -71,21 +89,175 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
             holder.notifyTitle.setText(notify.getNotifyTitle());
             holder.notifyContent.setText(notify.getNotifyContent());
 
-            Log.d("NotifyAdapter", "Notify Title: " + notify.getNotifyTitle() + ", isRead: " + notify.getIsRead());
+            StudentAPI studentAPI = new StudentAPI();
+            String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+            AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+            AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+            NotifyAPI notifyAPI = new NotifyAPI();
 
-            // Chỉ rung chuông khi isRead là false
-            if (notify.getIsRead() == 0) {
-                scheduleBellAnimation(holder.bellIcon);
-            } else {
-                holder.bellIcon.clearAnimation(); // Dừng mọi animation của chuông nếu đã đọc
-            }
+            studentAPI.getStudentByKey(userKey, new StudentAPI.StudentCallback() {
+                @Override
+                public void onStudentReceived(Student student) {
+                    notifyAPI.checkIfUserHasRead(notify.getNotifyId(), student.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
+                        @Override
+                        public void onResult(boolean hasRead) {
+                            // Chỉ rung chuông khi isRead là false
+                            if (!hasRead)
+                            {
+                                scheduleBellAnimation(holder.bellIcon);
+                            } else {
+                                holder.bellIcon.clearAnimation(); // Dừng mọi animation của chuông nếu đã đọc
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void onStudentsReceived(List<Student> students) {
+
+                }
+            });
+
+            adminBusinessAPI.getAdminBusinessByKey(userKey, new AdminBusinessAPI.AdminBusinessCallBack() {
+                @Override
+                public void onUserReceived(AdminBusiness adminBusiness) {
+                    notifyAPI.checkIfUserHasRead(notify.getNotifyId(), adminBusiness.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
+                        @Override
+                        public void onResult(boolean hasRead) {
+                            // Chỉ rung chuông khi isRead là false
+                            if (!hasRead)
+                            {
+                                scheduleBellAnimation(holder.bellIcon);
+                            } else {
+                                holder.bellIcon.clearAnimation(); // Dừng mọi animation của chuông nếu đã đọc
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                }
+
+                @Override
+                public void onError(String s) {
+
+                }
+            });
+
+            adminDepartmentAPI.getAdminDepartmentByKey(userKey, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                @Override
+                public void onUserReceived(AdminDepartment adminDepartment) {
+                    notifyAPI.checkIfUserHasRead(notify.getNotifyId(), adminDepartment.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
+                        @Override
+                        public void onResult(boolean hasRead) {
+                            // Chỉ rung chuông khi isRead là false
+                            if (!hasRead)
+                            {
+                                scheduleBellAnimation(holder.bellIcon);
+                            } else {
+                                holder.bellIcon.clearAnimation(); // Dừng mọi animation của chuông nếu đã đọc
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+                }
+
+                @Override
+                public void onError(String s) {
+
+                }
+            });
+
+            adminDefaultAPI.getAdminDefaultByKey(userKey, new AdminDefaultAPI.AdminDefaultCallBack() {
+                @Override
+                public void onUserReceived(AdminDefault adminDefault) {
+                    notifyAPI.checkIfUserHasRead(notify.getNotifyId(), adminDefault.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
+                        @Override
+                        public void onResult(boolean hasRead) {
+                            // Chỉ rung chuông khi isRead là false
+                            if (!hasRead)
+                            {
+                                scheduleBellAnimation(holder.bellIcon);
+                            } else {
+                                holder.bellIcon.clearAnimation(); // Dừng mọi animation của chuông nếu đã đọc
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+                }
+            });
 
             holder.buttonRead.setOnClickListener(v -> {
-                // Đánh dấu là đã đọc
-                notify.setIsRead(1);
-                NotifyAPI notifyAPI = new NotifyAPI();
-                notifyAPI.updateNotification(notify);
+                studentAPI.getStudentByKey(userKey, new StudentAPI.StudentCallback() {
+                    @Override
+                    public void onStudentReceived(Student student) {
+                        notifyAPI.addUserToRead(notify.getNotifyId(), student.getUserId());
+                    }
 
+                    @Override
+                    public void onStudentsReceived(List<Student> students) {
+
+                    }
+                });
+
+                adminDepartmentAPI.getAdminDepartmentByKey(userKey, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                    @Override
+                    public void onUserReceived(AdminDepartment adminDepartment) {
+                        notifyAPI.addUserToRead(notify.getNotifyId(), adminDepartment.getUserId());
+                    }
+
+                    @Override
+                    public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+                    }
+
+                    @Override
+                    public void onError(String s) {
+
+                    }
+                });
+
+                adminBusinessAPI.getAdminBusinessByKey(userKey, new AdminBusinessAPI.AdminBusinessCallBack() {
+                    @Override
+                    public void onUserReceived(AdminBusiness adminBusiness) {
+                        notifyAPI.addUserToRead(notify.getNotifyId(), adminBusiness.getUserId());
+                    }
+
+                    @Override
+                    public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                    }
+
+                    @Override
+                    public void onError(String s) {
+
+                    }
+                });
+
+                adminDefaultAPI.getAdminDefaultByKey(userKey, new AdminDefaultAPI.AdminDefaultCallBack() {
+                    @Override
+                    public void onUserReceived(AdminDefault adminDefault) {
+                        notifyAPI.addUserToRead(notify.getNotifyId(), adminDefault.getUserId());
+                    }
+
+                    @Override
+                    public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+                    }
+                });
+
+                // Đánh dấu là đã đọc
                 Intent intent = new Intent(v.getContext(), NotifyDetailActivity.class);
                 intent.putExtra("notifyId", notify.getNotifyId());
                 v.getContext().startActivity(intent);
