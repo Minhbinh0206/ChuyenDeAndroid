@@ -39,6 +39,7 @@ public class RegisterActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private Handler handler;
     private Runnable verificationRunnable;
+    private static final int VERIFICATION_CHECK_INTERVAL = 30000;
 
 
     @Override
@@ -130,7 +131,7 @@ public class RegisterActivity extends AppCompatActivity {
                     }
                 });
             }
-            handler.postDelayed(verificationRunnable, 30000);  // Tiếp tục kiểm tra sau 30 giây
+            handler.postDelayed(verificationRunnable, VERIFICATION_CHECK_INTERVAL);  // Tiếp tục kiểm tra sau 30 giây
         };
         handler.post(verificationRunnable);  // Bắt đầu chạy kiểm tra lần đầu tiên
     }
