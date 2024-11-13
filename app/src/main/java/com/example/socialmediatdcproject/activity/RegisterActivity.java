@@ -102,6 +102,15 @@ public class RegisterActivity extends AppCompatActivity {
                         if (snapshot.exists()) {
                             Toast.makeText(RegisterActivity.this, "MSSV đã tồn tại", Toast.LENGTH_SHORT).show();
                         }
+                        else{
+                            FirebaseUser user = auth.getCurrentUser();
+                            if(user != null){
+                                showVerificationDialog(user, email , password , sNumber);
+                            }
+                            else {
+                                registerUser(email, password , sNumber);
+                            }
+                        }
                     }
 
                     @Override
@@ -109,14 +118,6 @@ public class RegisterActivity extends AppCompatActivity {
                         Toast.makeText(RegisterActivity.this, "Lỗi kết nối!", Toast.LENGTH_SHORT).show();
                     }
                 });
-
-                FirebaseUser user = auth.getCurrentUser();
-                if(user != null){
-                    showVerificationDialog(user, email , password , sNumber);
-                }
-                else {
-                    registerUser(email, password , sNumber);
-                }
             });
         }
     }
