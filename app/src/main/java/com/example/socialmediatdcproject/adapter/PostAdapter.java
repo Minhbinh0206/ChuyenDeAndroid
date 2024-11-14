@@ -294,6 +294,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 public void onGroupReceived(Group group) {
                     Intent intent = new Intent(v.getContext(), GroupDetaiActivity.class);
                     intent.putExtra("groupId", group.getGroupId());
+                    intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                     if (v.getContext() instanceof GroupDetaiActivity || v.getContext() instanceof HomeAdminActivity) {
 
                     }else {
@@ -315,6 +316,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 public void onGroupReceived(Group group) {
                     Intent intent = new Intent(v.getContext(), GroupDetaiActivity.class);
                     intent.putExtra("groupId", group.getGroupId());
+                    intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                     if (v.getContext() instanceof GroupDetaiActivity || v.getContext() instanceof HomeAdminActivity) {
 
                     }else {
@@ -333,7 +335,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         holder.buttonComment.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
             intent.putExtra("postId", post.getPostId());
-
+            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             if (v.getContext() instanceof CommentPostActivity) {
                 //
             }

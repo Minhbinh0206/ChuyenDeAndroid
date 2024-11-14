@@ -125,10 +125,4 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
             removeButton = itemView.findViewById(R.id.button_remove);
         }
     }
-
-//    private void openPersonalPage(int userId) {
-//        Intent intent = new Intent(context, SharedActivity.class);
-//        intent.putExtra("studentId", userId);
-//        context.startActivity(intent);
-//    }
 }

@@ -107,6 +107,7 @@ public class MemberMessengerAdapter extends RecyclerView.Adapter<MemberMessenger
         holder.messengerDetail.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), MessengerDetailActivity.class);
             intent.putExtra("studentId", student.getUserId());
+            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             v.getContext().startActivity(intent);
         });
     }

@@ -275,8 +275,14 @@ public class CreateNewPostFragment extends Fragment {
         ImageButton changeBanckground = dialog.findViewById(R.id.post_change_background);
         ImageButton addSurvey = dialog.findViewById(R.id.post_icon_survey);
 
+        Intent intent = requireActivity().getIntent();
+        groupId = intent.getIntExtra("groupId", -1);
+
         //view hiển thị ảnh
         showImagePost = dialog.findViewById(R.id.show_image_create_post);
+
+        showImagePost.setVisibility(View.GONE);
+
         ImageView imageViewAvatar = dialog.findViewById(R.id.avatar_user_create_post);
 
         // Xử lý sự kiện khi nhấn vào nút addImage
@@ -344,6 +350,7 @@ public class CreateNewPostFragment extends Fragment {
                                             groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
                                                 @Override
                                                 public void onGroupReceived(Group group) {
+                                                    Log.d("CONCAC", "onGroupReceived: " + student.getUserId() + " And " + group.getAdminUserId());
                                                     if (!isPostAdded[0]) {
                                                         if (student.getUserId() == group.getAdminUserId()) {
                                                             Post post = new Post();
@@ -381,6 +388,7 @@ public class CreateNewPostFragment extends Fragment {
                                                         }
                                                         isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
                                                     }
+                                                    dialog.dismiss();
                                                 }
 
                                                 @Override

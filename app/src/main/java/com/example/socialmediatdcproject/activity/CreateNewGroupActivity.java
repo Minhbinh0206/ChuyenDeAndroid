@@ -342,6 +342,7 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                     Intent intent = new Intent(CreateNewGroupActivity.this, GroupDetaiActivity.class);
                     intent.putExtra("groupId", g.getGroupId());
                     intent.putExtra("isJoin", isJoin);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                     startActivity(intent);
                 }
             });

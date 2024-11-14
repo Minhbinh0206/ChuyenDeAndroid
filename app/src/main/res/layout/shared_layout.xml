@@ -78,6 +78,22 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/third_content_fragment" />
+
+                <TextView
+                    android:id="@+id/null_content_notify"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:textStyle="italic"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:textSize="20dp"
+                    android:text="Hiện chưa có bài viết nào"
+                    android:paddingVertical="100dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/second_content_fragment" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>
     </androidx.constraintlayout.widget.ConstraintLayout>

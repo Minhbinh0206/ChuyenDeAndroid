@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -60,17 +61,19 @@ public class ManagerGroupFragment extends Fragment {
         changeColorButtonActive(buttonUser);
         changeColorButtonNormal(buttonPost);
 
-        loadUserApply(groupId);
+        TextView textView = requireActivity().findViewById(R.id.null_content_notify);
+
+        loadUserApply(groupId, textView);
 
         buttonUser.setOnClickListener(v -> {
-            loadUserApply(groupId);
+            loadUserApply(groupId, textView);
 
             changeColorButtonActive(buttonUser);
             changeColorButtonNormal(buttonPost);
         });
 
         buttonPost.setOnClickListener(v -> {
-            loadPostApproveFromFirebase(groupId,0);
+            loadPostApproveFromFirebase(groupId,0, textView);
 
             changeColorButtonActive(buttonPost);
             changeColorButtonNormal(buttonUser);
@@ -87,7 +90,7 @@ public class ManagerGroupFragment extends Fragment {
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 
-    public void loadPostApproveFromFirebase(int id, int status) {
+    public void loadPostApproveFromFirebase(int id, int status, TextView textView) {
         ArrayList<Post> postsList = new ArrayList<>(); // Danh sách bài viết
 
         // Tham chiếu đến bảng "posts" trong Firebase Realtime Database
@@ -105,6 +108,14 @@ public class ManagerGroupFragment extends Fragment {
                             if (post.getStatus() == status) {
                                 postsList.add(post); // Thêm bài viết vào danh sách
                             }
+
+                            if (postsList.isEmpty()) {
+                                textView.setVisibility(View.VISIBLE);
+                                textView.setText("Hiện chưa có bài viết nào cần duyệt");
+                            }
+                            else {
+                                textView.setVisibility(View.GONE);
+                            }
                         }
 
                         // Cập nhật RecyclerView với dữ liệu bài viết
@@ -121,7 +132,7 @@ public class ManagerGroupFragment extends Fragment {
                 });
     }
 
-    public void loadUserApply(int groupId){
+    public void loadUserApply(int groupId, TextView textView){
         ArrayList<Answer> answerList = new ArrayList<>();
 
         AnswerAPI answerAPI = new AnswerAPI();
@@ -143,6 +154,14 @@ public class ManagerGroupFragment extends Fragment {
                         for (Answer a : answers) {
                             if (a.getQuestionId() == question.getQuestionId()) {
                                 answerList.add(a);
+                            }
+
+                            if (answerList.isEmpty()) {
+                                textView.setVisibility(View.VISIBLE);
+                                textView.setText("Hiện chưa có đơn xin tham gia nào");
+                            }
+                            else {
+                                textView.setVisibility(View.GONE);
                             }
 
                             // Cập nhật RecyclerView với dữ liệu bài viết

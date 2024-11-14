@@ -128,6 +128,7 @@ public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             else {
                 Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
                 intent.putExtra("postId", post.getPostId());
+                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                 v.getContext().startActivity(intent);
             }
         });

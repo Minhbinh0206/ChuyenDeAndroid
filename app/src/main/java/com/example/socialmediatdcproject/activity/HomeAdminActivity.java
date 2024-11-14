@@ -187,6 +187,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                         FirebaseAuth auth = FirebaseAuth.getInstance();
                         auth.signOut();
                         Intent intent = new Intent(HomeAdminActivity.this, LoginActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                         startActivity(intent);
                         finish(); // Đóng SharedActivity
                         return;  // Thoát phương thức để không thực hiện fragmentTransaction

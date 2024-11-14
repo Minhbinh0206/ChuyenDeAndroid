@@ -257,6 +257,7 @@ public class SharedActivity extends AppCompatActivity {
                     case 9:
                         // Mở SettingActivity
                         Intent settingIntent = new Intent(SharedActivity.this, SettingActivity.class);
+                        settingIntent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                         startActivity(settingIntent);
                         break;
                     case 10:
@@ -264,6 +265,7 @@ public class SharedActivity extends AppCompatActivity {
                         FirebaseAuth auth = FirebaseAuth.getInstance();
                         auth.signOut();
                         Intent intent = new Intent(SharedActivity.this, LoginActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                         startActivity(intent);
                         finish(); // Đóng SharedActivity
                         return;  // Thoát phương thức để không thực hiện fragmentTransaction
@@ -388,8 +390,6 @@ public class SharedActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         int key = intent.getIntExtra("keyFragment", -1);
-        int studentId = intent.getIntExtra("studentId", -1);
-        int groupId = intent.getIntExtra("groupId", -1);
 
         //Tìm kiếm hình ảnh user
         ImageView imageView = findViewById(R.id.nav_avatar_user);
@@ -412,16 +412,25 @@ public class SharedActivity extends AppCompatActivity {
                             .into(imageView);
                 }
 
+                // Biến để lưu trạng thái fragment hiện tại
+                final boolean[] isOnPersonalScreen = {false};
+
                 // Thêm sự kiện click vào avatar chuyển sang trang cá nhân
                 imageView.setOnClickListener(v -> {
-                    // Chuyển sang màn hình PersonalScreenFragment
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                    // Kiểm tra nếu chưa ở trang cá nhân thì mới chuyển
+                    if (!isOnPersonalScreen[0]) {
+                        // Đặt trạng thái là đang ở trang cá nhân
+                        isOnPersonalScreen[0] = true;
 
-                    PersonalScreenFragment personalScreenFragment = new PersonalScreenFragment();
-                    fragmentTransaction.replace(R.id.first_content_fragment, personalScreenFragment);
+                        // Chuyển sang màn hình PersonalScreenFragment
+                        FragmentManager fragmentManager = getSupportFragmentManager();
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-                    fragmentTransaction.commit();
+                        PersonalScreenFragment personalScreenFragment = new PersonalScreenFragment();
+                        fragmentTransaction.replace(R.id.first_content_fragment, personalScreenFragment);
+
+                        fragmentTransaction.commit();
+                    }
                 });
 
             }
@@ -434,58 +443,17 @@ public class SharedActivity extends AppCompatActivity {
 
         Log.d("TAG", "onResume: " + key);
 
-        if (key != -1) {
-            switch (key){
-                case 9999:
-                    Fragment fragment = new GroupFragment();
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    // Thay thế nội dung của FrameLayout bằng Fragment tương ứng nếu fragment không null
-                    if (fragment != null) {
-                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        fragmentTransaction.replace(R.id.first_content_fragment, fragment);
-                        fragmentTransaction.commit();
-                    }
-                    break;
-                default:
-                    // Gán fragment home là mặc định
-                    fragmentManager = getSupportFragmentManager();
-                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        // Gán fragment home là mặc định
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-                    // Nạp HomeFragment vào first_content_fragment
-                    fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
+        // Nạp HomeFragment vào first_content_fragment
+        fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
 
-                    // Lấy dữ lệu từ firebase
-                    loadPostsFromFirebase();
+        // Lấy dữ lệu từ firebase
+        loadPostsFromFirebase();
 
-                    fragmentTransaction.commit();
-                    break;
-            }
-        }else {
-            if (studentId != -1) {
-                // Gán fragment home là mặc định
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-                // Nạp HomeFragment vào first_content_fragment
-                fragmentTransaction.replace(R.id.first_content_fragment, new FriendsScreenFragment());
-
-                fragmentTransaction.commit();
-            }
-            else {
-                    // Gán fragment home là mặc định
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-                    // Nạp HomeFragment vào first_content_fragment
-                    fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
-
-                    // Lấy dữ lệu từ firebase
-                    loadPostsFromFirebase();
-
-                    fragmentTransaction.commit();
-            }
-
-        }
+        fragmentTransaction.commit();
 
         studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
             @Override

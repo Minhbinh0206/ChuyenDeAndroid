@@ -63,6 +63,7 @@ public class BussinessAdapter extends RecyclerView.Adapter<BussinessAdapter.Buss
                     public void onGroupReceived(Group group) {
                         Intent intent = new Intent(v.getContext(), GroupDetaiActivity.class);
                         intent.putExtra("groupId", group.getGroupId());
+                        intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                         v.getContext().startActivity(intent);
                     }
 

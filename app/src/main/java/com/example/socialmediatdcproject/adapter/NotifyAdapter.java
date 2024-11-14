@@ -260,6 +260,7 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
                 // Đánh dấu là đã đọc
                 Intent intent = new Intent(v.getContext(), NotifyDetailActivity.class);
                 intent.putExtra("notifyId", notify.getNotifyId());
+                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                 v.getContext().startActivity(intent);
             });
         } else {
