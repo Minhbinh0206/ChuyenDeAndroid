@@ -39,6 +39,7 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private ImageView avatar;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +48,8 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance(); // Khởi tạo FirebaseAuth
         initUi();
+
+        sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
 
 
         if (mAuth != null) {
@@ -106,6 +109,10 @@ public class LoginActivity extends AppCompatActivity {
                                                         boolean isAdmin = adminRoleIds.contains(roleId);
 
                                                         if (isAdmin) {
+                                                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                                                            editor.putBoolean("isAdmin", true);
+                                                            editor.apply();
+
                                                             adminDepartmentAPI.getAdminDepartmentById(userId, new AdminDepartmentAPI.AdminDepartmentCallBack() {
                                                                 @Override
                                                                 public void onUserReceived(AdminDepartment adminDepartment) {

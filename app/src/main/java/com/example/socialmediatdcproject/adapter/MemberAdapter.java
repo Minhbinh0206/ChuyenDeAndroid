@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -79,9 +80,20 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
                     .circleCrop()
                     .into(holder.memberAvatar);
 
-            holder.cardView.setOnClickListener(v -> {
-                openPersonalPage(student.getUserId());
-            });
+            // Kiểm tra quyền isAdmin trực tiếp từ SharedPreferences
+            SharedPreferences sharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+            boolean isAdmin = sharedPreferences.getBoolean("isAdmin", false);
+
+            if(isAdmin){
+                holder.cardView.setOnClickListener(v -> {
+                    //Nothing here
+                });
+            }else{
+                holder.cardView.setOnClickListener(v -> {
+                    openPersonalPage(student.getUserId());
+                });
+            }
+
 
             Log.e("LecturerAdapter", "isEditMode: " + isEditMode );
 
@@ -145,4 +157,6 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
         this.isEditMode = editMode;
         notifyDataSetChanged();
     }
+
+
 }
