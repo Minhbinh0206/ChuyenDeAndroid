@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -79,7 +80,16 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
                     .circleCrop()
                     .into(holder.lecturerAvatar);
 
-//            holder.cardView.setOnClickListener(v -> openPersonalPage(lecturer.getUserId()));
+            SharedPreferences sharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+            boolean isAdmin = sharedPreferences.getBoolean("isAdmin", false);
+
+            if(isAdmin){
+                holder.cardView.setOnClickListener(v -> {
+                    //Nothing here
+                });
+            }else{
+                holder.cardView.setOnClickListener(v -> openPersonalPage(lecturer.getUserId()));
+            }
 
             Log.e("LecturerAdapter", "isEditMode: " + isEditMode );
 
@@ -124,5 +134,11 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
             cardView = itemView.findViewById(R.id.item_member);
             removeButton = itemView.findViewById(R.id.button_remove);
         }
+    }
+
+    private void openPersonalPage(int userId) {
+        Intent intent = new Intent(context, SharedActivity.class);
+        intent.putExtra("studentId", userId);
+        context.startActivity(intent);
     }
 }

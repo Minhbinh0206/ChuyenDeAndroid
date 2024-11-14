@@ -264,6 +264,13 @@ public class SharedActivity extends AppCompatActivity {
                         // Đăng xuất người dùng và chuyển đến LoginActivity
                         FirebaseAuth auth = FirebaseAuth.getInstance();
                         auth.signOut();
+
+                        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                        SharedPreferences.Editor editor =  sharedPreferences.edit();
+                        editor.putBoolean("isRegistering", false);
+                        editor.putBoolean("isAdmin", false);
+                        editor.apply();
+
                         Intent intent = new Intent(SharedActivity.this, LoginActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                         startActivity(intent);
