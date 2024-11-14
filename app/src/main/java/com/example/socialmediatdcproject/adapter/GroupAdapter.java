@@ -13,11 +13,13 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.GroupDetaiActivity;
 import com.example.socialmediatdcproject.activity.SharedActivity;
 import com.example.socialmediatdcproject.model.Group;
+import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
 
 import java.util.List;
@@ -62,6 +64,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
                         .into(holder.groupAvatar);
             }
 
+
             userAPI.getAllUsers(new UserAPI.UserCallback() {
                 @Override
                 public void onUserReceived(User user) {
@@ -72,7 +75,23 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
                 public void onUsersReceived(List<User> users) {
                     for (User u : users) {
                         if (u.getUserId() == group.getAdminUserId()) {
-                            holder.groupAdminName.setText(u.getFullName());
+                            if (u.getRoleId() != -1) {
+                                holder.groupAdminName.setText(u.getFullName());
+                            }
+                            else {
+                                StudentAPI studentAPI = new StudentAPI();
+                                studentAPI.getStudentById(group.getAdminUserId(), new StudentAPI.StudentCallback() {
+                                    @Override
+                                    public void onStudentReceived(Student student) {
+                                        holder.groupAdminName.setText(student.getFullName());
+                                    }
+
+                                    @Override
+                                    public void onStudentsReceived(List<Student> students) {
+
+                                    }
+                                });
+                            }
                         }
                     }
                 }

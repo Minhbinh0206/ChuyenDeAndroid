@@ -110,7 +110,6 @@ public class SearchFriendAdapter extends RecyclerView.Adapter<SearchFriendAdapte
                 });
                 Intent intent = new Intent(v.getContext(), SharedActivity.class);
                 intent.putExtra("studentId", friend.getUserId());
-                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                 v.getContext().startActivity(intent);
             });
 

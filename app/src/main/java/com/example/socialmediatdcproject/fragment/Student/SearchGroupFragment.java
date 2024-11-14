@@ -30,6 +30,7 @@ public class SearchGroupFragment extends Fragment {
     private List<Group> filteredGroupList;
     private EditText editTextSearch;
     private ImageButton iconSearchGroup;
+    RecyclerView recyclerView;
 
     @Nullable
     @Override
@@ -39,7 +40,7 @@ public class SearchGroupFragment extends Fragment {
         // Ánh xạ các view từ layout
         editTextSearch = view.findViewById(R.id.edit_text_search);
         iconSearchGroup = view.findViewById(R.id.icon_search_group);
-        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment); // Chỉnh sửa từ requireActivity() thành view
+        recyclerView = requireActivity().findViewById(R.id.second_content_fragment); // Chỉnh sửa từ requireActivity() thành view
 
         // Khởi tạo danh sách nhóm và adapter
         groupList = new ArrayList<>();
@@ -58,9 +59,9 @@ public class SearchGroupFragment extends Fragment {
                 groupList.addAll(groups);
 
                 filteredGroupList = new ArrayList<>(groupList);
-                adapter = new GroupAdapter(filteredGroupList, requireContext());
+                adapter = new GroupAdapter(filteredGroupList, getContext());
                 adapter.notifyDataSetChanged();
-                LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
+                LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
                 recyclerView.setLayoutManager(linearLayoutManager);
                 recyclerView.setAdapter(adapter);
             }
@@ -94,8 +95,8 @@ public class SearchGroupFragment extends Fragment {
                 if (group.getGroupName().toLowerCase().contains(query.toLowerCase())) { // Tìm kiếm không phân biệt hoa thường
                     filteredGroupList.add(group);
                 }
+                adapter.notifyDataSetChanged(); // Cập nhật adapter
             }
         }
-        adapter.notifyDataSetChanged(); // Cập nhật adapter
     }
 }

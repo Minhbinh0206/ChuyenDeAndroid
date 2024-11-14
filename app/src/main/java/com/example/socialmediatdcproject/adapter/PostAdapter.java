@@ -3,6 +3,12 @@ package com.example.socialmediatdcproject.adapter;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.text.Html;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -70,25 +76,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         sortPostsByDate();
     }
 
-    // Hàm sắp xếp danh sách bài viết mới nhất lên đầu
-    private void sortPostsByDate() {
-        Collections.sort(postList, new Comparator<Post>() {
-            @Override
-            public int compare(Post post1, Post post2) {
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-                try {
-                    Date date1 = format.parse(post1.getCreatedAt());
-                    Date date2 = format.parse(post2.getCreatedAt());
-                    return date2.compareTo(date1); // Sắp xếp giảm dần
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                    return 0;
-                }
-            }
-        });
-    }
-
-
     @Override
     public int getItemViewType(int position) {
         Post post = postList.get(position);
@@ -122,6 +109,24 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    // Hàm sắp xếp danh sách bài viết mới nhất lên đầu
+    private void sortPostsByDate() {
+        Collections.sort(postList, new Comparator<Post>() {
+            @Override
+            public int compare(Post post1, Post post2) {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                try {
+                    Date date1 = format.parse(post1.getCreatedAt());
+                    Date date2 = format.parse(post2.getCreatedAt());
+                    return date2.compareTo(date1); // Sắp xếp giảm dần
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    return 0;
+                }
+            }
+        });
+    }
+
     // Hàm tính thời gian "trước" để hiển thị như Facebook
     private String getTimeAgo(String createdAt) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // Điều chỉnh định dạng cho đúng với chuỗi thời gian của bạn
@@ -148,8 +153,13 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             return "";
         }
     }
+
     private void setupPostView(PostImageViewHolder holder, Post post, UserAPI userAPI) {
-        holder.postcontent.setText(post.getContent());
+
+        SpannableString shortenedContent = getShortenedContent(post.getContent(), 100);
+        holder.postcontent.setText(shortenedContent);
+        holder.postcontent.setMovementMethod(LinkMovementMethod.getInstance()); // Bắt sự kiện nhấn vào "Xem thêm"
+
         holder.postLike.setText(String.valueOf(post.getPostLike()));
 
         StudentAPI studentAPI = new StudentAPI();
@@ -362,9 +372,10 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         if (!post.getPostImage().isEmpty()) {
             holder.postImageView.setVisibility(View.VISIBLE);
-            Glide.with(context)
-                    .load(post.getPostImage())
-                    .into(holder.postImageView);
+            Glide.with(context)  // context có thể là Activity hoặc Fragment của bạn
+                    .load(post.getPostImage())  // URL hoặc đường dẫn tới ảnh
+                    .centerCrop()  // Cắt ảnh để tràn viền
+                    .into(holder.postImageView);  // Đặt ảnh vào ImageView
         }
         else {
             holder.postImageView.setVisibility(View.GONE);
@@ -578,6 +589,31 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public int getItemCount() {
         return postList.size();
     }
+
+    private SpannableString getShortenedContent(final String content, int maxLength) {
+        if (content != null && content.length() > maxLength) {
+            String shortenedText = content.substring(0, maxLength) + " ...Xem thêm"; // Chỉ thêm "Xem thêm" vào cuối
+            SpannableString spannableString = new SpannableString(shortenedText);
+
+            // Tạo clickable span cho chữ "Xem thêm"
+            int start = shortenedText.indexOf("Xem thêm");
+            int end = start + "Xem thêm".length();
+
+            spannableString.setSpan(new ClickableSpan() {
+                @Override
+                public void onClick(@NonNull View widget) {
+                    // Xử lý khi click vào "Xem thêm"
+                    TextView textView = (TextView) widget;
+                    textView.setText(content); // Hiển thị nội dung đầy đủ
+                }
+            }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            return spannableString;
+        } else {
+            return new SpannableString(content); // Nếu không cắt, chỉ trả về nội dung gốc
+        }
+    }
+
 
     public static class PostTextViewHolder extends RecyclerView.ViewHolder {
         TextView postcontent;

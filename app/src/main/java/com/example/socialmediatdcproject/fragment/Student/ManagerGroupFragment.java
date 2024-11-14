@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +40,7 @@ import java.util.List;
 public class ManagerGroupFragment extends Fragment {
 
     RecyclerView recyclerView;
+    FrameLayout frameLayout;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -57,6 +59,7 @@ public class ManagerGroupFragment extends Fragment {
         Button buttonUser = view.findViewById(R.id.button_apply_for_group);
         Button buttonPost = view.findViewById(R.id.button_approve_post_group);
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
 
         changeColorButtonActive(buttonUser);
         changeColorButtonNormal(buttonPost);

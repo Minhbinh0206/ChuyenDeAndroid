@@ -87,7 +87,10 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
             });
 
             holder.notifyTitle.setText(notify.getNotifyTitle());
-            holder.notifyContent.setText(notify.getNotifyContent());
+
+            // Cắt content xuống tối đa 100 ký tự
+            String shortContent = getShortenedContent(notify.getNotifyContent(), 100);
+            holder.notifyContent.setText(shortContent);
 
             StudentAPI studentAPI = new StudentAPI();
             String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -273,6 +276,15 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
     public int getItemCount() {
         return notifyList.size();
     }
+
+    private String getShortenedContent(String content, int maxLength) {
+        if (content != null && content.length() > maxLength) {
+            return content.substring(0, maxLength) + "..."; // Thêm dấu "..." nếu chuỗi bị cắt
+        } else {
+            return content;
+        }
+    }
+
 
     // Lớp ViewHolder
     public static class NotifyViewHolder extends RecyclerView.ViewHolder {

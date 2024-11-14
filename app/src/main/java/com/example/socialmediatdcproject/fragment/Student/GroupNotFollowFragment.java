@@ -64,8 +64,11 @@ public class GroupNotFollowFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
-        frameLayout.setVisibility(view.GONE);
+        Fragment searchGroupFragment = new SplitFragment();
+        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
+        fragmentTransaction.commit();
+
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
 
         ImageView avatarGroup = view.findViewById(R.id.image_group_user_follow);
@@ -78,8 +81,6 @@ public class GroupNotFollowFragment extends Fragment {
 
         Intent intent = requireActivity().getIntent();
         groupId = intent.getIntExtra("groupId", -1);
-
-        String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         loadPostFromFirebase(groupId);
 
@@ -223,8 +224,11 @@ public class GroupNotFollowFragment extends Fragment {
 
             @Override
             public void onPostsReceived(List<Post> posts) {
+                TextView textView = requireActivity().findViewById(R.id.null_content_notify);
                 // Kiểm tra nếu có bài viết
                 if (posts.size() > 0) {
+                    textView.setVisibility(View.GONE);
+
                     for (Post p : posts) {
                         if (p != null) {
                             postsList.add(p); // Thêm bài viết vào danh sách
@@ -236,12 +240,9 @@ public class GroupNotFollowFragment extends Fragment {
                     recyclerView.setAdapter(postAdapter);
                     recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
                 } else {
-                    ArrayList<Post> postsList = new ArrayList<>();
 
-                    // Cập nhật RecyclerView với dữ liệu bài viết
-                    PostAdapter postAdapter = new PostAdapter(postsList, requireContext());
-                    recyclerView.setAdapter(postAdapter);
-                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                    textView.setVisibility(View.VISIBLE);
+                    textView.setText("Bạn chưa tham gia nhóm này, Hãy tham gia nhóm để cập nhật những thông tin mới nhất!");
                 }
             }
         });

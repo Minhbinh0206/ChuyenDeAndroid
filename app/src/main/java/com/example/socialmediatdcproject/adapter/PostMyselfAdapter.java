@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,8 +41,14 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int VIEW_TYPE_TEXT = 0;  // Kiểu view cho post không có ảnh
@@ -54,12 +61,58 @@ public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public PostMyselfAdapter(ArrayList<Post> postList, Context context) {
         this.postList = postList;
         this.context = context;
+        sortPostsByDate();
     }
 
     @Override
     public int getItemViewType(int position) {
         Post post = postList.get(position);
         return (post.getPostImage() != null) ? VIEW_TYPE_IMAGE : VIEW_TYPE_TEXT;
+    }
+
+    // Hàm sắp xếp danh sách bài viết mới nhất lên đầu
+    private void sortPostsByDate() {
+        Collections.sort(postList, new Comparator<Post>() {
+            @Override
+            public int compare(Post post1, Post post2) {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                try {
+                    Date date1 = format.parse(post1.getCreatedAt());
+                    Date date2 = format.parse(post2.getCreatedAt());
+                    return date2.compareTo(date1); // Sắp xếp giảm dần
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    return 0;
+                }
+            }
+        });
+    }
+
+    // Hàm tính thời gian "trước" để hiển thị như Facebook
+    private String getTimeAgo(String createdAt) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // Điều chỉnh định dạng cho đúng với chuỗi thời gian của bạn
+        try {
+            Date createdDate = format.parse(createdAt);
+            Date currentDate = new Date();
+
+            long diffInMillis = currentDate.getTime() - createdDate.getTime();
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis);
+            long hours = TimeUnit.MILLISECONDS.toHours(diffInMillis);
+            long days = TimeUnit.MILLISECONDS.toDays(diffInMillis);
+
+            if (minutes == 0) {
+                return "Vừa xong";
+            } else if (minutes < 60) {
+                return minutes + " phút trước";
+            } else if (hours < 24) {
+                return hours + " giờ trước";
+            } else {
+                return days + " ngày trước";
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     @NonNull
@@ -79,7 +132,7 @@ public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         if (holder.getItemViewType() == VIEW_TYPE_IMAGE) {
             PostImageViewHolder imageViewHolder = (PostImageViewHolder) holder;
             setupPostView(imageViewHolder, post, userAPI);
-
+            imageViewHolder.postCreateAt.setText(getTimeAgo(post.getCreatedAt())); // Hiển thị thời gian đăng bài
         } else {
             PostTextViewHolder textViewHolder = (PostTextViewHolder) holder;
             setupPostView(textViewHolder, post, userAPI);
@@ -89,6 +142,8 @@ public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     private void setupPostView(PostTextViewHolder holder, Post post, UserAPI userAPI) {
         holder.postcontent.setText(post.getContent());
         holder.postLike.setText(String.valueOf(post.getPostLike()));
+
+
 
         userAPI.getAllUsers(new UserAPI.UserCallback() {
             @Override
@@ -137,6 +192,17 @@ public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     private void setupPostView(PostImageViewHolder holder, Post post, UserAPI userAPI) {
         holder.postcontent.setText(post.getContent());
         holder.postLike.setText(String.valueOf(post.getPostLike()));
+
+        if (!post.getPostImage().isEmpty()) {
+            holder.postImageView.setVisibility(View.VISIBLE);
+            Glide.with(context)  // context có thể là Activity hoặc Fragment của bạn
+                    .load(post.getPostImage())  // URL hoặc đường dẫn tới ảnh
+                    .centerCrop()  // Cắt ảnh để tràn viền
+                    .into(holder.postImageView);  // Đặt ảnh vào ImageView
+        }
+        else {
+            holder.postImageView.setVisibility(View.GONE);
+        }
 
         userAPI.getAllUsers(new UserAPI.UserCallback() {
             @Override
@@ -360,6 +426,8 @@ public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         LinearLayout buttonLike;
         ImageButton imageButtonLike;
         TextView status;
+        ImageView postImageView;
+        TextView postCreateAt; // Thêm TextView cho thời gian đăng
 
         public PostImageViewHolder(View itemView) {
             super(itemView);
@@ -371,6 +439,8 @@ public class PostMyselfAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             postAvatar = itemView.findViewById(R.id.post_avatar);
             imageButtonLike = itemView.findViewById(R.id.like_button_image);
             status = itemView.findViewById(R.id.status_post);
+            postImageView = itemView.findViewById(R.id.post_image);
+            postCreateAt = itemView.findViewById(R.id.post_create_at); // Ánh xạ ID cho thời gian đăng
         }
     }
 }

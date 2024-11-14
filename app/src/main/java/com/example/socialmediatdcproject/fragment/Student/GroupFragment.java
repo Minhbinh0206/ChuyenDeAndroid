@@ -63,9 +63,14 @@ public class GroupFragment extends Fragment {
         groupCreateNew.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
         groupCreateNew.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
 
+        TextView textView = requireActivity().findViewById(R.id.null_content_notify);
+        textView.setVisibility(View.GONE);
+
         // Sự kiện khi nhấn vào nút postButton
         groupAvailable.setOnClickListener(v -> {
             loadGroups();
+
+            textView.setVisibility(View.GONE);
 
             // Cập nhật màu cho các nút
             groupCreateNew.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
@@ -74,7 +79,6 @@ public class GroupFragment extends Fragment {
             groupAvailable.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
         });
 
-        TextView textView = requireActivity().findViewById(R.id.null_content_notify);
 
         // Sự kiện khi nhấn vào nút memberButton
         groupCreateNew.setOnClickListener(v -> {

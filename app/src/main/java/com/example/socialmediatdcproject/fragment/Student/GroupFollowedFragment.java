@@ -86,18 +86,10 @@ public class GroupFollowedFragment extends Fragment {
         groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
             @Override
             public void onGroupReceived(Group group) {
-                if (group.getAvatar().isEmpty()) {
-                    Glide.with(view)
-                            .load(R.drawable.avatar_group_default)
-                            .circleCrop()
-                            .into(avatarGroup);
-                }
-                else {
-                    Glide.with(view)
-                            .load(group.getAvatar())
-                            .circleCrop()
-                            .into(avatarGroup);
-                }
+                Glide.with(view)
+                        .load(group.getAvatar())
+                        .circleCrop()
+                        .into(avatarGroup);
 
                 if (group.isGroupDefault()) {
                     frameLayout.setVisibility(View.GONE);
@@ -124,6 +116,8 @@ public class GroupFollowedFragment extends Fragment {
                             myselfBtn.setText("Quản lý");
 
                             postBtn.setOnClickListener(v -> {
+                                frameLayout.setVisibility(View.VISIBLE);
+
                                 Fragment searchGroupFragment = new CreateNewPostFragment();
                                 FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
                                 fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
@@ -143,6 +137,7 @@ public class GroupFollowedFragment extends Fragment {
                                     fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
                                     fragmentTransaction.commit();
                                 }else {
+                                    frameLayout.setVisibility(View.GONE);
                                     loadPostApproveFromFirebase(groupId, 0, textView);
                                 }
 
@@ -152,6 +147,8 @@ public class GroupFollowedFragment extends Fragment {
                             });
 
                             memberBtn.setOnClickListener(v -> {
+                                frameLayout.setVisibility(View.GONE);
+
                                 Fragment searchGroupFragment = new SplitFragment();
                                 FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
                                 fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);

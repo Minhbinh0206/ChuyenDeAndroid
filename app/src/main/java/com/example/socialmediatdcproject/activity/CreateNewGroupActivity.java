@@ -3,10 +3,13 @@ package com.example.socialmediatdcproject.activity;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,7 +21,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -43,12 +48,15 @@ import com.example.socialmediatdcproject.dataModels.Question;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 public class CreateNewGroupActivity extends AppCompatActivity {
     private int adminUserId;
@@ -81,6 +89,7 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                 })
                 .show();
     }
+
     // Hàm xử lý kết quả từ camera hoặc gallery
     private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -97,13 +106,12 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                                 // Hiển thị ảnh chọn từ Gallery
                                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
 
-                                Glide.with(CreateNewGroupActivity.this)
-                                        .load(bitmap)
-                                        .into(imgFromGallery);
+                                // Đặt ảnh làm background cho imgFromGallery
+                                Drawable drawable = new BitmapDrawable(getResources(), bitmap);
+                                imgFromGallery.setBackground(drawable);
 
                             } catch (IOException e) {
                                 e.printStackTrace();
-
                             }
                         }
                         // Nếu chụp ảnh từ Camera
@@ -112,15 +120,12 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                             if (extras != null) {
                                 Bitmap imageBitmap = (Bitmap) extras.get("data");
                                 if (imageBitmap != null) {
-
-                                    Glide.with(CreateNewGroupActivity.this)
-                                            .load(imageBitmap)
-                                            .into(imgFromGallery);
+                                    // Đặt ảnh làm background cho imgFromGallery
+                                    Drawable drawable = new BitmapDrawable(getResources(), imageBitmap);
+                                    imgFromGallery.setBackground(drawable);
 
                                     // Chuyển Bitmap thành Uri
                                     selectedImageUri = getImageUriFromBitmap(CreateNewGroupActivity.this, imageBitmap);
-
-                                    // Upload ảnh lên Firebase Storage
                                 }
                             }
                         }
@@ -129,11 +134,46 @@ public class CreateNewGroupActivity extends AppCompatActivity {
             }
     );
 
+
+    // 3. Upload ảnh lên Firebase Storage
+    private void uploadImageToFirebase(Uri imageUri, Group group) {
+        if (imageUri == null) {
+            // Lấy Uri của ảnh mặc định từ drawable
+            imageUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.drawable.avatar_group_default);
+        }
+
+        // Tạo một tên file duy nhất
+        String fileName = "groupAvatars/" + UUID.randomUUID().toString() + ".jpg";
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference().child(fileName);
+
+        storageRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
+            storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                String avatarUrl = uri.toString();
+
+                group.setAvatar(avatarUrl);
+
+                GroupAPI groupAPI = new GroupAPI();
+                groupAPI.updateGroup(group.getGroupId(), group);
+
+                // Chuyển sang GroupDetailActivity với groupId
+                Intent intent = new Intent(CreateNewGroupActivity.this, GroupDetaiActivity.class);
+                intent.putExtra("groupId", group.getGroupId());
+                startActivity(intent);
+                finish();
+
+            }).addOnFailureListener(e -> {
+                // Xử lý lỗi khi lấy URL
+            });
+        }).addOnFailureListener(e -> {
+            // Xử lý lỗi khi upload ảnh
+        });
+    }
+
     // Cấp quyền mở file ảnh trong thiết bị và camera
     private void onClickRequestPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CUR_DEVELOPMENT) {
 
-            showImageSourceDialog();
+            openGallery();
 
             return;
         }
@@ -273,8 +313,20 @@ public class CreateNewGroupActivity extends AppCompatActivity {
         // Xác nhận tạo nhóm
         submitAction.setOnClickListener(v -> {
             String nameGroup = fieldNameGroup.getText().toString();
-            String avatar = selectedImageUri != null ? selectedImageUri.toString() : ""; // Lấy URI của ảnh được chọn
             boolean isPrivate = fieldIsPrivate.isChecked();
+
+            // Tạo Dialog
+            Dialog loadingDialog = new Dialog(CreateNewGroupActivity.this);
+            loadingDialog.setContentView(R.layout.dialog_loading);
+            loadingDialog.setCancelable(false); // Không cho phép người dùng tắt dialog bằng cách bấm ngoài
+
+            // Thêm ProgressBar vào layout của Dialog (layout: dialog_loading.xml)
+            ProgressBar progressBar = loadingDialog.findViewById(R.id.progressBar);
+            TextView textView = loadingDialog.findViewById(R.id.textLoading);
+            textView.setText("Đang khởi tạo nhóm ...");
+
+            // Hiển thị Dialog
+            loadingDialog.show();
 
             submitAction.setEnabled(false);
 
@@ -290,6 +342,8 @@ public class CreateNewGroupActivity extends AppCompatActivity {
 
             GroupAPI groupAPI = new GroupAPI();
             Group g = new Group();
+
+            uploadImageToFirebase(selectedImageUri ,g);
 
             GroupUserAPI groupUserAPI = new GroupUserAPI();
             GroupUser groupUser = new GroupUser();
@@ -307,7 +361,6 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                     g.setAdminUserId(adminUserId);
                     g.setGroupDefault(false);
                     g.setPrivate(isPrivate);
-                    g.setAvatar(avatar); // Đặt URI ảnh làm avatar của nhóm
 
                     // Thêm nhóm vào cơ sở dữ liệu
                     groupAPI.addGroup(g);
@@ -335,15 +388,6 @@ public class CreateNewGroupActivity extends AppCompatActivity {
                     groupUser.setUserId(adminUserId);
                     groupUser.setGroupId(g.getGroupId());
                     groupUserAPI.addGroupUser(groupUser);
-
-                    boolean isJoin = true;
-
-                    // Chuyển sang GroupDetailActivity với groupId
-                    Intent intent = new Intent(CreateNewGroupActivity.this, GroupDetaiActivity.class);
-                    intent.putExtra("groupId", g.getGroupId());
-                    intent.putExtra("isJoin", isJoin);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-                    startActivity(intent);
                 }
             });
         });

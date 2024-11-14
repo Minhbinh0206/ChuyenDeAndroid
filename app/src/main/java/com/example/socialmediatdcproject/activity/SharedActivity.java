@@ -443,17 +443,29 @@ public class SharedActivity extends AppCompatActivity {
 
         Log.d("TAG", "onResume: " + key);
 
-        // Gán fragment home là mặc định
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        int studentId = intent.getIntExtra("studentId", -1);
 
-        // Nạp HomeFragment vào first_content_fragment
-        fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
+        if (studentId != -1) {
+            // Gán fragment home là mặc định
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        // Lấy dữ lệu từ firebase
-        loadPostsFromFirebase();
+            // Nạp HomeFragment vào first_content_fragment
+            fragmentTransaction.replace(R.id.first_content_fragment, new FriendsScreenFragment());
 
-        fragmentTransaction.commit();
+            fragmentTransaction.commit();
+        } else {
+            // Gán fragment home là mặc định
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+            // Nạp HomeFragment vào first_content_fragment
+            fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
+
+            loadPostsFromFirebase();
+
+            fragmentTransaction.commit();
+        }
 
         studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
             @Override
