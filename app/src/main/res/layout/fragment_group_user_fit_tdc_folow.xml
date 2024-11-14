@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_marginVertical="10dp"
             android:layout_gravity="center_vertical"
-            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp"
             android:maxLines="2"
             android:layout_weight="1"
             android:text="name"

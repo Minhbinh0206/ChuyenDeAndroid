@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -62,9 +63,14 @@ public class GroupFragment extends Fragment {
         groupCreateNew.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
         groupCreateNew.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
 
+        TextView textView = requireActivity().findViewById(R.id.null_content_notify);
+        textView.setVisibility(View.GONE);
+
         // Sự kiện khi nhấn vào nút postButton
         groupAvailable.setOnClickListener(v -> {
             loadGroups();
+
+            textView.setVisibility(View.GONE);
 
             // Cập nhật màu cho các nút
             groupCreateNew.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
@@ -74,7 +80,6 @@ public class GroupFragment extends Fragment {
         });
 
 
-
         // Sự kiện khi nhấn vào nút memberButton
         groupCreateNew.setOnClickListener(v -> {
             String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -82,7 +87,7 @@ public class GroupFragment extends Fragment {
             studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
                 @Override
                 public void onStudentReceived(Student student) {
-                    loadGroupsByUserIdIsAdmin(student.getUserId());
+                    loadGroupsByUserIdIsAdmin(student.getUserId(), textView);
                 }
 
                 @Override
@@ -130,7 +135,7 @@ public class GroupFragment extends Fragment {
         });
     }
 
-    public void loadGroupsByUserIdIsAdmin(int id) {
+    public void loadGroupsByUserIdIsAdmin(int id, TextView textView) {
         // Chuyển sang GroupFollowedFragment sau khi thêm thành công
         Fragment createNewGroupFragment = new CreateNewGroupFragment();
         FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
@@ -153,6 +158,15 @@ public class GroupFragment extends Fragment {
                             groupsList.add(group);
                         }
                     }
+
+                    if (groupsList.isEmpty()) {
+                        textView.setVisibility(View.VISIBLE);
+                        textView.setText("Bạn không quản lý group nào, tạo mới ngay.");
+                    }
+                    else {
+                        textView.setVisibility(View.GONE);
+                    }
+
                     GroupAdapter groupAdapter = new GroupAdapter(groupsList, requireContext());
                     recyclerView.setAdapter(groupAdapter);
                     recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));

@@ -149,6 +149,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
     private void openPersonalPage(int userId) {
         Intent intent = new Intent(context, SharedActivity.class);
         intent.putExtra("studentId", userId); // Chuyển userId qua trang cá nhân
+        intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
         context.startActivity(intent);
     }
 

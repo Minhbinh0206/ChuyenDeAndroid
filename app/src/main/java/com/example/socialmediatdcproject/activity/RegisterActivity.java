@@ -195,6 +195,7 @@ public class RegisterActivity extends AppCompatActivity {
                 intent.putExtra("userId", userId);
                 intent.putExtra("email",email);
                 intent.putExtra("studentNumber", sNumber);
+                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                 startActivity(intent);
                 finish();
             }
@@ -242,6 +243,7 @@ public class RegisterActivity extends AppCompatActivity {
         TextView textLogIn = findViewById(R.id.textLogIn);
         textLogIn.setOnClickListener(v -> {
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             startActivity(intent);
             finish();
         });

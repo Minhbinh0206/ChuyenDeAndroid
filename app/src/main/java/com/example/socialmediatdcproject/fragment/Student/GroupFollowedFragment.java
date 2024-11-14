@@ -73,12 +73,12 @@ public class GroupFollowedFragment extends Fragment {
         changeColorButtonNormal(memberBtn);
         changeColorButtonNormal(myselfBtn);
 
+        TextView textView = requireActivity().findViewById(R.id.null_content_notify);
+
         Intent intent = requireActivity().getIntent();
         groupId = intent.getIntExtra("groupId", -1);
 
-        String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        loadPostFromFirebase(groupId, 1);
+        loadPostFromFirebase(groupId, 1, textView);
 
         iconSetting.setVisibility(View.GONE);
 
@@ -86,18 +86,10 @@ public class GroupFollowedFragment extends Fragment {
         groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
             @Override
             public void onGroupReceived(Group group) {
-                if (group.getAvatar().isEmpty()) {
-                    Glide.with(view)
-                            .load(R.drawable.avatar_group_default)
-                            .circleCrop()
-                            .into(avatarGroup);
-                }
-                else {
-                    Glide.with(view)
-                            .load(group.getAvatar())
-                            .circleCrop()
-                            .into(avatarGroup);
-                }
+                Glide.with(view)
+                        .load(group.getAvatar())
+                        .circleCrop()
+                        .into(avatarGroup);
 
                 if (group.isGroupDefault()) {
                     frameLayout.setVisibility(View.GONE);
@@ -124,12 +116,14 @@ public class GroupFollowedFragment extends Fragment {
                             myselfBtn.setText("Quản lý");
 
                             postBtn.setOnClickListener(v -> {
+                                frameLayout.setVisibility(View.VISIBLE);
+
                                 Fragment searchGroupFragment = new CreateNewPostFragment();
                                 FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
                                 fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
                                 fragmentTransaction.commit();
 
-                                loadPostFromFirebase(groupId, 1);
+                                loadPostFromFirebase(groupId, 1, textView);
 
                                 changeColorButtonActive(postBtn);
                                 changeColorButtonNormal(memberBtn);
@@ -143,7 +137,8 @@ public class GroupFollowedFragment extends Fragment {
                                     fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
                                     fragmentTransaction.commit();
                                 }else {
-                                    loadPostApproveFromFirebase(groupId, 0);
+                                    frameLayout.setVisibility(View.GONE);
+                                    loadPostApproveFromFirebase(groupId, 0, textView);
                                 }
 
                                 changeColorButtonActive(myselfBtn);
@@ -152,12 +147,14 @@ public class GroupFollowedFragment extends Fragment {
                             });
 
                             memberBtn.setOnClickListener(v -> {
+                                frameLayout.setVisibility(View.GONE);
+
                                 Fragment searchGroupFragment = new SplitFragment();
                                 FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
                                 fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
                                 fragmentTransaction.commit();
 
-                                loadUsersByGroupId(groupId);
+                                loadUsersByGroupId(groupId, textView);
 
                                 changeColorButtonActive(memberBtn);
                                 changeColorButtonNormal(myselfBtn);
@@ -170,7 +167,7 @@ public class GroupFollowedFragment extends Fragment {
                             myselfBtn.setText("Tôi");
 
                             postBtn.setOnClickListener(v -> {
-                                loadPostFromFirebase(groupId, 1);
+                                loadPostFromFirebase(groupId, 1, textView);
 
                                 changeColorButtonActive(postBtn);
                                 changeColorButtonNormal(memberBtn);
@@ -178,7 +175,7 @@ public class GroupFollowedFragment extends Fragment {
                             });
 
                             myselfBtn.setOnClickListener(v -> {
-                                loadPostMyselfFromFirebase(groupId);
+                                loadPostMyselfFromFirebase(groupId, textView);
 
                                 changeColorButtonActive(myselfBtn);
                                 changeColorButtonNormal(memberBtn);
@@ -186,7 +183,7 @@ public class GroupFollowedFragment extends Fragment {
                             });
 
                             memberBtn.setOnClickListener(v -> {
-                                loadUsersByGroupId(groupId);
+                                loadUsersByGroupId(groupId, textView);
 
                                 changeColorButtonActive(memberBtn);
                                 changeColorButtonNormal(myselfBtn);
@@ -219,7 +216,7 @@ public class GroupFollowedFragment extends Fragment {
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 
-    public void loadPostFromFirebase(int id, int status) {
+    public void loadPostFromFirebase(int id, int status, TextView textView) {
         ArrayList<Post> postsList = new ArrayList<>(); // Danh sách bài viết
 
         // Tham chiếu đến bảng "posts" trong Firebase Realtime Database
@@ -237,6 +234,14 @@ public class GroupFollowedFragment extends Fragment {
                             if (post.getStatus() == status) {
                                 postsList.add(post); // Thêm bài viết vào danh sách
                             }
+                        }
+
+                        if (postsList.isEmpty()) {
+                            textView.setVisibility(View.VISIBLE);
+                            textView.setText("Hiện chưa có bài viết nào");
+                        }
+                        else {
+                            textView.setVisibility(View.GONE);
                         }
 
                         // Cập nhật RecyclerView với dữ liệu bài viết
@@ -253,7 +258,7 @@ public class GroupFollowedFragment extends Fragment {
                 });
     }
 
-    public void loadPostApproveFromFirebase(int id, int status) {
+    public void loadPostApproveFromFirebase(int id, int status, TextView textView) {
         ArrayList<Post> postsList = new ArrayList<>(); // Danh sách bài viết
 
         // Tham chiếu đến bảng "posts" trong Firebase Realtime Database
@@ -273,6 +278,14 @@ public class GroupFollowedFragment extends Fragment {
                             }
                         }
 
+                        if (postsList.isEmpty()) {
+                            textView.setVisibility(View.VISIBLE);
+                            textView.setText("Hiện chưa có bài viết nào cần duyêt");
+                        }
+                        else {
+                            textView.setVisibility(View.GONE);
+                        }
+
                         // Cập nhật RecyclerView với dữ liệu bài viết
                         PostApproveAdapter postAdapter = new PostApproveAdapter(postsList, requireContext());
                         recyclerView.setAdapter(postAdapter);
@@ -285,9 +298,11 @@ public class GroupFollowedFragment extends Fragment {
                         Toast.makeText(requireContext(), "Failed to load posts: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
+
+
     }
 
-    public void loadPostMyselfFromFirebase(int id) {
+    public void loadPostMyselfFromFirebase(int id, TextView textView) {
         ArrayList<Post> postsList = new ArrayList<>(); // Danh sách bài viết
 
         // Tham chiếu đến bảng "posts" trong Firebase Realtime Database
@@ -310,6 +325,14 @@ public class GroupFollowedFragment extends Fragment {
                                         postsList.add(post);
                                     }
 
+                                    if (postsList.isEmpty()) {
+                                        textView.setVisibility(View.VISIBLE);
+                                        textView.setText("Bạn chưa đăng bài viết nào");
+                                    }
+                                    else {
+                                        textView.setVisibility(View.GONE);
+                                    }
+
                                     // Cập nhật RecyclerView với dữ liệu bài viết
                                     PostMyselfAdapter postAdapter = new PostMyselfAdapter(postsList, requireContext());
                                     recyclerView.setAdapter(postAdapter);
@@ -330,9 +353,11 @@ public class GroupFollowedFragment extends Fragment {
                         Toast.makeText(requireContext(), "Failed to load posts: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
+
+
     }
 
-    private void loadUsersByGroupId(int id) {
+    private void loadUsersByGroupId(int id, TextView textView) {
         ArrayList<Student> memberGroup = new ArrayList<>();
         StudentAPI studentAPI = new StudentAPI();
         studentAPI.getAllStudents(new StudentAPI.StudentCallback() {

@@ -41,9 +41,6 @@ public class GroupDetaiActivity extends AppCompatActivity {
 
         ImageButton iconBack = findViewById(R.id.icon_back);
         iconBack.setOnClickListener(v -> {
-            Intent intent = new Intent(GroupDetaiActivity.this, SharedActivity.class);
-            intent.putExtra("keyFragment", 9999);
-            startActivity(intent);
             finish();
         });
 
@@ -55,7 +52,6 @@ public class GroupDetaiActivity extends AppCompatActivity {
         if (groupId != -1) {
             // Thực hiện việc lấy dữ liệu và kiểm tra người dùng có tham gia group không
             GroupUserAPI groupUserAPI = new GroupUserAPI();
-
             groupUserAPI.getGroupUserByIdGroup(groupId, new GroupUserAPI.GroupUserCallback() {
                 @Override
                 public void onGroupUsersReceived(List<GroupUser> groupUsers) {

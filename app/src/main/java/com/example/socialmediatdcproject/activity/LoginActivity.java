@@ -208,6 +208,7 @@ public class LoginActivity extends AppCompatActivity {
         TextView textSignUp = findViewById(R.id.textSignUp);
         textSignUp.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             startActivity(intent);
         });
 
@@ -215,6 +216,7 @@ public class LoginActivity extends AppCompatActivity {
         TextView textForgotPassword = findViewById(R.id.textForgotPassword);
         textForgotPassword.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             startActivity(intent);
         });
     }
@@ -227,6 +229,7 @@ public class LoginActivity extends AppCompatActivity {
         if (isRegistering) {
             // Nếu đang trong quá trình đăng ký, điều hướng đến UploadProfileActivity
             Intent intent = new Intent(LoginActivity.this, UploadProfileActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             startActivity(intent);
             finish();
 
