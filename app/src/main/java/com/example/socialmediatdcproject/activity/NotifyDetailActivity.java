@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -32,8 +33,13 @@ public class NotifyDetailActivity extends AppCompatActivity {
         notifyId = intent.getIntExtra("notifyId", -1);
 
         ImageButton iconBack = findViewById(R.id.icon_back_notify);
+        Button button = findViewById(R.id.button_return_notify);
 
         iconBack.setOnClickListener(v -> {
+            finish();
+        });
+
+        button.setOnClickListener(v -> {
             finish();
         });
 

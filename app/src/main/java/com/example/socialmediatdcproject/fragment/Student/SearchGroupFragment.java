@@ -90,12 +90,15 @@ public class SearchGroupFragment extends Fragment {
         filteredGroupList.clear(); // Xóa nội dung hiện tại của filteredGroupList
         if (query.isEmpty()) {
             filteredGroupList.addAll(groupList); // Nếu chuỗi tìm kiếm rỗng, hiển thị toàn bộ danh sách
+            adapter.notifyDataSetChanged(); // Cập nhật adapter
+
         } else {
             for (Group group : groupList) {
                 if (group.getGroupName().toLowerCase().contains(query.toLowerCase())) { // Tìm kiếm không phân biệt hoa thường
                     filteredGroupList.add(group);
+                    adapter.notifyDataSetChanged(); // Cập nhật adapter
+
                 }
-                adapter.notifyDataSetChanged(); // Cập nhật adapter
             }
         }
     }
