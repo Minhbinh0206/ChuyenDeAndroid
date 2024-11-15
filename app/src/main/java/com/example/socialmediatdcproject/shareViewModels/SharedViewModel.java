@@ -22,11 +22,8 @@ public class SharedViewModel extends ViewModel {
     private final MutableLiveData<Boolean> isEditMode = new MutableLiveData<>(false);
 
     private DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference();
-
-    // không dùng nữa
-    private final MutableLiveData<List<Lecturer>> lecturerListLiveData = new MutableLiveData<>(new ArrayList<>());
-    private final MutableLiveData<List<Student>> studentListLiveData = new MutableLiveData<>(new ArrayList<>());
-    //----------------
+    private DatabaseReference lecturersRef = FirebaseDatabase.getInstance().getReference("Lecturers");
+    private DatabaseReference studentsRef = FirebaseDatabase.getInstance().getReference("Students");
 
     public LiveData<Boolean> getIsEditMode() {
         return isEditMode;
@@ -102,38 +99,86 @@ public class SharedViewModel extends ViewModel {
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         Log.e("SharedViewModel", "Lỗi khi truy vấn UserInGroup", error.toException());
-//                        Toast.makeText(context, "Lỗi khi truy vấn dữ liệu", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+    // lấy danh sách giảng viên
+    public void fetchLecturersList() {
+        lecturersRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                List<String> lecturersList = new ArrayList<>();
+                for (DataSnapshot lecturerSnapshot : dataSnapshot.getChildren()) {
+                    String lecturerName = lecturerSnapshot.child("fullName").getValue(String.class);
+                    if (lecturerName != null) {
+                        lecturersList.add(lecturerName);
+                    }
+                }
+                Log.d("SharedViewModel", "Lecturers List: " + lecturersList);
+            }
 
-
-    // Hảm không còn dùng
-    public LiveData<List<Lecturer>> getLecturerList() {
-        return lecturerListLiveData;
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("SharedViewModel", "Failed to read lecturers list", databaseError.toException());
+            }
+        });
     }
 
-    public void removeLecturer(Lecturer lecturer) {
-        List<Lecturer> currentList = lecturerListLiveData.getValue();
-        if (currentList != null) {
-            currentList.remove(lecturer);
-            lecturerListLiveData.setValue(new ArrayList<>(currentList)); // Cập nhật LiveData sau khi xóa
+    // lấy danh sách sinh viên
+    public void fetchStudentsList() {
+        studentsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                List<String> studentsList = new ArrayList<>();
+                for (DataSnapshot studentSnapshot : dataSnapshot.getChildren()) {
+                    String studentName = studentSnapshot.child("fullName").getValue(String.class);
+                    if (studentName != null) {
+                        studentsList.add(studentName);
+                    }
+                }
+                // Bạn có thể xử lý danh sách này ở đây (ví dụ: cập nhật UI)
+                Log.d("SharedViewModel", "Students List: " + studentsList);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("SharedViewModel", "Failed to read students list", databaseError.toException());
+            }
+        });
+    }
+
+    public void addStudentToGroup(int groupId, int studentId) {
+        DatabaseReference usersInGroupRef = databaseRef.child("UsersInGroup");
+
+        String userInGroupId = usersInGroupRef.push().getKey();
+        if (userInGroupId != null) {
+            // Thêm dữ liệu
+            usersInGroupRef.child(userInGroupId).child("groupId").setValue(groupId);
+            usersInGroupRef.child(userInGroupId).child("userId").setValue(studentId)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Log.d("SharedViewModel", "Thêm sinh viên vào nhóm thành công");
+                        } else {
+                            Log.e("SharedViewModel", "Lỗi khi thêm sinh viên vào nhóm", task.getException());
+                        }
+                    });
         }
     }
 
-    public void removeStudent(Student student) {
-        List<Student> currentList = studentListLiveData.getValue();
-        if (currentList != null) {
-            currentList.remove(student);
-            Log.d("ShareViewModel" , "Đã xóa học sinh" + student);
-//            Toast.makeText("","Đã xóa thành công", Toast.LENGTH_SHORT).show();
-            studentListLiveData.setValue(new ArrayList<>(currentList)); // Cập nhật LiveData sau khi xóa
+    public void addLecturerToGroup(int groupId, int lecturerId) {
+        DatabaseReference usersInGroupRef = databaseRef.child("UsersInGroup");
+        String userInGroupId = usersInGroupRef.push().getKey();
+        if (userInGroupId != null) {
+            // Thêm dữ liệu
+            usersInGroupRef.child(userInGroupId).child("groupId").setValue(groupId);
+            usersInGroupRef.child(userInGroupId).child("userId").setValue(lecturerId)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Log.d("SharedViewModel", "Thêm giảng viên vào nhóm thành công");
+                        } else {
+                            Log.e("SharedViewModel", "Lỗi khi thêm giảng viên vào nhóm", task.getException());
+                        }
+                    });
         }
-        Log.d("ShareViewModel" , "Đang xóa học sinh");
     }
-
-    public void setLecturerList(List<Lecturer> lecturers) {
-        lecturerListLiveData.setValue(lecturers);
-    }
-
 }
