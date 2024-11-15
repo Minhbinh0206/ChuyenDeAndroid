@@ -367,7 +367,6 @@ public class CreateNewPostFragment extends Fragment {
                                                     post.setCreatedAt(sdf.format(new Date()));
                                                     postAPI.addPost(post);
 
-                                                    Toast.makeText(requireContext(), "Đăng bài thành công", Toast.LENGTH_SHORT).show();
                                                 } else {
                                                     Post post = new Post();
                                                     post.setPostId(posts.size());
@@ -380,8 +379,6 @@ public class CreateNewPostFragment extends Fragment {
                                                     post.setGroupId(groupId);
                                                     post.setCreatedAt(sdf.format(new Date()));
                                                     postAPI.addPost(post);
-
-                                                    Toast.makeText(requireContext(), "Bài đăng của bạn đang chờ phê duyệt", Toast.LENGTH_SHORT).show();
 
                                                     notifyQuickly.setNotifyId(notifications.size());
                                                     notifyQuickly.setUserSendId(student.getUserId());

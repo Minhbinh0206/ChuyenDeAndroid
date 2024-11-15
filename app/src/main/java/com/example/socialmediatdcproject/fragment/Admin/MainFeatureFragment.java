@@ -1182,5 +1182,4 @@ public class MainFeatureFragment extends Fragment {
         intent.setType("image/*");
         mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
     }
-
 }
