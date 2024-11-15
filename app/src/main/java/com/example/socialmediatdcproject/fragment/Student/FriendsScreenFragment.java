@@ -89,9 +89,10 @@ public class FriendsScreenFragment extends Fragment {
         // Tìm ảnh
         ImageView imageUser = view.findViewById(R.id.logo_personal_user_image);
         TextView nameUser = view.findViewById(R.id.name_personnal_user);
+        TextView des = view.findViewById(R.id.personal_description);
 
-        Intent intentg = requireActivity().getIntent();
-        int studentId = intentg.getIntExtra("studentId", -1);
+        Intent intent = requireActivity().getIntent();
+        int studentId = intent.getIntExtra("studentId", -1);
 
         // Set màu mặc định cho nút "Bài viết"
         updateButtonColorsActive(personalFriends);
@@ -121,6 +122,7 @@ public class FriendsScreenFragment extends Fragment {
                             .load(student.getAvatar())
                             .circleCrop()
                             .into(imageUser);
+                    des.setText(student.getDescription());
                 }
             }
 
