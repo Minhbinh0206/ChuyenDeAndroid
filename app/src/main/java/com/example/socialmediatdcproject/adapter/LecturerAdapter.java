@@ -53,11 +53,11 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
         notifyDataSetChanged();
     }
 
-    public void updateData(ArrayList<Lecturer> newLecturerList) {
-        lecturerList.clear();
-        lecturerList.addAll(newLecturerList);
-        notifyDataSetChanged();
-    }
+//    public void updateData(ArrayList<Lecturer> newLecturerList) {
+//        lecturerList.clear();
+//        lecturerList.addAll(newLecturerList);
+//        notifyDataSetChanged();
+//    }
 
     @NonNull
     @Override

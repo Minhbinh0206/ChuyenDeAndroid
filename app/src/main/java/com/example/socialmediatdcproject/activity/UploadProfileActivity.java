@@ -654,7 +654,7 @@ public class UploadProfileActivity extends AppCompatActivity {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
+        mActivityResultLauncher.launch(Intent.createChooser(intent, "Chọn ảnh"));
     }
 
     // Hàm chụp ảnh từ Camera
@@ -694,7 +694,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                     '/' + getResources().getResourceEntryName(defaultImageResId));
         }
         String imageName = "avatar_" + student.getStudentNumber() + ".jpg";
-        StorageReference avatarRef = storageRef.child("avatarUser/" + imageName);
+        StorageReference avatarRef = storageRef.child("avatar/" + imageName);
 
         avatarRef.putFile(filePath)
                 .addOnSuccessListener(taskSnapshot -> {
@@ -723,7 +723,7 @@ public class UploadProfileActivity extends AppCompatActivity {
                 editor.putBoolean("isRegistering", false);
                 editor.apply();
 
-                Toast.makeText(getApplicationContext(), "Student profile uploaded successfully!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Cập nhật thông tin thành công!", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(UploadProfileActivity.this, SharedActivity.class));
             }
 

@@ -19,7 +19,6 @@ import com.example.socialmediatdcproject.shareViewModels.SharedViewModel;
 
 public class AddOrCancelButtonFragment extends Fragment {
     private SharedViewModel sharedViewModel;
-    private LecturerAdapter lecturerAdapter;
 
     @Nullable
     @Override
@@ -32,31 +31,19 @@ public class AddOrCancelButtonFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Khởi tạo SharedViewModel
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-
-        // Kiểm tra nếu lecturerAdapter là null
-        if (lecturerAdapter == null) {
-            // Nếu là null, khởi tạo nó
-            lecturerAdapter = new LecturerAdapter();
-        }
-        Log.d("RepairButtonFragment" , "LecturerAdapter: " + lecturerAdapter);
 
         // Khởi tạo các nút
         Button btnAdd = view.findViewById(R.id.button_add);
         Button btnCancel = view.findViewById(R.id.button_cancel);
-
-        sharedViewModel.getIsEditMode().observe(getViewLifecycleOwner(), isEditMode -> {
-            if (lecturerAdapter != null) {
-                lecturerAdapter.setEditMode(isEditMode); // Cập nhật chế độ chỉnh sửa cho adapter
-            }
-        });
-
         btnCancel.setOnClickListener(v -> {
             sharedViewModel.setEditMode(false);
             // Quay lại RepairButtonFragment
             FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
             fragmentManager.popBackStack();
+        });
+        btnAdd.setOnClickListener(v -> {
+            // Chưa xử lý
         });
     }
 }
