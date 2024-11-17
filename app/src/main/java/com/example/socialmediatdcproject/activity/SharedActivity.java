@@ -589,30 +589,10 @@ public class SharedActivity extends AppCompatActivity {
     }
 
     private FirebaseAuth.AuthStateListener authStateListener = firebaseAuth -> {
-        final int[] userId = {-1};
         StudentAPI studentAPI = new StudentAPI();
-        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-            @Override
-            public void onStudentReceived(Student student) {
-                userId[0] = student.getUserId();
-            }
-
-            @Override
-            public void onStudentsReceived(List<Student> students) {
-
-            }
-        });
-        // Người dùng đã đăng nhập
-        studentAPI.listenForOnlineStatus(userId[0], new StudentAPI.OnlineStatusCallback() {
-            @Override
-            public void onOnlineStatusReceived(boolean isOnline) {
-                if (firebaseAuth.getCurrentUser() != null) {
-                    studentAPI.updateOnline(true);
-                } else {
-                    studentAPI.updateOnline(false);
-                }
-            }
-        });
+        if (firebaseAuth.getCurrentUser() != null) {
+            studentAPI.updateOnline(true);
+        }
     };
 
     @Override

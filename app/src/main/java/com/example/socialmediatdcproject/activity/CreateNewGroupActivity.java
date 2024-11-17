@@ -38,6 +38,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminBusinessAPI;
+import com.example.socialmediatdcproject.API.AdminDefaultAPI;
+import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.QuestionAPI;
@@ -45,6 +48,9 @@ import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.example.socialmediatdcproject.dataModels.Question;
+import com.example.socialmediatdcproject.model.AdminBusiness;
+import com.example.socialmediatdcproject.model.AdminDefault;
+import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
@@ -289,6 +295,56 @@ public class CreateNewGroupActivity extends AppCompatActivity {
             @Override
             public void onStudentsReceived(List<Student> students) {}
         });
+
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+        adminDepartmentAPI.getAdminDepartmentByKey(key, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+            @Override
+            public void onUserReceived(AdminDepartment adminDepartment) {
+                adminUserId = adminDepartment.getUserId();
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+            }
+
+            @Override
+            public void onError(String s) {
+
+            }
+        });
+
+        AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+        adminBusinessAPI.getAdminBusinessByKey(key, new AdminBusinessAPI.AdminBusinessCallBack() {
+            @Override
+            public void onUserReceived(AdminBusiness adminBusiness) {
+                adminUserId = adminBusiness.getUserId();
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+            }
+
+            @Override
+            public void onError(String s) {
+
+            }
+        });
+
+        AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+        adminDefaultAPI.getAdminDefaultByKey(key, new AdminDefaultAPI.AdminDefaultCallBack() {
+            @Override
+            public void onUserReceived(AdminDefault adminDefault) {
+                adminUserId = adminDefault.getUserId();
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+            }
+        });
+
 
         fieldIsPrivate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

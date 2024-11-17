@@ -56,9 +56,11 @@ public class AdminGroupFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ConstraintLayout backgroundAdmin = view.findViewById(R.id.background_admin);
         ImageView avatarAdmin = view.findViewById(R.id.avatar_admin);
         TextView nameAdmin = view.findViewById(R.id.name_admin);
+
+        TextView textView = requireActivity().findViewById(R.id.null_content);
+        textView.setVisibility(View.GONE);
 
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
 
@@ -108,7 +110,7 @@ public class AdminGroupFragment extends Fragment {
                     }
                 });
 
-                loadGroupsOfAdmin(adminBusiness.getUserId());
+                loadGroupsOfAdmin(adminBusiness.getUserId(), textView);
             }
 
             @Override
@@ -131,7 +133,7 @@ public class AdminGroupFragment extends Fragment {
 
                 nameAdmin.setText(adminDefault.getFullName());
 
-                loadGroupsOfAdmin(adminDefault.getUserId());
+                loadGroupsOfAdmin(adminDefault.getUserId(), textView);
             }
 
             @Override
@@ -171,7 +173,7 @@ public class AdminGroupFragment extends Fragment {
                     }
                 });
 
-                loadGroupsOfAdmin(adminDepartment.getUserId());
+                loadGroupsOfAdmin(adminDepartment.getUserId(), textView);
             }
 
             @Override
@@ -188,8 +190,8 @@ public class AdminGroupFragment extends Fragment {
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
     }
 
-    public void loadGroupsOfAdmin(int userId) {
-        ArrayList<Group> groupsList = new ArrayList<>();
+    public void loadGroupsOfAdmin(int userId, TextView textView) {
+        ArrayList<Group> groupsList = new ArrayList<>(); // Khởi tạo lại danh sách mỗi lần gọi
         GroupAPI groupAPI = new GroupAPI();
         GroupUserAPI groupUserAPI = new GroupUserAPI();
 
@@ -205,6 +207,14 @@ public class AdminGroupFragment extends Fragment {
                     }
                 }
 
+                // Nếu không có groupId nào, hiển thị thông báo
+                if (userGroupIds.isEmpty()) {
+                    textView.setVisibility(View.VISIBLE);
+                    textView.setText("Hiện bạn chưa quản lý nhóm nào!");
+                    recyclerView.setAdapter(null); // Đặt adapter thành null để không hiển thị gì
+                    return; // Không cần tiếp tục nếu không có nhóm
+                }
+
                 // Lấy thông tin nhóm từ các groupId
                 for (int groupId : userGroupIds) {
                     groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
@@ -212,11 +222,19 @@ public class AdminGroupFragment extends Fragment {
                         public void onGroupReceived(Group group) {
                             if (group != null) {
                                 groupsList.add(group);
+                            }
 
-                                // Cập nhật RecyclerView với dữ liệu nhóm
-                                GroupAdapter groupAdapter = new GroupAdapter(groupsList, requireContext());
-                                recyclerView.setAdapter(groupAdapter);
-                                recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                            // Cập nhật RecyclerView với dữ liệu nhóm
+                            GroupAdapter groupAdapter = new GroupAdapter(groupsList, requireContext());
+                            recyclerView.setAdapter(groupAdapter);
+                            recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+                            // Kiểm tra xem groupsList có rỗng không
+                            if (groupsList.isEmpty()) {
+                                textView.setVisibility(View.VISIBLE);
+                                textView.setText("Hiện bạn chưa quản lý nhóm nào!");
+                            } else {
+                                textView.setVisibility(View.GONE);
                             }
                         }
 
@@ -229,5 +247,6 @@ public class AdminGroupFragment extends Fragment {
             }
         });
     }
+
 
 }
