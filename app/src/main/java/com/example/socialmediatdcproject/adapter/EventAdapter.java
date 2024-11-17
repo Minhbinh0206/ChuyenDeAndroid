@@ -103,8 +103,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.GroupViewHol
                 .centerCrop()
                 .into(holder.imageEvent);
         // Cắt content xuống tối đa 50 ký tự
-        String shortContent = getShortenedContent(event.getTitleEvent(), 50);
-        holder.titleEvent.setText(shortContent);
+        String shortContent = getShortenedContent(event.getTitleEvent(), 30);
+        holder.titleEvent.setText(shortContent + "...");
 
         changeColorButtonActive(holder.detailEvent);
 

@@ -5,9 +5,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.AdapterView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -71,17 +75,20 @@ public class ListEventAndGroupFragment extends Fragment {
         updateButtonColorsActive(listEvent);
         updateButtonColorsNormal(listGroup);
 
-        loadEventUsedToJoin(textView);
+        loadEventUsedToJoin(textView, recyclerView2);
 
         listEvent.setOnClickListener(v -> {
             recyclerView2.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
             detail.setVisibility(View.VISIBLE);
-            loadEventUsedToJoin(textView);
+
+            loadEventUsedToJoin(textView, recyclerView2);
 
             updateButtonColorsActive(listEvent);
             updateButtonColorsNormal(listGroup);
         });
+
+        detail.setOnClickListener(m -> showCustomPopup());
 
         listGroup.setOnClickListener(v -> {
             recyclerView2.setVisibility(View.GONE);
@@ -108,7 +115,7 @@ public class ListEventAndGroupFragment extends Fragment {
         button.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 
-    private void loadEventUsedToJoin(TextView textView){
+    private void loadEventUsedToJoin(TextView textView, RecyclerView r){
         EventAPI eventAPI = new EventAPI();
         StudentAPI studentAPI = new StudentAPI();
         ArrayList<Event> eventList = new ArrayList<>();
@@ -149,8 +156,8 @@ public class ListEventAndGroupFragment extends Fragment {
 
                         EventPersonalAdapter eventPersonalAdapter = new EventPersonalAdapter(eventList, requireContext());
                         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false);
-                        recyclerView2.setLayoutManager(linearLayoutManager);
-                        recyclerView2.setAdapter(eventPersonalAdapter);
+                        r.setLayoutManager(linearLayoutManager);
+                        r.setAdapter(eventPersonalAdapter);
                         eventPersonalAdapter.notifyDataSetChanged();
 
                     }
@@ -219,4 +226,157 @@ public class ListEventAndGroupFragment extends Fragment {
             }
         });
     }
+
+    private void showCustomPopup() {
+        // Inflate layout custom cho popup
+        LayoutInflater inflater = LayoutInflater.from(requireContext());
+        View popupView = inflater.inflate(R.layout.popup_detail_event, null);
+
+        // Tạo AlertDialog
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(requireContext());
+        builder.setView(popupView);
+
+        // Lấy các view trong layout popup
+        RecyclerView popupRecycle = popupView.findViewById(R.id.event_item_detail);
+        Spinner spinner = popupView.findViewById(R.id.filter_join);
+        ImageButton filterIcon = popupView.findViewById(R.id.filter_icon);
+        Button closeButton = popupView.findViewById(R.id.popup_button_close);
+        TextView textView = popupView.findViewById(R.id.null_event);
+
+        // Tạo adapter cho spinner
+        String[] filterOptions = {"Hỗ trợ", "Tham gia"};
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                filterOptions
+        );
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(spinnerAdapter);
+
+        filterIcon.setOnClickListener(v -> {
+            spinner.performClick();
+        });
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // Lấy nội dung của mục được chọn
+                String selectedItem = parent.getItemAtPosition(position).toString();
+
+                // Thực hiện hành động dựa trên mục được chọn
+                switch (selectedItem) {
+                    case "Hỗ trợ":
+                        // Gọi hàm xử lý cho mục "Người hỗ trợ"
+                        loadEventAssistantPopup(popupRecycle);
+                        break;
+                    case "Tham gia":
+                        // Gọi hàm xử lý cho mục "Tham gia"
+                        loadEventJoinPopup(popupRecycle);
+                        break;
+                    default:
+                        loadEventUsedToJoin(textView, popupRecycle);
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Xử lý trường hợp không có gì được chọn
+            }
+        });
+
+        // Tạo dialog và hiển thị
+        androidx.appcompat.app.AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+
+        // Xử lý sự kiện nút đóng
+        closeButton.setOnClickListener(v -> alertDialog.dismiss());
+    }
+
+    private void loadEventJoinPopup(RecyclerView recyclerViewPopup){
+        EventAPI eventAPI = new EventAPI();
+        StudentAPI studentAPI = new StudentAPI();
+        ArrayList<Event> eventList = new ArrayList<>();
+        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+            @Override
+            public void onStudentReceived(Student student) {
+                eventAPI.getAllEvents(new EventAPI.EventCallback() {
+                    @Override
+                    public void onEventReceived(Event event) {
+
+                    }
+
+                    @Override
+                    public void onEventsReceived(List<Event> events) {
+                        for (Event e : events) {
+                            if (e.getUserJoin() != null) {
+                                for (RollCall r : e.getUserJoin()) {
+                                    if (r.getStudentNumber().equals(student.getStudentNumber()) && r.getIsVerify() == 2) {
+                                        eventList.add(e);
+                                    }
+                                }
+                            }
+                        }
+
+                        EventPersonalAdapter eventPersonalAdapter = new EventPersonalAdapter(eventList, requireContext());
+                        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false);
+                        recyclerViewPopup.setLayoutManager(linearLayoutManager);
+                        recyclerViewPopup.setAdapter(eventPersonalAdapter);
+                        eventPersonalAdapter.notifyDataSetChanged();
+
+                    }
+
+                });
+            }
+
+            @Override
+            public void onStudentsReceived(List<Student> students) {
+
+            }
+        });
+    }
+
+    private void loadEventAssistantPopup(RecyclerView recyclerViewPopup){
+        EventAPI eventAPI = new EventAPI();
+        StudentAPI studentAPI = new StudentAPI();
+        ArrayList<Event> eventList = new ArrayList<>();
+        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+            @Override
+            public void onStudentReceived(Student student) {
+                eventAPI.getAllEvents(new EventAPI.EventCallback() {
+                    @Override
+                    public void onEventReceived(Event event) {
+
+                    }
+
+                    @Override
+                    public void onEventsReceived(List<Event> events) {
+                        for (Event e : events) {
+                            if (e.getUserAssist() != null) {
+                                for (Assist a : e.getUserAssist()) {
+                                    if (a.getUserId() == student.getUserId() && a.isAssist()) {
+                                        eventList.add(e);
+                                    }
+                                }
+                            }
+                        }
+
+                        EventPersonalAdapter eventPersonalAdapter = new EventPersonalAdapter(eventList, requireContext());
+                        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false);
+                        recyclerViewPopup.setLayoutManager(linearLayoutManager);
+                        recyclerViewPopup.setAdapter(eventPersonalAdapter);
+                        eventPersonalAdapter.notifyDataSetChanged();
+
+                    }
+
+                });
+            }
+
+            @Override
+            public void onStudentsReceived(List<Student> students) {
+
+            }
+        });
+    }
+
 }

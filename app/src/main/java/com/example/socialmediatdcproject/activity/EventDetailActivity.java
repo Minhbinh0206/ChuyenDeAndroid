@@ -189,11 +189,11 @@ public class EventDetailActivity extends AppCompatActivity {
             Date finishAt = sdf.parse(event.getFinishAt());
 
             if (currentTime.before(beginAt)) {
-                setEventStatus("Sắp diễn ra", 0, R.color.danger, event);
+                setEventStatus("Sắp diễn ra", 0, R.color.defaultBlue, event);
             } else if (currentTime.before(finishAt)) {
                 setEventStatus("Đang diễn ra", 1, R.color.warning, event);
             } else {
-                setEventStatus("Đã kết thúc", 2, R.color.defaultBlue, event);
+                setEventStatus("Đã kết thúc", 2, R.color.danger, event);
                 showEventEndedPopup(); // Hiện popup khi sự kiện đã kết thúc
             }
             eventAPI.updateEvent(event);

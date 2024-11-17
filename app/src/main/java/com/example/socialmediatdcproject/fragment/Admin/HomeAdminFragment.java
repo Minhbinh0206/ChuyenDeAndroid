@@ -260,6 +260,7 @@ public class HomeAdminFragment extends Fragment {
 
             @Override
             public void onEventsReceived(List<Event> events) {
+                eventList.clear();
                 eventList.addAll(events);
 
                 if (eventList.isEmpty()) {

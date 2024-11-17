@@ -275,4 +275,10 @@ public class MessengerDetailActivity extends AppCompatActivity {
         recyclerView.scrollToPosition(listMessage.size() - 1);
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        isInDetailPage = false; // Rời khỏi
+    }
 }
