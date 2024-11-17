@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +47,7 @@ import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.CreateNewEventActivity;
 import com.example.socialmediatdcproject.activity.CreateNewGroupActivity;
 import com.example.socialmediatdcproject.activity.SharedActivity;
 import com.example.socialmediatdcproject.activity.UploadProfileActivity;
@@ -202,7 +204,7 @@ public class CreateNewPostFragment extends Fragment {
     }
 
     // Tải ảnh lên Firebase và lưu URL vào post
-    private void uploadImageToFirebaseStorage(Uri filePath, Post post) {
+    private void uploadImageToFirebaseStorage(Uri filePath, Post post, Dialog loadingDialog) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
 
@@ -219,6 +221,9 @@ public class CreateNewPostFragment extends Fragment {
 
                             PostAPI postAPI = new PostAPI();
                             postAPI.updatePost(post);
+
+                            // Dismiss dialog sau khi bài viết được thêm
+                            loadingDialog.dismiss();
                         });
                     })
                     .addOnFailureListener(exception -> {
@@ -333,7 +338,23 @@ public class CreateNewPostFragment extends Fragment {
                         return; // Dừng tiếp tục xử lý nếu title hoặc content rỗng
                     }
 
+                    // Tạo Dialog
+                    Dialog loadingDialog = new Dialog(getContext());
+                    loadingDialog.setContentView(R.layout.dialog_loading);
+                    loadingDialog.setCancelable(false); // Không cho phép người dùng tắt dialog bằng cách bấm ngoài
+
+                    // Thêm ProgressBar vào layout của Dialog (layout: dialog_loading.xml)
+                    ProgressBar progressBar = loadingDialog.findViewById(R.id.progressBar);
+                    TextView textView = loadingDialog.findViewById(R.id.textLoading);
+                    textView.setText("Đang đăng bài...");
+
+                    // Hiển thị Dialog
+                    loadingDialog.show();
+
                     PostAPI postAPI = new PostAPI();
+                    Post post = new Post();
+                    uploadImageToFirebaseStorage(selectedImageUri, post, loadingDialog);
+
                     final boolean[] isPostAdded = {false};
                     postAPI.getAllPosts(new PostAPI.PostCallback() {
                         @Override
@@ -356,11 +377,9 @@ public class CreateNewPostFragment extends Fragment {
                                         public void onGroupReceived(Group group) {
                                             if (!isPostAdded[0]) {
                                                 if (student.getUserId() == group.getAdminUserId()) {
-                                                    Post post = new Post();
                                                     post.setPostId(posts.size());
                                                     post.setUserId(student.getUserId());
                                                     post.setPostLike(0);
-                                                    uploadImageToFirebaseStorage(selectedImageUri, post);
                                                     post.setContent(content);
                                                     post.setStatus(Post.APPROVED);
                                                     post.setGroupId(groupId);
@@ -368,11 +387,9 @@ public class CreateNewPostFragment extends Fragment {
                                                     postAPI.addPost(post);
 
                                                 } else {
-                                                    Post post = new Post();
                                                     post.setPostId(posts.size());
                                                     post.setUserId(student.getUserId());
                                                     post.setPostLike(0);
-                                                    uploadImageToFirebaseStorage(selectedImageUri, post);
                                                     post.setContent(content);
                                                     post.setFilter(false);
                                                     post.setStatus(Post.WAITING);
@@ -387,6 +404,9 @@ public class CreateNewPostFragment extends Fragment {
                                                     notifyQuicklyAPI.addNotification(notifyQuickly);
                                                 }
                                                 isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
+
+                                                // Hiển thị Toast thông báo thành công
+                                                Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
                                             }
                                             dialog.dismiss();
                                         }

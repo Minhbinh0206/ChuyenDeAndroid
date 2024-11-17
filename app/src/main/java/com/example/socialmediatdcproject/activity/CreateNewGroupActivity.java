@@ -61,7 +61,6 @@ import java.util.UUID;
 public class CreateNewGroupActivity extends AppCompatActivity {
     private int adminUserId;
     private static final int MY_REQUEST_CODE = 10;
-    private static final int REQUEST_CODE_STORAGE_PERMISSION = 2 ;
     private static final int MY_CAMERA_REQUEST_CODE = 100;
     private ImageView imgFromGallery;
     private ImageView selectImage;

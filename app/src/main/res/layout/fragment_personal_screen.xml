@@ -94,7 +94,7 @@
                     android:gravity="center"
                     android:letterSpacing="0.08"
                     android:padding="13dp"
-                    android:text="Nhóm"
+                    android:text="Hoạt động"
                     android:textColor="#FFFFFF"
                     android:textSize="15sp"
                     android:textStyle="bold" />

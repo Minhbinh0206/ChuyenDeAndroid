@@ -47,6 +47,12 @@ public class TrainingTwoFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
 
+        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        recyclerView.setVisibility(View.VISIBLE);
+
+        FrameLayout frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+        frameLayout.setVisibility(View.GONE);
+
         loadPostFromFirebase();
 
     }

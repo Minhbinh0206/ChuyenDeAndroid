@@ -59,7 +59,7 @@ public class EditScreenActivity extends AppCompatActivity {
     private EditText editTextName, editTextMSSV, editTextClass, editTextDepartment, editTextDescription, editTextDoB , editTextPhone;
     private Button buttonUpdate;
     private Uri selectedImageUri;
-    private Uri selectedBackgroup;
+    private Uri selectedImageUriBr;
     private ImageView imageEditPersonal, imageEditPersonalSmall, imageEditBackgroupPersonalSmall, imageEditBackgroupPersonalBig ;
     private ImageButton btnBack;
     private String userId;
@@ -118,9 +118,9 @@ public class EditScreenActivity extends AppCompatActivity {
         editTextDoB = findViewById(R.id.editTextDoB);
         editTextPhone = findViewById(R.id.editTextPhone);
 
-         editTextDescription = findViewById(R.id.editTextDescription);
+        editTextDescription = findViewById(R.id.editTextDescription);
         buttonUpdate = findViewById(R.id.button_club_post);
-         btnBack = findViewById(R.id.icon_back);
+        btnBack = findViewById(R.id.icon_back);
 
         // Thiết lập sự kiện nhấn
         btnBack.setOnClickListener(v -> finish()); // Đóng Activity khi nhấn nút
@@ -153,7 +153,7 @@ public class EditScreenActivity extends AppCompatActivity {
 
                     Glide.with(EditScreenActivity.this)
                             .load(student.getBackground())
-                            .optionalFitCenter()
+                            .centerCrop()
                             .into(imageEditBackgroupPersonalBig);
 
                     Glide.with(EditScreenActivity.this)
@@ -196,13 +196,24 @@ public class EditScreenActivity extends AppCompatActivity {
                                 if (MY_REQUEST_CODE_AVATAR) {
                                     uploadImageToFirebaseStorage(selectedImageUri, student);
                                 }
-
+                            } else if (selectedImageUriBr != null) {
                                 if (MY_REQUEST_CODE_BACKGROUND)  {
-                                    uploadImageToFirebaseStorageBackground(selectedImageUri, student);
+                                    uploadImageToFirebaseStorageBackground(selectedImageUriBr, student);
                                 }
-                            } else {
-                                // Cập nhật thông tin người dùng mà không cần đổi ảnh
-                                saveStudentDataToDatabase(student);
+                            }
+                            else {
+                                StudentAPI studentAPI = new StudentAPI();
+                                studentAPI.updateStudent(student, new StudentAPI.StudentCallback() {
+                                    @Override
+                                    public void onStudentReceived(Student student) {
+
+                                    }
+
+                                    @Override
+                                    public void onStudentsReceived(List<Student> students) {
+
+                                    }
+                                });
                             }
                         }
                     });
@@ -257,7 +268,18 @@ public class EditScreenActivity extends AppCompatActivity {
                                 student.setAvatar(uri.toString());
                             //    student.setBackgroup(uri.toString());
                                 // Cập nhật URL ảnh mới vào student object
-                                saveStudentDataToDatabase(student);
+                                StudentAPI studentAPI = new StudentAPI();
+                                studentAPI.updateStudent(student, new StudentAPI.StudentCallback() {
+                                    @Override
+                                    public void onStudentReceived(Student student) {
+
+                                    }
+
+                                    @Override
+                                    public void onStudentsReceived(List<Student> students) {
+
+                                    }
+                                });
                             });
                         })
                         .addOnFailureListener(exception -> {
@@ -270,7 +292,18 @@ public class EditScreenActivity extends AppCompatActivity {
                             avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
                                 student.setAvatar(uri.toString());  // Cập nhật URL ảnh mới vào student object
                             //    student.setBackgroup(uri.toString());
-                                saveStudentDataToDatabase(student);
+                                StudentAPI studentAPI = new StudentAPI();
+                                studentAPI.updateStudent(student, new StudentAPI.StudentCallback() {
+                                    @Override
+                                    public void onStudentReceived(Student student) {
+
+                                    }
+
+                                    @Override
+                                    public void onStudentsReceived(List<Student> students) {
+
+                                    }
+                                });
                             });
                         })
                         .addOnFailureListener(e -> {
@@ -298,7 +331,18 @@ public class EditScreenActivity extends AppCompatActivity {
                                 student.setBackground(uri.toString());
                                 //    student.setBackgroup(uri.toString());
                                 // Cập nhật URL ảnh mới vào student object
-                                saveStudentDataToDatabase(student);
+                                StudentAPI studentAPI = new StudentAPI();
+                                studentAPI.updateStudent(student, new StudentAPI.StudentCallback() {
+                                    @Override
+                                    public void onStudentReceived(Student student) {
+
+                                    }
+
+                                    @Override
+                                    public void onStudentsReceived(List<Student> students) {
+
+                                    }
+                                });
                             });
                         })
                         .addOnFailureListener(exception -> {
@@ -311,7 +355,18 @@ public class EditScreenActivity extends AppCompatActivity {
                             avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
                                 student.setBackground(uri.toString());  // Cập nhật URL ảnh mới vào student object
                                 //    student.setBackgroup(uri.toString());
-                                saveStudentDataToDatabase(student);
+                                StudentAPI studentAPI = new StudentAPI();
+                                studentAPI.updateStudent(student, new StudentAPI.StudentCallback() {
+                                    @Override
+                                    public void onStudentReceived(Student student) {
+
+                                    }
+
+                                    @Override
+                                    public void onStudentsReceived(List<Student> students) {
+
+                                    }
+                                });
                             });
                         })
                         .addOnFailureListener(e -> {
@@ -349,19 +404,6 @@ public class EditScreenActivity extends AppCompatActivity {
     private Uri getImageUriFromBitmap(Context context, Bitmap bitmap) {
         String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, "CameraImage", null);
         return Uri.parse(path);
-    }
-
-    private void saveStudentDataToDatabase(Student student) {
-        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Students").child(userId);
-        userRef.setValue(student)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(EditScreenActivity.this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                        finish();  // Quay về màn hình trước đó
-                    } else {
-                        Toast.makeText(EditScreenActivity.this, "Cập nhật thất bại!", Toast.LENGTH_SHORT).show();
-                    }
-                });
     }
 
     private void onClickRequestPermission() {
@@ -511,6 +553,7 @@ public class EditScreenActivity extends AppCompatActivity {
         mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
 
     }
+
     private void openGalleryBackground() {
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -592,7 +635,7 @@ public class EditScreenActivity extends AppCompatActivity {
 
                             Glide.with(EditScreenActivity.this)
                                     .load(imageBitmap)
-                                    .centerInside()
+                                    .centerCrop()
                                     .into(imageEditBackgroupPersonalBig);
 
                             Glide.with(EditScreenActivity.this)
@@ -600,17 +643,19 @@ public class EditScreenActivity extends AppCompatActivity {
                                     .circleCrop()
                                     .into(imageEditBackgroupPersonalSmall);
                             // Chuyển đổi Bitmap thành Uri tạm
-                            selectedImageUri = getImageUriFromBitmap(EditScreenActivity.this, imageBitmap);
+                            selectedImageUriBr = getImageUriFromBitmap(EditScreenActivity.this, imageBitmap);
                         } else {
                             // Nhận ảnh từ gallery
-                            selectedImageUri = data.getData();
+                            selectedImageUriBr = data.getData();
                             //  selectedBackgroup = data.getData();
                             try {
                                 // Hiển thị ảnh chọn từ Gallery
-                                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUri);
+                                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImageUriBr);
 //                                    imageEditPersonalSmall.setImageBitmap(bitmap);
+
                                 Glide.with(EditScreenActivity.this)
                                         .load(bitmap)
+                                        .centerCrop()
                                         .into(imageEditBackgroupPersonalBig);
 
                                 Glide.with(EditScreenActivity.this)
