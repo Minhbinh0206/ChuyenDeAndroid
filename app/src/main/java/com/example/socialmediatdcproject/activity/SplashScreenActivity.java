@@ -66,6 +66,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 
                             if (student.getUserId() != -1) {
                                 Intent intent = new Intent(SplashScreenActivity.this, SharedActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                                 startActivity(intent);
                                 finish();
                             } else {
@@ -82,6 +83,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                         public void onUserReceived(AdminDepartment adminDepartment) {
                             if (adminDepartment.getUserId() != -1) {
                                 Intent intent = new Intent(SplashScreenActivity.this, HomeAdminActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                                 startActivity(intent);
                                 finish();
                             }
@@ -99,6 +101,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                         public void onUserReceived(AdminBusiness adminBusiness) {
                             if (adminBusiness.getUserId() != -1) {
                                 Intent intent = new Intent(SplashScreenActivity.this, HomeAdminActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                                 startActivity(intent);
                                 finish();
                             }
@@ -121,6 +124,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                             if (!adminDefault.getAdminType().equals("Super")) {
                                 if (adminDefault.getUserId() != -1) {
                                     Intent intent = new Intent(SplashScreenActivity.this, HomeAdminActivity.class);
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                                     startActivity(intent);
                                     finish();
                                 }
@@ -137,6 +141,7 @@ public class SplashScreenActivity extends AppCompatActivity {
                     });
                 } else {
                     Intent intent = new Intent(SplashScreenActivity.this, LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                     startActivity(intent);
                     finish();
                 }
@@ -161,6 +166,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         if (isRegistering) {
             // Nếu đang trong quá trình đăng ký, điều hướng đến UploadProfileActivity
             Intent intent = new Intent(SplashScreenActivity.this, UploadProfileActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             startActivity(intent);
             finish();
 
@@ -178,6 +184,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         if (isVerified) {
             // Nếu đang trong quá trình đăng ký, điều hướng đến RegisterActivity
             Intent intent = new Intent(SplashScreenActivity.this, RegisterActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             startActivity(intent);
             finish();
 

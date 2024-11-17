@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,7 +26,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -53,6 +57,7 @@ import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.FilterPostsAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R; // Import đúng package chứa R
+import com.example.socialmediatdcproject.activity.CreateNewEventActivity;
 import com.example.socialmediatdcproject.activity.SendNotificationActivity;
 import com.example.socialmediatdcproject.adapter.ItemFilterAdapter;
 import com.example.socialmediatdcproject.dataModels.Collab;
@@ -80,8 +85,11 @@ import java.util.List;
 
 public class MainFeatureFragment extends Fragment {
     private List<String> optionsOfAdminDepartment = new ArrayList<>();
+    private static final int MY_REQUEST_CODE = 10;
+    private static final int MY_CAMERA_REQUEST_CODE = 110;
     RecyclerView recyclerView;
     ItemFilterAdapter itemFilterAdapter;
+    private Uri selectedImageUri;
     private ImageView showImagePost;
 
     @Nullable
@@ -97,10 +105,12 @@ public class MainFeatureFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Button postBtn = view.findViewById(R.id.admin_create_post);
         Button noticeBtn = view.findViewById(R.id.admin_create_notify);
-        showImagePost = view.findViewById(R.id.show_image_create_post);
+        Button eventBtn = view.findViewById(R.id.admin_create_event);
+        showImagePost = view.findViewById(R.id.post_image_filter);
 
         changeColorButtonNormal(postBtn);
         changeColorButtonNormal(noticeBtn);
+        changeColorButtonNormal(eventBtn);
 
         postBtn.setOnClickListener(v -> {
             showCustomDialog();
@@ -111,6 +121,123 @@ public class MainFeatureFragment extends Fragment {
             intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             startActivity(intent);
         });
+
+        eventBtn.setOnClickListener(v -> {
+            String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+            Intent intent = new Intent(v.getContext(), CreateNewEventActivity.class);
+
+            AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+            AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+            AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+            adminDepartmentAPI.getAdminDepartmentByKey(userKey, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                @Override
+                public void onUserReceived(AdminDepartment adminDepartment) {
+                    intent.putExtra("adminId", adminDepartment.getUserId());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                    startActivity(intent);
+                }
+
+                @Override
+                public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+                }
+
+                @Override
+                public void onError(String s) {
+
+                }
+            });
+            adminBusinessAPI.getAdminBusinessByKey(userKey, new AdminBusinessAPI.AdminBusinessCallBack() {
+                @Override
+                public void onUserReceived(AdminBusiness adminBusiness) {
+                    intent.putExtra("adminId", adminBusiness.getUserId());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                    startActivity(intent);
+                }
+
+                @Override
+                public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                }
+
+                @Override
+                public void onError(String s) {
+
+                }
+            });
+            adminDefaultAPI.getAdminDefaultByKey(userKey, new AdminDefaultAPI.AdminDefaultCallBack() {
+                @Override
+                public void onUserReceived(AdminDefault adminDefault) {
+                    intent.putExtra("adminId", adminDefault.getUserId());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                    startActivity(intent);
+                }
+
+                @Override
+                public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+                }
+            });
+
+        });
+    }
+
+    private ActivityResultLauncher<Intent> mActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        if (data != null) {
+                            showImagePost.setVisibility(View.VISIBLE);
+
+                            if (data.hasExtra("data")) {
+                                // Nhận ảnh từ Camera
+                                Bundle extras = data.getExtras();
+                                if (extras != null) {
+                                    Bitmap imageBitmap = (Bitmap) extras.get("data");
+                                    if (imageBitmap != null && isAdded()) {
+                                        // Đặt ảnh làm background cho imgFromGallery
+                                        Drawable drawable = new BitmapDrawable(getResources(), imageBitmap);
+                                        showImagePost.setBackground(drawable);
+
+                                        // Chuyển Bitmap thành Uri
+                                        selectedImageUri = getImageUriFromBitmap(requireContext(), imageBitmap);
+                                    }
+                                }
+                            } else {
+                                // Nhận ảnh từ Gallery
+                                selectedImageUri = data.getData();
+                                if (selectedImageUri != null && isAdded()) {
+                                    try {
+                                        // Đọc ảnh từ Uri
+                                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), selectedImageUri);
+                                        if (bitmap != null) {
+                                            // Đặt ảnh làm background cho imgFromGallery
+                                            Drawable drawable = new BitmapDrawable(getResources(), bitmap);
+                                            showImagePost.setBackground(drawable);
+
+                                            // Chuyển Bitmap thành Uri
+                                            selectedImageUri = getImageUriFromBitmap(requireContext(), bitmap);
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+    );
+
+    // Phương thức helper để chuyển Bitmap thành Uri
+    private Uri getImageUriFromBitmap(Context context, Bitmap bitmap) {
+        // Lưu bitmap thành file và trả về Uri
+        String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, "temp_image", null);
+        return Uri.parse(path);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -130,6 +257,9 @@ public class MainFeatureFragment extends Fragment {
             dialog.getWindow().setAttributes(params);
         }
 
+        showImagePost = dialog.findViewById(R.id.post_image_filter);
+        showImagePost.setVisibility(View.GONE);
+
         dialog.show();
 
         // Tìm các view bên trong Dialog
@@ -142,6 +272,21 @@ public class MainFeatureFragment extends Fragment {
         ImageButton addImage = dialog.findViewById(R.id.post_add_image);
         ImageButton changeBanckground = dialog.findViewById(R.id.post_change_background);
         ImageButton addSurvey = dialog.findViewById(R.id.post_icon_survey);
+
+        // Xử lý sự kiện khi nhấn vào nút addImage
+        addImage.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            builder.setTitle("Chọn ảnh")
+                    .setItems(new CharSequence[]{"Chọn từ thư viện", "Chụp ảnh mới"}, (dialogInterface, which) -> {
+                        if (which == 0) {
+                            onClickRequestGalleryPermission();
+
+                        } else {
+                            onClickRequestCameraPermission();
+                        }
+                    })
+                    .show();
+        });
 
         ImageView imageViewAvatar = dialog.findViewById(R.id.avatar_user_create_post);
 
@@ -260,7 +405,6 @@ public class MainFeatureFragment extends Fragment {
         filterMain.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.d("AdminBusiness", "Hihi: " + isAdminType[0]);
                 String selected = optionsOfAdminDepartment.get(position);
                 if (isAdminType[0] == 1) {
                     // Admin Department
@@ -511,6 +655,7 @@ public class MainFeatureFragment extends Fragment {
 
             // Bật lại nút sau khi hoàn thành
             postButtonCreate.setEnabled(true);
+
         });
 
         postButtonCancle.setOnClickListener(v -> dialog.dismiss());
@@ -533,8 +678,8 @@ public class MainFeatureFragment extends Fragment {
     }
 
     public void changeColorButtonNormal(Button btn){
-        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 
     private void loadBusinessFilterCollabsDepartment() {
@@ -822,8 +967,23 @@ public class MainFeatureFragment extends Fragment {
         AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
+        // Tạo Dialog
+        Dialog loadingDialog = new Dialog(getContext());
+        loadingDialog.setContentView(R.layout.dialog_loading);
+        loadingDialog.setCancelable(false); // Không cho phép người dùng tắt dialog bằng cách bấm ngoài
+
+        // Thêm ProgressBar vào layout của Dialog (layout: dialog_loading.xml)
+        ProgressBar progressBar = loadingDialog.findViewById(R.id.progressBar);
+        TextView textView = loadingDialog.findViewById(R.id.textLoading);
+        textView.setText("Đang đăng bài...");
+
+        // Hiển thị Dialog
+        loadingDialog.show();
+
         // Cờ để kiểm tra chỉ gọi addPost một lần
         final boolean[] isPostAdded = {false};
+        Post newPost = new Post();
+        uploadImageToFirebaseStorage(selectedImageUri, newPost, loadingDialog);
         adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
             @Override
             public void onUserReceived(AdminDepartment adminDepartment) {
@@ -847,12 +1007,9 @@ public class MainFeatureFragment extends Fragment {
                                         // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
                                         if (adminDepartment.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
                                             isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
-
-                                            Post newPost = new Post();
                                             newPost.setPostId(posts.size());
                                             newPost.setUserId(adminDepartment.getUserId());
                                             newPost.setPostLike(0);
-                                            newPost.setPostImage("");
                                             newPost.setContent(content);
                                             newPost.setStatus(Post.APPROVED);
                                             newPost.setFilter(filter);
@@ -864,7 +1021,9 @@ public class MainFeatureFragment extends Fragment {
                                             }
 
                                             postAPI.addPost(newPost);
-                                            Toast.makeText(requireContext(), "Đăng bài thành công", Toast.LENGTH_SHORT).show();
+
+                                            // Hiển thị Toast thông báo thành công
+                                            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
                                         }
                                     }
 
@@ -918,11 +1077,9 @@ public class MainFeatureFragment extends Fragment {
                                         if (!isPostAdded[0]) {
                                             isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
 
-                                            Post newPost = new Post();
                                             newPost.setPostId(posts.size());
                                             newPost.setUserId(adminBusiness.getUserId());
                                             newPost.setPostLike(0);
-                                            newPost.setPostImage("");
                                             newPost.setContent(content);
                                             newPost.setStatus(Post.APPROVED);
                                             newPost.setFilter(filter);
@@ -934,7 +1091,9 @@ public class MainFeatureFragment extends Fragment {
                                             }
 
                                             postAPI.addPost(newPost);
-                                            Toast.makeText(requireContext(), "Đăng bài thành công", Toast.LENGTH_SHORT).show();
+
+                                            // Hiển thị Toast thông báo thành công
+                                            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
                                         }
                                     }
 
@@ -984,11 +1143,9 @@ public class MainFeatureFragment extends Fragment {
                                     if (!isPostAdded[0]) {
                                         isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
 
-                                        Post newPost = new Post();
                                         newPost.setPostId(posts.size());
                                         newPost.setUserId(adminDefault.getUserId());
                                         newPost.setPostLike(0);
-                                        newPost.setPostImage("");
                                         newPost.setContent(content);
                                         newPost.setStatus(Post.APPROVED);
                                         newPost.setFilter(filter);
@@ -1000,7 +1157,9 @@ public class MainFeatureFragment extends Fragment {
                                         }
 
                                         postAPI.addPost(newPost);
-                                        Toast.makeText(requireContext(), "Đăng bài thành công", Toast.LENGTH_SHORT).show();
+
+                                        // Hiển thị Toast thông báo thành công
+                                        Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
                                     }
                                 }
 
@@ -1019,5 +1178,94 @@ public class MainFeatureFragment extends Fragment {
 
             }
         });
+    }
+
+    // Tải ảnh lên Firebase và lưu URL vào post
+    private void uploadImageToFirebaseStorage(Uri filePath, Post post, Dialog loadingDialog) {
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReference();
+
+        // Đặt tên ảnh theo postId
+        String imageName = FirebaseDatabase.getInstance().getReference().push().getKey();
+        StorageReference postImageRef = storageRef.child("postImages/" + imageName);
+
+        if (filePath != null) {
+            postImageRef.putFile(filePath)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        postImageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            String downloadUrl = uri.toString();
+                            post.setPostImage(downloadUrl);
+
+                            PostAPI postAPI = new PostAPI();
+                            postAPI.updatePost(post);
+
+                            // Dismiss dialog sau khi bài viết được thêm
+                            loadingDialog.dismiss();
+                        });
+                    })
+                    .addOnFailureListener(exception -> {
+                        Toast.makeText(requireContext(), "Tải ảnh thất bại: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        }
+        else {
+            post.setPostImage("");
+            PostAPI postAPI = new PostAPI();
+            postAPI.updatePost(post);
+        }
+
+    }
+    // Camera
+    private void onClickRequestCameraPermission() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            openCamera();
+        } else {
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, MY_CAMERA_REQUEST_CODE);
+        }
+    }
+
+    // Mở thư viện ảnh
+    private void onClickRequestGalleryPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CUR_DEVELOPMENT ||
+                ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            openGallery();
+        } else {
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, MY_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // Xử lý quyền đọc bộ nhớ
+        if (requestCode == MY_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openGallery();
+            } else {
+                Toast.makeText(getContext(), "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        // Xử lý quyền camera
+        if (requestCode == MY_CAMERA_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                Toast.makeText(getContext(), "Camera permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    //Mở cam
+    private void openCamera() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        mActivityResultLauncher.launch(cameraIntent);
+    }
+
+    //Mở Gallery
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        mActivityResultLauncher.launch(Intent.createChooser(intent, "Select Picture"));
     }
 }

@@ -6,6 +6,7 @@ public class Message {
     private int yourUserId;
     private String content;
     private String messageType;
+    private boolean isRead;
     private String createAt;
 
     public int getMessageId() {
@@ -40,6 +41,14 @@ public class Message {
         this.content = content;
     }
 
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean read) {
+        isRead = read;
+    }
+
     public String getMessageType() {
         return messageType;
     }
@@ -56,10 +65,11 @@ public class Message {
         this.createAt = createAt;
     }
 
-    public Message(int messageId, int myUserId, int yourUserId, String content, String messageType, String createAt) {
+    public Message(int messageId, int myUserId, int yourUserId, String content, boolean read, String messageType, String createAt) {
         this.messageId = messageId;
         this.myUserId = myUserId;
         this.yourUserId = yourUserId;
+        this.isRead = read;
         this.content = content;
         this.messageType = messageType;
         this.createAt = createAt;

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:id="@+id/drawer_layout"
+android:background="#EEE"
+android:layout_width="match_parent"
+android:layout_height="match_parent">
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/navComment"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:background="@color/defaultBlue"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/icon_back_event"
+            android:layout_width="40dp"
+            android:layout_height="35dp"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="20dp"
+            android:background="@android:color/transparent"
+            android:scaleType="fitXY"
+            android:src="@drawable/icon_arrow_back" />
+    </LinearLayout>
+
+    <!-- Nội dung cuộn nằm dưới thanh navigation bar -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/navComment">
+
+        <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <ImageView
+                android:id="@+id/detail_image_event"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_marginVertical="10dp"
+                app:layout_constraintBottom_toTopOf="@+id/linear"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/detail_title_event"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Title event"
+                android:padding="10dp"
+                android:textSize="20dp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@+id/detail_content_event"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/linear" />
+
+            <TextView
+                android:id="@+id/detail_content_event"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Content event ..."
+                android:padding="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/detail_title_event" />
+
+            <TextView
+                android:id="@+id/text_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/warning"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="10dp"
+                android:text="Đang diễn ra"
+                android:textColor="@color/white"
+                android:textSize="20dp"
+                android:textStyle="italic|bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/detail_image_event" />
+
+            <LinearLayout
+                android:id="@+id/linear"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toTopOf="@+id/detail_title_event"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/detail_image_event">
+
+                <Button
+                    android:id="@+id/button_volunteer"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_weight="1"
+                    android:paddingHorizontal="30dp"
+                    android:paddingVertical="15dp"
+                    android:text="Đăng kí hỗ trợ"
+                    app:layout_constraintBottom_toTopOf="@+id/detail_title_event"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/detail_image_event" />
+
+                <TextView
+                    android:id="@+id/text_hidden"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.5"
+                    android:gravity="center"
+                    android:textColor="@color/danger"
+                    android:textSize="18dp"
+                    android:textStyle="italic" />
+
+                <Button
+                    android:id="@+id/button_join"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="10dp"
+                    android:layout_weight="1"
+                    android:paddingHorizontal="30dp"
+                    android:paddingVertical="15dp"
+                    android:text="Tham gia"
+                    app:layout_constraintBottom_toTopOf="@+id/detail_title_event"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/detail_image_event" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:id="@+id/roll_call_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/detail_content_event" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+<!-- NavigationView nằm bên cạnh -->
+<com.google.android.material.navigation.NavigationView
+    android:id="@+id/nav_view"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    app:headerLayout="@layout/nav_header_layout"
+    android:background="#F9E8B1"
+    app:itemBackground="@drawable/nav_item_background"
+    android:fitsSystemWindows="true" />
+</androidx.drawerlayout.widget.DrawerLayout>

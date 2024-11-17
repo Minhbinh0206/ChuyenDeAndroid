@@ -23,6 +23,35 @@ public class MessageAPI {
         messageDatabase = FirebaseDatabase.getInstance().getReference("Messages");
     }
 
+
+    public void setMessageRead(int myUserId, int messageId) {
+        String userIdKey = String.valueOf(myUserId);
+        messageDatabase.child(userIdKey).child(String.valueOf(messageId)).child("read").setValue(true)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("MessageAPI", "Message marked as read.");
+                    } else {
+                        Log.e("MessageAPI", "Failed to mark message as read.", task.getException());
+                    }
+                });
+    }
+
+    // Update a message by user ID and message ID
+    public void updateMessage(int myUserId, int id ,Message updatedMessage) {
+        String userIdKey = String.valueOf(myUserId);
+
+        // Update the message at the specific location
+        messageDatabase.child(userIdKey).child(String.valueOf(id)).setValue(updatedMessage)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("MessageAPI", "Message updated successfully.");
+                    } else {
+                        Log.e("MessageAPI", "Failed to update message.", task.getException());
+                    }
+                });
+    }
+
+
     // Thêm tin nhắn mới vào Firebase với khóa là số tự tăng dưới nhánh myUserId
     public void addMessage(Message message) {
         String myUserId = String.valueOf(message.getMyUserId());
@@ -71,6 +100,31 @@ public class MessageAPI {
 
         // Lấy toàn bộ tin nhắn của myUserId
         messageDatabase.child(userIdKey).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                List<Message> messages = new ArrayList<>();
+                for (DataSnapshot messageSnapshot : dataSnapshot.getChildren()) {
+                    Message message = messageSnapshot.getValue(Message.class);
+                    if (message != null) {
+                        messages.add(message);
+                    }
+                }
+                callback.onMessagesReceived(messages);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("MessageAPI", "Failed to retrieve messages.", databaseError.toException());
+            }
+        });
+    }
+
+    // Lấy tất cả tin nhắn của một người dùng
+    public void getAllMessagesRealtime(int myUserId, MessageCallback callback) {
+        String userIdKey = String.valueOf(myUserId);
+
+        // Lấy toàn bộ tin nhắn của myUserId
+        messageDatabase.child(userIdKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 List<Message> messages = new ArrayList<>();

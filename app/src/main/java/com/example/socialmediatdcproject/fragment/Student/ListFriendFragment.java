@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,14 +48,19 @@ public class ListFriendFragment extends Fragment {
         Button listInvitation = view.findViewById(R.id.button_personal_list_invitation);
         Button listFollowed = view.findViewById(R.id.button_personal_list_follow);
 
-        displayFriends();
+        recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+
+        TextView textView = requireActivity().findViewById(R.id.null_content_notify);
+        textView.setVisibility(View.VISIBLE);
+
+        displayFriends(textView);
 
         updateButtonColorsActive(listFriend);
         updateButtonColorsNormal(listInvitation);
         updateButtonColorsNormal(listFollowed);
 
         listFriend.setOnClickListener(v -> {
-            displayFriends();
+            displayFriends(textView);
 
             updateButtonColorsActive(listFriend);
             updateButtonColorsNormal(listInvitation);
@@ -62,7 +68,7 @@ public class ListFriendFragment extends Fragment {
         });
 
         listInvitation.setOnClickListener(v -> {
-            displayFriendsFollow();
+            displayFriendsFollow(textView);
 
             updateButtonColorsActive(listInvitation);
             updateButtonColorsNormal(listFriend);
@@ -70,7 +76,7 @@ public class ListFriendFragment extends Fragment {
         });
 
         listFollowed.setOnClickListener(v -> {
-            displayFriendsInvitation();
+            displayFriendsInvitation(textView);
 
             updateButtonColorsActive(listFollowed);
             updateButtonColorsNormal(listInvitation);
@@ -92,8 +98,7 @@ public class ListFriendFragment extends Fragment {
         button.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 
-    private void displayFriends(){
-        recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+    private void displayFriends(TextView textView){
         ArrayList<Student> listFriends = new ArrayList<>();
         ArrayList<Student> tempListFriends = new ArrayList<>();
 
@@ -126,6 +131,13 @@ public class ListFriendFragment extends Fragment {
                                                 listFriends.add(student);
                                             }
 
+                                            if (listFriends.isEmpty()) {
+                                                textView.setVisibility(View.VISIBLE);
+                                                textView.setText("Bạn chưa có bạn bè");
+                                            }
+                                            else {
+                                                textView.setVisibility(View.GONE);
+                                            }
                                             Log.d("FR", "onStudentReceived: " + listFriends.size());
 
                                             FriendPersonalAdapter friendPersonalAdapter = new FriendPersonalAdapter(listFriends, requireContext());
@@ -192,8 +204,7 @@ public class ListFriendFragment extends Fragment {
 
     }
 
-    private void displayFriendsInvitation(){
-        recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+    private void displayFriendsInvitation(TextView textView){
         ArrayList<Student> listFriends = new ArrayList<>();
 
         FriendAPI friendAPI = new FriendAPI();
@@ -213,6 +224,14 @@ public class ListFriendFragment extends Fragment {
                                     @Override
                                     public void onStudentReceived(Student student) {
                                         listFriends.add(student);
+
+                                        if (listFriends.isEmpty()) {
+                                            textView.setVisibility(View.VISIBLE);
+                                            textView.setText("Hiện chưa có lời mời kết bạn nào");
+                                        }
+                                        else {
+                                            textView.setVisibility(View.GONE);
+                                        }
 
                                         Log.d("FR", "onStudentReceived: " + listFriends.size());
 
@@ -240,17 +259,9 @@ public class ListFriendFragment extends Fragment {
 
             }
         });
-
-        FriendPersonalAdapter friendPersonalAdapter = new FriendPersonalAdapter(listFriends, requireContext());
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false);
-        recyclerView.setLayoutManager(linearLayoutManager);
-        recyclerView.setAdapter(friendPersonalAdapter);
-        friendPersonalAdapter.notifyDataSetChanged();
-
     }
 
-    private void displayFriendsFollow(){
-        recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+    private void displayFriendsFollow(TextView textView){
         ArrayList<Student> listFriends = new ArrayList<>();
 
         FriendAPI friendAPI = new FriendAPI();
@@ -270,6 +281,14 @@ public class ListFriendFragment extends Fragment {
                                     @Override
                                     public void onStudentReceived(Student student) {
                                         listFriends.add(student);
+
+                                        if (listFriends.isEmpty()) {
+                                            textView.setVisibility(View.VISIBLE);
+                                            textView.setText("Bạn không gửi lời mời kết bạn nào");
+                                        }
+                                        else {
+                                            textView.setVisibility(View.GONE);
+                                        }
 
                                         Log.d("FR", "onStudentReceived: " + listFriends.size());
 

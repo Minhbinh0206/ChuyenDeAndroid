@@ -50,6 +50,9 @@ public class NotifyFragment extends Fragment {
         frameLayout.setVisibility(view.GONE);
 
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        recyclerView.setVisibility(View.VISIBLE);
+
+        recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
         // Khởi tạo NotifyAdapter với danh sách dữ liệu rỗng
         notifyAdapter = new NotifyAdapter(new ArrayList<Notify>());
 

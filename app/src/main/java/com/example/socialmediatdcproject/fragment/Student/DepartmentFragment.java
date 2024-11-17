@@ -57,6 +57,12 @@ public class DepartmentFragment extends Fragment {
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
         frameLayout.setVisibility(view.GONE);
 
+        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        recyclerView.setVisibility(View.VISIBLE);
+
+        FrameLayout frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+        frameLayout.setVisibility(View.GONE);
+
         String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
         StudentAPI studentAPI = new StudentAPI();
         studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {

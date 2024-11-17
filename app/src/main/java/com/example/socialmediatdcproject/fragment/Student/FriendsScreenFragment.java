@@ -27,6 +27,7 @@ import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.MessengerDetailActivity;
 import com.example.socialmediatdcproject.adapter.FriendPersonalAdapter;
 import com.example.socialmediatdcproject.adapter.GroupAdapter;
 import com.example.socialmediatdcproject.dataModels.Friends;
@@ -88,9 +89,10 @@ public class FriendsScreenFragment extends Fragment {
         // Tìm ảnh
         ImageView imageUser = view.findViewById(R.id.logo_personal_user_image);
         TextView nameUser = view.findViewById(R.id.name_personnal_user);
+        TextView des = view.findViewById(R.id.personal_description);
 
-        Intent intentg = requireActivity().getIntent();
-        int studentId = intentg.getIntExtra("studentId", -1);
+        Intent intent = requireActivity().getIntent();
+        int studentId = intent.getIntExtra("studentId", -1);
 
         // Set màu mặc định cho nút "Bài viết"
         updateButtonColorsActive(personalFriends);
@@ -120,6 +122,7 @@ public class FriendsScreenFragment extends Fragment {
                             .load(student.getAvatar())
                             .circleCrop()
                             .into(imageUser);
+                    des.setText(student.getDescription());
                 }
             }
 
@@ -136,18 +139,29 @@ public class FriendsScreenFragment extends Fragment {
             updateButtonColorsNormal(personalMyGroup);
         });
 
-        personalMyGroup.setOnClickListener(v -> {
-            loadGroupFromFirebase(studentId);
-
-            // Cập nhật màu cho các nút
-            updateButtonColorsActive(personalMyGroup);
-            updateButtonColorsNormal(personalFriends);
-        });
+        personalMyGroup.setText("Nhắn tin");
 
         studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
                 listenForFriendStatusChanges(student, student.getUserId() +"", studentId, personalFriends);
+
+                friendAPI.checkFriendStatus(student.getUserId(), studentId, new FriendAPI.FriendStatusCallback() {
+                    @Override
+                    public void onStatusReceived(int status) {
+                        personalMyGroup.setOnClickListener(v -> {
+                            if (status == 3) {
+                                Intent intent = new Intent(v.getContext(), MessengerDetailActivity.class);
+                                intent.putExtra("studentId", studentId);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                                startActivity(intent);
+                            }
+                            else {
+                                Toast.makeText(requireContext(), "Hãy trở thành bạn bè trước", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                });
             }
 
             @Override

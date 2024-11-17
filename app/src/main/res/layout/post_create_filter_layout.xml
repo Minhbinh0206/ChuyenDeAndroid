@@ -87,9 +87,11 @@
                 </LinearLayout>
 
                 <ImageView
+                    android:id="@+id/post_image_filter"
                     android:layout_marginHorizontal="15dp"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:visibility="gone"
+                    android:layout_height="200dp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"

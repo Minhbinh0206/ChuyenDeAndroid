@@ -38,6 +38,7 @@ import com.example.socialmediatdcproject.adapter.PostAdapter;
 import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentMemberFragment;
 import com.example.socialmediatdcproject.fragment.Admin.AdminFragment;
 import com.example.socialmediatdcproject.fragment.Admin.AdminGroupFragment;
+import com.example.socialmediatdcproject.fragment.Admin.HomeAdminFragment;
 import com.example.socialmediatdcproject.fragment.Admin.MainFeatureFragment;
 import com.example.socialmediatdcproject.fragment.Admin.RepairButtonFragment;
 import com.example.socialmediatdcproject.fragment.Student.NotifyFragment;
@@ -104,53 +105,12 @@ public class HomeAdminActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
     }
 
-    public void loadPostFromFirebase(int id) {
-        ArrayList<Post> postsList = new ArrayList<>(); // Danh sách bài viết
-        RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-
-        // Tạo instance của PostAPI
-        PostAPI postAPI = new PostAPI();
-
-        // Lấy bài viết theo groupId
-        postAPI.getPostByGroupId(id, new PostAPI.PostCallback() {
-            @Override
-            public void onPostReceived(Post post) {
-
-            }
-
-            @Override
-            public void onPostsReceived(List<Post> posts) {
-                postsList.clear();
-                // Kiểm tra nếu có bài viết
-                if (posts.size() > 0) {
-                    for (Post p : posts) {
-                        if (p != null) {
-                            postsList.add(p); // Thêm bài viết vào danh sách
-                        }
-                    }
-
-                    // Cập nhật RecyclerView với dữ liệu bài viết
-                    PostAdapter postAdapter = new PostAdapter(postsList, HomeAdminActivity.this);
-                    recyclerView.setAdapter(postAdapter);
-                    recyclerView.setLayoutManager(new LinearLayoutManager(HomeAdminActivity.this));
-                } else {
-                    ArrayList<Post> postsList = new ArrayList<>();
-
-                    // Cập nhật RecyclerView với dữ liệu bài viết
-                    PostAdapter postAdapter = new PostAdapter(postsList, HomeAdminActivity.this);
-                    recyclerView.setAdapter(postAdapter);
-                    recyclerView.setLayoutManager(new LinearLayoutManager(HomeAdminActivity.this));
-                }
-            }
-        });
-    }
-
     private void addNavigationItems(NavigationView navigationView) {
         LinearLayout navLayout = (LinearLayout) navigationView.getHeaderView(0).findViewById(R.id.nav_container);
 
         // Danh sách item để thêm vào Navigation Drawer
-        int[] icons = {R.drawable.icon_home, R.drawable.icon_group, R.drawable.icon_flag, R.drawable.icon_setting, R.drawable.icon_logout};
-        String[] titles = {"Trang chủ", "Thành viên", "Nhóm", "Cài đặt", "Đăng xuất"};
+        int[] icons = {R.drawable.icon_home, R.drawable.icon_survey, R.drawable.icon_group, R.drawable.icon_flag, R.drawable.icon_setting, R.drawable.icon_logout};
+        String[] titles = {"Trang chủ", "Quản lý", "Thành viên", "Nhóm", "Cài đặt", "Đăng xuất"};
 
         // Khởi tạo FragmentManager
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -170,20 +130,24 @@ public class HomeAdminActivity extends AppCompatActivity {
                 switch (index) {
                     case 0:
                         // Home
-                        fragment = new AdminFragment();
+                        fragment = new HomeAdminFragment();
                         break;
                     case 1:
+                        // Quản lý
+                        fragment = new AdminFragment();
+                        break;
+                    case 2:
                         // Member
                         fragment = new AdminDepartmentMemberFragment();
                         break;
-                    case 2:
+                    case 3:
                         // Group
                         fragment = new AdminGroupFragment();
                         break;
-                    case 3:
+                    case 4:
                         // Setting
                         break;
-                    case 4:
+                    case 5:
                         // Đăng xuất người dùng và chuyển đến LoginActivity
                         FirebaseAuth auth = FirebaseAuth.getInstance();
                         auth.signOut();
@@ -195,6 +159,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                         editor.apply();
 
                         Intent intent = new Intent(HomeAdminActivity.this, LoginActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                         startActivity(intent);
                         finish(); // Đóng SharedActivity
                         return;  // Thoát phương thức để không thực hiện fragmentTransaction
@@ -235,15 +200,22 @@ public class HomeAdminActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         NotifyAPI notifyAPI = new NotifyAPI();
-        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+
+        // Gán fragment home là mặc định
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        // Nạp HomeFragment vào first_content_fragment
+        fragmentTransaction.replace(R.id.first_content_fragment, new HomeAdminFragment());
+
+        // Lấy dữ lệu từ firebase
+        fragmentTransaction.commit();
+
         AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
         AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
-
-        Intent intent = getIntent();
-
-        adminDepartmentAPI.getAdminDepartmentByKey(mAuth.getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
+        adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
             @Override
             public void onUserReceived(AdminDepartment adminDepartment) {
                 if (adminDepartment.getAvatar() == null) {
@@ -260,32 +232,6 @@ public class HomeAdminActivity extends AppCompatActivity {
                             .circleCrop()
                             .into(imageView);
                 }
-
-                GroupAPI groupAPI = new GroupAPI();
-                DepartmentAPI departmentAPI = new DepartmentAPI();
-                departmentAPI.getDepartmentById(adminDepartment.getDepartmentId(), new DepartmentAPI.DepartmentCallback() {
-                    @Override
-                    public void onDepartmentReceived(Department department) {
-                        groupAPI.getGroupById(department.getGroupId(), new GroupAPI.GroupCallback() {
-                            @Override
-                            public void onGroupReceived(Group group) {
-
-                            }
-
-                            @Override
-                            public void onGroupsReceived(List<Group> groups) {
-                                for(Group group : groups) {
-                                    loadPostFromFirebase(group.getGroupId());
-                                }
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onDepartmentsReceived(List<Department> departments) {
-
-                    }
-                });
 
                 notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
                     @Override
@@ -322,7 +268,6 @@ public class HomeAdminActivity extends AppCompatActivity {
 
             }
         });
-
         adminBusinessAPI.getAdminBusinessByKey(mAuth.getCurrentUser().getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
             @Override
             public void onUserReceived(AdminBusiness adminBusiness) {
@@ -340,32 +285,6 @@ public class HomeAdminActivity extends AppCompatActivity {
                             .circleCrop()
                             .into(imageView);
                 }
-
-                GroupAPI groupAPI = new GroupAPI();
-                BusinessAPI businessAPI = new BusinessAPI();
-                businessAPI.getBusinessById(adminBusiness.getBusinessId(), new BusinessAPI.BusinessCallback() {
-                    @Override
-                    public void onBusinessReceived(Business business) {
-                        groupAPI.getGroupById(business.getGroupId(), new GroupAPI.GroupCallback() {
-                            @Override
-                            public void onGroupReceived(Group group) {
-
-                            }
-
-                            @Override
-                            public void onGroupsReceived(List<Group> groups) {
-                                for(Group group : groups) {
-                                    loadPostFromFirebase(group.getGroupId());
-                                }
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onBusinessesReceived(List<Business> businesses) {
-
-                    }
-                });
 
                 notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
                     @Override
@@ -403,7 +322,6 @@ public class HomeAdminActivity extends AppCompatActivity {
 
             }
         });
-
         adminDefaultAPI.getAdminDefaultByKey(mAuth.getCurrentUser().getUid(), new AdminDefaultAPI.AdminDefaultCallBack() {
             @Override
             public void onUserReceived(AdminDefault adminDefault) {
@@ -422,21 +340,6 @@ public class HomeAdminActivity extends AppCompatActivity {
                                 .circleCrop()
                                 .into(imageView);
                     }
-
-                    GroupAPI groupAPI = new GroupAPI();
-                    groupAPI.getGroupById(adminDefault.getGroupId(), new GroupAPI.GroupCallback() {
-                        @Override
-                        public void onGroupReceived(Group group) {
-
-                        }
-
-                        @Override
-                        public void onGroupsReceived(List<Group> groups) {
-                            for(Group group : groups) {
-                                loadPostFromFirebase(group.getGroupId());
-                            }
-                        }
-                    });
 
                     notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
                         @Override
@@ -470,16 +373,6 @@ public class HomeAdminActivity extends AppCompatActivity {
             }
         });
 
-        // Gán fragment home là mặc định
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        // Nạp HomeFragment vào first_content_fragment
-        fragmentTransaction.replace(R.id.first_content_fragment, new AdminFragment());
-        fragmentTransaction.replace(R.id.third_content_fragment, new MainFeatureFragment());
-
-        // Lấy dữ lệu từ firebase
-        fragmentTransaction.commit();
     }
 
     private void processNotification(Notify n, int id, ArrayList<Notify> notifyList, int[] processedPostsCount, int totalNotificationsCount) {

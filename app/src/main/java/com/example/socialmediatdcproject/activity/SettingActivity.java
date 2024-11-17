@@ -32,6 +32,7 @@ public class SettingActivity extends AppCompatActivity {
 
         btnChangePassword.setOnClickListener(v -> {
             Intent intent = new Intent(SettingActivity.this, ChangePasswordActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             startActivity(intent);
         });
 

@@ -30,6 +30,7 @@ import com.example.socialmediatdcproject.API.AdminDefaultAPI;
 import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.FilterNotifyAPI;
 import com.example.socialmediatdcproject.API.FilterPostsAPI;
+import com.example.socialmediatdcproject.API.MessageAPI;
 import com.example.socialmediatdcproject.API.NotifyAPI;
 import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
@@ -39,7 +40,9 @@ import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.NotifyQuicklyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
+import com.example.socialmediatdcproject.dataModels.Message;
 import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
+import com.example.socialmediatdcproject.fragment.Admin.HomeAdminFragment;
 import com.example.socialmediatdcproject.fragment.Student.BussinessFragment;
 import com.example.socialmediatdcproject.fragment.Student.DepartmentFragment;
 import com.example.socialmediatdcproject.fragment.Student.FriendsScreenFragment;
@@ -60,6 +63,8 @@ import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -257,9 +262,13 @@ public class SharedActivity extends AppCompatActivity {
                     case 9:
                         // Mở SettingActivity
                         Intent settingIntent = new Intent(SharedActivity.this, SettingActivity.class);
+                        settingIntent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                         startActivity(settingIntent);
                         break;
                     case 10:
+                        StudentAPI studentAPI = new StudentAPI();
+                        studentAPI.updateOnline(false);
+
                         // Đăng xuất người dùng và chuyển đến LoginActivity
                         FirebaseAuth auth = FirebaseAuth.getInstance();
                         auth.signOut();
@@ -271,6 +280,7 @@ public class SharedActivity extends AppCompatActivity {
                         editor.apply();
 
                         Intent intent = new Intent(SharedActivity.this, LoginActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                         startActivity(intent);
                         finish(); // Đóng SharedActivity
                         return;  // Thoát phương thức để không thực hiện fragmentTransaction
@@ -374,6 +384,14 @@ public class SharedActivity extends AppCompatActivity {
         NotifyAPI notifyAPI = new NotifyAPI();
 
         StudentAPI studentAPI = new StudentAPI();
+
+        // Kiểm tra trạng thái đăng nhập
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            studentAPI.updateOnline(true);
+        } else {
+            studentAPI.updateOnline(false);
+        }
+
         studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
@@ -395,8 +413,6 @@ public class SharedActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         int key = intent.getIntExtra("keyFragment", -1);
-        int studentId = intent.getIntExtra("studentId", -1);
-        int groupId = intent.getIntExtra("groupId", -1);
 
         //Tìm kiếm hình ảnh user
         ImageView imageView = findViewById(R.id.nav_avatar_user);
@@ -441,57 +457,29 @@ public class SharedActivity extends AppCompatActivity {
 
         Log.d("TAG", "onResume: " + key);
 
-        if (key != -1) {
-            switch (key){
-                case 9999:
-                    Fragment fragment = new GroupFragment();
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    // Thay thế nội dung của FrameLayout bằng Fragment tương ứng nếu fragment không null
-                    if (fragment != null) {
-                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        fragmentTransaction.replace(R.id.first_content_fragment, fragment);
-                        fragmentTransaction.commit();
-                    }
-                    break;
-                default:
-                    // Gán fragment home là mặc định
-                    fragmentManager = getSupportFragmentManager();
-                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        int studentId = intent.getIntExtra("studentId", -1);
 
-                    // Nạp HomeFragment vào first_content_fragment
-                    fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
+        if (studentId != -1) {
+            // Gán fragment home là mặc định
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-                    // Lấy dữ lệu từ firebase
-                    loadPostsFromFirebase();
+            // Nạp HomeFragment vào first_content_fragment
+            fragmentTransaction.replace(R.id.first_content_fragment, new FriendsScreenFragment());
 
-                    fragmentTransaction.commit();
-                    break;
-            }
-        }else {
-            if (studentId != -1) {
-                // Gán fragment home là mặc định
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.commit();
+        } else {
+            // Gán fragment home là mặc định
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-                // Nạp HomeFragment vào first_content_fragment
-                fragmentTransaction.replace(R.id.first_content_fragment, new FriendsScreenFragment());
+            // Nạp HomeFragment vào first_content_fragment
+            fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
+            fragmentTransaction.replace(R.id.third_content_fragment, new HomeAdminFragment());
 
-                fragmentTransaction.commit();
-            }
-            else {
-                    // Gán fragment home là mặc định
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            loadPostsFromFirebase();
 
-                    // Nạp HomeFragment vào first_content_fragment
-                    fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
-
-                    // Lấy dữ lệu từ firebase
-                    loadPostsFromFirebase();
-
-                    fragmentTransaction.commit();
-            }
-
+            fragmentTransaction.commit();
         }
 
         studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
@@ -598,5 +586,31 @@ public class SharedActivity extends AppCompatActivity {
                 });
             }
         }
+    }
+
+    private FirebaseAuth.AuthStateListener authStateListener = firebaseAuth -> {
+        StudentAPI studentAPI = new StudentAPI();
+        if (firebaseAuth.getCurrentUser() != null) {
+            studentAPI.updateOnline(true);
+        }
+    };
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        FirebaseAuth.getInstance().removeAuthStateListener(authStateListener);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseAuth.getInstance().addAuthStateListener(authStateListener);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        FirebaseAuth.getInstance().removeAuthStateListener(authStateListener);
     }
 }

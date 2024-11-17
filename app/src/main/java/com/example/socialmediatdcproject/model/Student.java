@@ -7,6 +7,7 @@ public class Student extends User {
     private int majorId;
     private int classId;
     private String description;
+    private boolean isOnline;
 
     // Thêm trường cập nhật Avatar
     private String avatar;
@@ -23,8 +24,13 @@ public class Student extends User {
     //thêm trương cập nhật background
     private String background;
 
+    public boolean isOnline() {
+        return isOnline;
+    }
 
-    //
+    public void setOnline(boolean online) {
+        isOnline = online;
+    }
 
     public Student(int userId, String email, String password, String fullName, String avatar, String phoneNumber, int roleId, String background) {
         super(userId, email, password, fullName, avatar, phoneNumber, roleId);

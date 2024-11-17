@@ -11,6 +11,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,6 +26,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +47,8 @@ import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.CreateNewEventActivity;
+import com.example.socialmediatdcproject.activity.CreateNewGroupActivity;
 import com.example.socialmediatdcproject.activity.SharedActivity;
 import com.example.socialmediatdcproject.activity.UploadProfileActivity;
 import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
@@ -71,9 +76,6 @@ public class CreateNewPostFragment extends Fragment {
     private int groupId;
     private Uri selectedImageUri;
     private ImageView showImagePost;
-    private int postId;
-    private Post post;
-
     // Camera
     private void onClickRequestCameraPermission() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
@@ -139,15 +141,21 @@ public class CreateNewPostFragment extends Fragment {
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         Intent data = result.getData();
                         if (data != null) {
+                            showImagePost.setVisibility(View.VISIBLE);
                             // Kiểm tra nếu ảnh đến từ camera
                             if (data.hasExtra("data")) {
-                                // Nhận ảnh từ camera
-                                Bundle extras = data.getExtras();
-                                Bitmap imageBitmap = (Bitmap) extras.get("data");
-                                showImagePost.setImageBitmap(imageBitmap);
+                                Bundle extras = data != null ? data.getExtras() : null;
+                                if (extras != null) {
+                                    Bitmap imageBitmap = (Bitmap) extras.get("data");
+                                    if (imageBitmap != null) {
+                                        // Đặt ảnh làm background cho imgFromGallery
+                                        Drawable drawable = new BitmapDrawable(getResources(), imageBitmap);
+                                        showImagePost.setBackground(drawable);
 
-                                // Chuyển đổi bitmap sang URI và upload
-                                selectedImageUri = getImageUriFromBitmap(requireContext(), imageBitmap);
+                                        // Chuyển Bitmap thành Uri
+                                        selectedImageUri = getImageUriFromBitmap(requireContext(), imageBitmap);
+                                    }
+                                }
 
                             } else {
                                 // Nhận ảnh từ gallery
@@ -156,8 +164,12 @@ public class CreateNewPostFragment extends Fragment {
                                     if (isAdded()) {
                                         // Hiển thị ảnh chọn từ Gallery
                                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireContext().getContentResolver(), selectedImageUri);
-                                        showImagePost.setImageBitmap(bitmap);
 
+                                        // Đặt ảnh làm background cho imgFromGallery
+                                        Drawable drawable = new BitmapDrawable(getResources(), bitmap);
+                                        showImagePost.setBackground(drawable);
+
+                                        selectedImageUri = getImageUriFromBitmap(requireContext(), bitmap);
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -192,12 +204,7 @@ public class CreateNewPostFragment extends Fragment {
     }
 
     // Tải ảnh lên Firebase và lưu URL vào post
-    private void uploadImageToFirebaseStorage(Uri filePath, int postId, Post post) {
-        if (filePath == null) {
-            Toast.makeText(requireContext(), "Không có ảnh nào được chọn.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
+    private void uploadImageToFirebaseStorage(Uri filePath, Post post, Dialog loadingDialog) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
 
@@ -205,24 +212,30 @@ public class CreateNewPostFragment extends Fragment {
         String imageName = FirebaseDatabase.getInstance().getReference().push().getKey();
         StorageReference postImageRef = storageRef.child("postImages/" + imageName);
 
-        postImageRef.putFile(filePath)
-                .addOnSuccessListener(taskSnapshot -> {
-                    postImageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                        String downloadUrl = uri.toString();
-                        post.setPostImage(downloadUrl);
-                        savePostToDatabase(post);
-                        Log.d("Load", "uploadImageToFirebaseStorage: " + downloadUrl);
-                    });
-                })
-                .addOnFailureListener(exception -> {
-                    Toast.makeText(requireContext(), "Tải ảnh thất bại: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
+        if (filePath != null) {
+            postImageRef.putFile(filePath)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        postImageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                            String downloadUrl = uri.toString();
+                            post.setPostImage(downloadUrl);
 
-    // Lưu bài đăng vào cơ sở dữ liệu
-    private void savePostToDatabase(Post post) {
-        PostAPI postAPI = new PostAPI();
-        postAPI.updatePost(post);
+                            PostAPI postAPI = new PostAPI();
+                            postAPI.updatePost(post);
+
+                            // Dismiss dialog sau khi bài viết được thêm
+                            loadingDialog.dismiss();
+                        });
+                    })
+                    .addOnFailureListener(exception -> {
+                        Toast.makeText(requireContext(), "Tải ảnh thất bại: " + exception.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        }
+        else {
+            post.setPostImage("");
+            PostAPI postAPI = new PostAPI();
+            postAPI.updatePost(post);
+        }
+
     }
 
     @Nullable
@@ -275,8 +288,13 @@ public class CreateNewPostFragment extends Fragment {
         ImageButton changeBanckground = dialog.findViewById(R.id.post_change_background);
         ImageButton addSurvey = dialog.findViewById(R.id.post_icon_survey);
 
+        Intent intent = requireActivity().getIntent();
+        groupId = intent.getIntExtra("groupId", -1);
+
         //view hiển thị ảnh
         showImagePost = dialog.findViewById(R.id.show_image_create_post);
+        showImagePost.setVisibility(View.GONE);
+
         ImageView imageViewAvatar = dialog.findViewById(R.id.avatar_user_create_post);
 
         // Xử lý sự kiện khi nhấn vào nút addImage
@@ -320,83 +338,86 @@ public class CreateNewPostFragment extends Fragment {
                         return; // Dừng tiếp tục xử lý nếu title hoặc content rỗng
                     }
 
+                    // Tạo Dialog
+                    Dialog loadingDialog = new Dialog(getContext());
+                    loadingDialog.setContentView(R.layout.dialog_loading);
+                    loadingDialog.setCancelable(false); // Không cho phép người dùng tắt dialog bằng cách bấm ngoài
+
+                    // Thêm ProgressBar vào layout của Dialog (layout: dialog_loading.xml)
+                    ProgressBar progressBar = loadingDialog.findViewById(R.id.progressBar);
+                    TextView textView = loadingDialog.findViewById(R.id.textLoading);
+                    textView.setText("Đang đăng bài...");
+
+                    // Hiển thị Dialog
+                    loadingDialog.show();
+
                     PostAPI postAPI = new PostAPI();
+                    Post post = new Post();
+                    uploadImageToFirebaseStorage(selectedImageUri, post, loadingDialog);
+
                     final boolean[] isPostAdded = {false};
-                    studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                    postAPI.getAllPosts(new PostAPI.PostCallback() {
                         @Override
-                        public void onStudentReceived(Student student) {
-                            postAPI.getAllPosts(new PostAPI.PostCallback() {
+                        public void onPostReceived(Post post) {
+
+                        }
+
+                        @Override
+                        public void onPostsReceived(List<Post> posts) {
+                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+                            NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+                            NotifyQuickly notifyQuickly = new NotifyQuickly();
+                            notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
                                 @Override
-                                public void onPostReceived(Post post) {
-
-                                }
-
-                                @Override
-                                public void onPostsReceived(List<Post> posts) {
-                                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-
-                                    NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
-                                    NotifyQuickly notifyQuickly = new NotifyQuickly();
-                                    notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
+                                public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                                    GroupAPI groupAPI = new GroupAPI();
+                                    groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
                                         @Override
-                                        public void onNotificationsReceived(List<NotifyQuickly> notifications) {
-                                            GroupAPI groupAPI = new GroupAPI();
-                                            groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
-                                                @Override
-                                                public void onGroupReceived(Group group) {
-                                                    if (!isPostAdded[0]) {
-                                                        if (student.getUserId() == group.getAdminUserId()) {
-                                                            Post post = new Post();
-                                                            post.setPostId(posts.size());
-                                                            post.setUserId(student.getUserId());
-                                                            post.setPostLike(0);
-                                                            uploadImageToFirebaseStorage(selectedImageUri, postId, post);
-                                                            post.setContent(content);
-                                                            post.setStatus(Post.APPROVED);
-                                                            post.setGroupId(groupId);
-                                                            post.setCreatedAt(sdf.format(new Date()));
-                                                            postAPI.addPost(post);
+                                        public void onGroupReceived(Group group) {
+                                            if (!isPostAdded[0]) {
+                                                if (student.getUserId() == group.getAdminUserId()) {
+                                                    post.setPostId(posts.size());
+                                                    post.setUserId(student.getUserId());
+                                                    post.setPostLike(0);
+                                                    post.setContent(content);
+                                                    post.setStatus(Post.APPROVED);
+                                                    post.setGroupId(groupId);
+                                                    post.setCreatedAt(sdf.format(new Date()));
+                                                    postAPI.addPost(post);
 
-                                                            Toast.makeText(requireContext(), "Đăng bài thành công", Toast.LENGTH_SHORT).show();
-                                                        } else {
-                                                            Post post = new Post();
-                                                            post.setPostId(posts.size());
-                                                            post.setUserId(student.getUserId());
-                                                            post.setPostLike(0);
-                                                            uploadImageToFirebaseStorage(selectedImageUri, postId, post);
-                                                            post.setContent(content);
-                                                            post.setFilter(false);
-                                                            post.setStatus(Post.WAITING);
-                                                            post.setGroupId(groupId);
-                                                            post.setCreatedAt(sdf.format(new Date()));
-                                                            postAPI.addPost(post);
+                                                } else {
+                                                    post.setPostId(posts.size());
+                                                    post.setUserId(student.getUserId());
+                                                    post.setPostLike(0);
+                                                    post.setContent(content);
+                                                    post.setFilter(false);
+                                                    post.setStatus(Post.WAITING);
+                                                    post.setGroupId(groupId);
+                                                    post.setCreatedAt(sdf.format(new Date()));
+                                                    postAPI.addPost(post);
 
-                                                            Toast.makeText(requireContext(), "Bài đăng của bạn đang chờ phê duyệt", Toast.LENGTH_SHORT).show();
-
-                                                            notifyQuickly.setNotifyId(notifications.size());
-                                                            notifyQuickly.setUserSendId(student.getUserId());
-                                                            notifyQuickly.setUserGetId(group.getAdminUserId());
-                                                            notifyQuickly.setContent(student.getFullName() + " vừa đăng bài mới và đang chờ bạn duuyệt!");
-                                                            notifyQuicklyAPI.addNotification(notifyQuickly);
-                                                        }
-                                                        isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
-                                                    }
+                                                    notifyQuickly.setNotifyId(notifications.size());
+                                                    notifyQuickly.setUserSendId(student.getUserId());
+                                                    notifyQuickly.setUserGetId(group.getAdminUserId());
+                                                    notifyQuickly.setContent(student.getFullName() + " vừa đăng bài mới và đang chờ bạn duuyệt!");
+                                                    notifyQuicklyAPI.addNotification(notifyQuickly);
                                                 }
+                                                isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
 
-                                                @Override
-                                                public void onGroupsReceived(List<Group> groups) {
+                                                // Hiển thị Toast thông báo thành công
+                                                Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
+                                            }
+                                            dialog.dismiss();
+                                        }
 
-                                                }
-                                            });
+                                        @Override
+                                        public void onGroupsReceived(List<Group> groups) {
+
                                         }
                                     });
                                 }
                             });
-                        }
-
-                        @Override
-                        public void onStudentsReceived(List<Student> students) {
-
                         }
                     });
                 });
@@ -444,10 +465,3 @@ public class CreateNewPostFragment extends Fragment {
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 }
-
-
-
-
-
-
-
