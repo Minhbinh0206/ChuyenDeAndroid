@@ -235,6 +235,7 @@ public class HomeAdminActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         NotifyAPI notifyAPI = new NotifyAPI();
         AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
         AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
@@ -268,12 +269,14 @@ public class HomeAdminActivity extends AppCompatActivity {
                         groupAPI.getGroupById(department.getGroupId(), new GroupAPI.GroupCallback() {
                             @Override
                             public void onGroupReceived(Group group) {
-                                loadPostFromFirebase(group.getGroupId());
+
                             }
 
                             @Override
                             public void onGroupsReceived(List<Group> groups) {
-
+                                for(Group group : groups) {
+                                    loadPostFromFirebase(group.getGroupId());
+                                }
                             }
                         });
                     }
@@ -346,12 +349,14 @@ public class HomeAdminActivity extends AppCompatActivity {
                         groupAPI.getGroupById(business.getGroupId(), new GroupAPI.GroupCallback() {
                             @Override
                             public void onGroupReceived(Group group) {
-                                loadPostFromFirebase(group.getGroupId());
+
                             }
 
                             @Override
                             public void onGroupsReceived(List<Group> groups) {
-
+                                for(Group group : groups) {
+                                    loadPostFromFirebase(group.getGroupId());
+                                }
                             }
                         });
                     }
@@ -422,12 +427,14 @@ public class HomeAdminActivity extends AppCompatActivity {
                     groupAPI.getGroupById(adminDefault.getGroupId(), new GroupAPI.GroupCallback() {
                         @Override
                         public void onGroupReceived(Group group) {
-                            loadPostFromFirebase(group.getGroupId());
+
                         }
 
                         @Override
                         public void onGroupsReceived(List<Group> groups) {
-
+                            for(Group group : groups) {
+                                loadPostFromFirebase(group.getGroupId());
+                            }
                         }
                     });
 

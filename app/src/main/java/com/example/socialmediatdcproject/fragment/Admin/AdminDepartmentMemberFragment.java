@@ -304,8 +304,6 @@ public class AdminDepartmentMemberFragment extends Fragment {
             }
         });
     }
-
-
     public void changeColorButtonActive(Button btn){
         btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
@@ -334,6 +332,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         fragmentTransaction.replace(R.id.third_content_fragment, new AddOrCancelButtonFragment());
+
         fragmentTransaction.addToBackStack(null); // Thêm dòng này
         fragmentTransaction.commit();
     }

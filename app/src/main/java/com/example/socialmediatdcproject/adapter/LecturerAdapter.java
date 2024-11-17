@@ -10,8 +10,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -94,10 +97,11 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
             Log.e("LecturerAdapter", "isEditMode: " + isEditMode );
 
             holder.removeButton.setVisibility(isEditMode ? View.VISIBLE : View.GONE);
+            changeColorButtonRemove(holder.removeButton);
             holder.removeButton.setOnClickListener(view -> {
                 // Gọi phương thức xóa trong ViewModel và truyền vào groupId và studentId
                 sharedViewModel.removeLecturerFromGroup(groupId, lecturer.getUserId());
-
+                Toast.makeText(context, "Xóa giảng viên thành công khỏi nhóm", Toast.LENGTH_SHORT).show();
                 // Cập nhật danh sách hiển thị trong Adapter
                 lecturerList.remove(position);
                 notifyItemRemoved(position);
@@ -141,4 +145,14 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
         intent.putExtra("studentId", userId);
         context.startActivity(intent);
     }
+
+    public void changeColorButtonRemove(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.white));
+        btn.setTextColor(ContextCompat.getColorStateList(context, R.color.black));
+    }
+
+//    public void changeColorButtonNormal(Button btn){
+//        btn.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.white));
+//        btn.setTextColor(ContextCompat.getColorStateList(context, R.color.defaultBlue));
+//    }
 }

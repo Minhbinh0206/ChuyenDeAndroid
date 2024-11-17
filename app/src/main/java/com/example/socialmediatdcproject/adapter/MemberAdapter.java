@@ -10,8 +10,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -27,6 +30,7 @@ import java.util.List;
 public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberViewHolder> {
 
     private List<Student> memberList;
+    private List<Student> filteredMemberList;
     private Context context;
     private OnMemberClickListener onMemberClickListener;
     private boolean isEditMode;
@@ -50,6 +54,10 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
         this.memberList = memberList;
         this.context = context;
     }
+
+    public MemberAdapter(List<Student> studentList) {
+    }
+
     public interface OnMemberClickListener {
         void onMemberClick(Student student);
     }
@@ -98,10 +106,12 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
             Log.e("LecturerAdapter", "isEditMode: " + isEditMode );
 
             holder.removeButton.setVisibility(isEditMode ? View.VISIBLE : View.GONE);
+            changeColorButtonRemove(holder.removeButton);
+
             holder.removeButton.setOnClickListener(view -> {
                 // Gọi phương thức xóa trong ViewModel và truyền vào groupId và studentId
                 sharedViewModel.removeStudentFromGroup(groupId, student.getUserId());
-
+                    Toast.makeText(context,"Xóa học sinh thành công khỏi nhóm", Toast.LENGTH_SHORT).show();
                 // Cập nhật danh sách hiển thị trong Adapter
                 memberList.remove(position);
                 notifyItemRemoved(position);
@@ -157,6 +167,32 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
         this.isEditMode = editMode;
         notifyDataSetChanged();
     }
+
+    public void changeColorButtonRemove(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.defaultBlue));
+        btn.setTextColor(ContextCompat.getColorStateList(context, R.color.black));
+    }
+
+    public void filterMember(String keyword) {
+//        memberList.clear();
+        if (keyword.isEmpty()) {
+            filteredMemberList = new ArrayList<>(memberList);
+        } else {
+            List<Student> filteredList = new ArrayList<>();
+            for (Student student : memberList) {
+                if (student.getFullName().toLowerCase().contains(keyword.toLowerCase())) {
+                    filteredList.add(student);
+                }
+            }
+            filteredMemberList = filteredList;
+        }
+        notifyDataSetChanged();
+    }
+
+//    public void changeColorButtonNormal(Button btn){
+//        btn.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.white));
+//        btn.setTextColor(ContextCompat.getColorStateList(context, R.color.defaultBlue));
+//    }
 
 
 }
