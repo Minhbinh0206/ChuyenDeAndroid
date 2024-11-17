@@ -51,6 +51,12 @@ public class BussinessFragment extends Fragment {
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
         frameLayout.setVisibility(view.GONE);
 
+        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        recyclerView.setVisibility(View.VISIBLE);
+
+        FrameLayout frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+        frameLayout.setVisibility(View.GONE);
+
         postAdapter = new PostAdapter(postsBusiness, requireContext());
         businessAdapter = new BussinessAdapter(businessesList , requireContext());
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));

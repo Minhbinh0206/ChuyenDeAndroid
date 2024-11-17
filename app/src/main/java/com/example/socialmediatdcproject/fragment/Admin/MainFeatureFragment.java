@@ -26,7 +26,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
@@ -55,6 +57,7 @@ import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.FilterPostsAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R; // Import đúng package chứa R
+import com.example.socialmediatdcproject.activity.CreateNewEventActivity;
 import com.example.socialmediatdcproject.activity.SendNotificationActivity;
 import com.example.socialmediatdcproject.adapter.ItemFilterAdapter;
 import com.example.socialmediatdcproject.dataModels.Collab;
@@ -102,10 +105,12 @@ public class MainFeatureFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Button postBtn = view.findViewById(R.id.admin_create_post);
         Button noticeBtn = view.findViewById(R.id.admin_create_notify);
+        Button eventBtn = view.findViewById(R.id.admin_create_event);
         showImagePost = view.findViewById(R.id.post_image_filter);
 
         changeColorButtonNormal(postBtn);
         changeColorButtonNormal(noticeBtn);
+        changeColorButtonNormal(eventBtn);
 
         postBtn.setOnClickListener(v -> {
             showCustomDialog();
@@ -115,6 +120,66 @@ public class MainFeatureFragment extends Fragment {
             Intent intent = new Intent(v.getContext(), SendNotificationActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             startActivity(intent);
+        });
+
+        eventBtn.setOnClickListener(v -> {
+            String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+            Intent intent = new Intent(v.getContext(), CreateNewEventActivity.class);
+
+            AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+            AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+            AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+            adminDepartmentAPI.getAdminDepartmentByKey(userKey, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                @Override
+                public void onUserReceived(AdminDepartment adminDepartment) {
+                    intent.putExtra("adminId", adminDepartment.getUserId());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                    startActivity(intent);
+                }
+
+                @Override
+                public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+                }
+
+                @Override
+                public void onError(String s) {
+
+                }
+            });
+            adminBusinessAPI.getAdminBusinessByKey(userKey, new AdminBusinessAPI.AdminBusinessCallBack() {
+                @Override
+                public void onUserReceived(AdminBusiness adminBusiness) {
+                    intent.putExtra("adminId", adminBusiness.getUserId());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                    startActivity(intent);
+                }
+
+                @Override
+                public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                }
+
+                @Override
+                public void onError(String s) {
+
+                }
+            });
+            adminDefaultAPI.getAdminDefaultByKey(userKey, new AdminDefaultAPI.AdminDefaultCallBack() {
+                @Override
+                public void onUserReceived(AdminDefault adminDefault) {
+                    intent.putExtra("adminId", adminDefault.getUserId());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                    startActivity(intent);
+                }
+
+                @Override
+                public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+                }
+            });
+
         });
     }
 
@@ -613,8 +678,8 @@ public class MainFeatureFragment extends Fragment {
     }
 
     public void changeColorButtonNormal(Button btn){
-        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
-        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 
     private void loadBusinessFilterCollabsDepartment() {
@@ -902,8 +967,23 @@ public class MainFeatureFragment extends Fragment {
         AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
+        // Tạo Dialog
+        Dialog loadingDialog = new Dialog(getContext());
+        loadingDialog.setContentView(R.layout.dialog_loading);
+        loadingDialog.setCancelable(false); // Không cho phép người dùng tắt dialog bằng cách bấm ngoài
+
+        // Thêm ProgressBar vào layout của Dialog (layout: dialog_loading.xml)
+        ProgressBar progressBar = loadingDialog.findViewById(R.id.progressBar);
+        TextView textView = loadingDialog.findViewById(R.id.textLoading);
+        textView.setText("Đang đăng bài...");
+
+        // Hiển thị Dialog
+        loadingDialog.show();
+
         // Cờ để kiểm tra chỉ gọi addPost một lần
         final boolean[] isPostAdded = {false};
+        Post newPost = new Post();
+        uploadImageToFirebaseStorage(selectedImageUri, newPost, loadingDialog);
         adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
             @Override
             public void onUserReceived(AdminDepartment adminDepartment) {
@@ -927,11 +1007,9 @@ public class MainFeatureFragment extends Fragment {
                                         // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
                                         if (adminDepartment.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
                                             isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
-                                            Post newPost = new Post();
                                             newPost.setPostId(posts.size());
                                             newPost.setUserId(adminDepartment.getUserId());
                                             newPost.setPostLike(0);
-                                            uploadImageToFirebaseStorage(selectedImageUri, newPost);
                                             newPost.setContent(content);
                                             newPost.setStatus(Post.APPROVED);
                                             newPost.setFilter(filter);
@@ -943,6 +1021,9 @@ public class MainFeatureFragment extends Fragment {
                                             }
 
                                             postAPI.addPost(newPost);
+
+                                            // Hiển thị Toast thông báo thành công
+                                            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
                                         }
                                     }
 
@@ -996,11 +1077,9 @@ public class MainFeatureFragment extends Fragment {
                                         if (!isPostAdded[0]) {
                                             isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
 
-                                            Post newPost = new Post();
                                             newPost.setPostId(posts.size());
                                             newPost.setUserId(adminBusiness.getUserId());
                                             newPost.setPostLike(0);
-                                            uploadImageToFirebaseStorage(selectedImageUri, newPost);
                                             newPost.setContent(content);
                                             newPost.setStatus(Post.APPROVED);
                                             newPost.setFilter(filter);
@@ -1012,6 +1091,9 @@ public class MainFeatureFragment extends Fragment {
                                             }
 
                                             postAPI.addPost(newPost);
+
+                                            // Hiển thị Toast thông báo thành công
+                                            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
                                         }
                                     }
 
@@ -1061,11 +1143,9 @@ public class MainFeatureFragment extends Fragment {
                                     if (!isPostAdded[0]) {
                                         isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
 
-                                        Post newPost = new Post();
                                         newPost.setPostId(posts.size());
                                         newPost.setUserId(adminDefault.getUserId());
                                         newPost.setPostLike(0);
-                                        uploadImageToFirebaseStorage(selectedImageUri, newPost);
                                         newPost.setContent(content);
                                         newPost.setStatus(Post.APPROVED);
                                         newPost.setFilter(filter);
@@ -1077,6 +1157,9 @@ public class MainFeatureFragment extends Fragment {
                                         }
 
                                         postAPI.addPost(newPost);
+
+                                        // Hiển thị Toast thông báo thành công
+                                        Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
                                     }
                                 }
 
@@ -1098,7 +1181,7 @@ public class MainFeatureFragment extends Fragment {
     }
 
     // Tải ảnh lên Firebase và lưu URL vào post
-    private void uploadImageToFirebaseStorage(Uri filePath, Post post) {
+    private void uploadImageToFirebaseStorage(Uri filePath, Post post, Dialog loadingDialog) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
 
@@ -1115,6 +1198,9 @@ public class MainFeatureFragment extends Fragment {
 
                             PostAPI postAPI = new PostAPI();
                             postAPI.updatePost(post);
+
+                            // Dismiss dialog sau khi bài viết được thêm
+                            loadingDialog.dismiss();
                         });
                     })
                     .addOnFailureListener(exception -> {

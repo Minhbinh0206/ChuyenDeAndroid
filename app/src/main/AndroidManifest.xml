@@ -90,6 +90,12 @@
         <activity android:name=".activity.SendNotificationActivity"
             android:exported="false">
         </activity>
+        <activity android:name=".activity.CreateNewEventActivity"
+            android:exported="false">
+        </activity>
+        <activity android:name=".activity.EventDetailActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>

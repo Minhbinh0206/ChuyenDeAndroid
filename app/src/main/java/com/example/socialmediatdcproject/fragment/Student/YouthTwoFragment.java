@@ -56,6 +56,11 @@ public class YouthTwoFragment extends Fragment {
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
         frameLayout.setVisibility(view.GONE);
+        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        recyclerView.setVisibility(View.VISIBLE);
+
+        FrameLayout frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+        frameLayout.setVisibility(View.GONE);
 
         GroupAPI groupAPI = new GroupAPI();
         groupAPI.getGroupById(3, new GroupAPI.GroupCallback() {

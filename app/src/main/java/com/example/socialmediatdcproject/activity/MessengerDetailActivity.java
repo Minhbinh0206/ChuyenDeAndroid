@@ -3,6 +3,7 @@ package com.example.socialmediatdcproject.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,6 +24,8 @@ import com.example.socialmediatdcproject.dataModels.Message;
 import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,6 +42,9 @@ public class MessengerDetailActivity extends AppCompatActivity {
     private HashSet<String> messageIds = new HashSet<>(); // Tạo một HashSet để theo dõi các ID của tin nhắn đã có
     private boolean isSendMessagesLoaded = false;
     private boolean isReceiveMessagesLoaded = false;
+    private boolean isInDetailPage = false;
+    TextView onlineStatus;
+    TextView offlineStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +58,9 @@ public class MessengerDetailActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(friendPersonalAdapter);
 
+        onlineStatus = findViewById(R.id.online);
+        offlineStatus = findViewById(R.id.offline);
+
         ImageButton buttonBackHome = findViewById(R.id.icon_back_home);
         buttonBackHome.setOnClickListener(v -> finish());
     }
@@ -59,6 +68,8 @@ public class MessengerDetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        isInDetailPage = true; // Đang ở trang chi tiết
 
         isSendMessagesLoaded = false;
         isReceiveMessagesLoaded = false;
@@ -69,14 +80,25 @@ public class MessengerDetailActivity extends AppCompatActivity {
         ImageButton submitMessage = findViewById(R.id.submit_mess);
         EditText contentMessage = findViewById(R.id.content_mess);
 
-
-
         // Set Avatar
         StudentAPI studentAPI = new StudentAPI();
         if (studentId != -1) {
             studentAPI.getStudentById(studentId, new StudentAPI.StudentCallback() {
                 @Override
                 public void onStudentReceived(Student student) {
+                    studentAPI.listenForOnlineStatus(student.getUserId(), new StudentAPI.OnlineStatusCallback() {
+                        @Override
+                        public void onOnlineStatusReceived(boolean isOnline) {
+                            if (isOnline) {
+                                onlineStatus.setVisibility(View.VISIBLE);
+                                offlineStatus.setVisibility(View.GONE);
+                            }
+                            else {
+                                onlineStatus.setVisibility(View.GONE);
+                                offlineStatus.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    });
                     ImageView imageView = findViewById(R.id.avatar_user);
                     Glide.with(MessengerDetailActivity.this)
                             .load(student.getAvatar())
@@ -99,43 +121,57 @@ public class MessengerDetailActivity extends AppCompatActivity {
                                 String currentDateAndTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
 
                                 if (!messageContent.isEmpty()) {
-                                    // Cấu hình tin nhắn Send
-                                    messSend.setMyUserId(myStudent.getUserId());
-                                    messSend.setYourUserId(studentId);
-                                    messSend.setContent(messageContent);
-                                    messSend.setMessageType("Send");
-                                    messSend.setCreateAt(currentDateAndTime);
-
-                                    // Cấu hình tin nhắn Receive
-                                    messReceive.setMyUserId(studentId);
-                                    messReceive.setYourUserId(myStudent.getUserId());
-                                    messReceive.setContent(messageContent);
-                                    messReceive.setMessageType("Receive");
-                                    messReceive.setCreateAt(currentDateAndTime);
-
-                                    // Lưu tin nhắn vào Firebase
-                                    messageAPI.addMessage(messSend);
-                                    messageAPI.addMessage(messReceive);
-
-                                    NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
-                                    notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
+                                    messageAPI.getAllMessages(student.getUserId(), new MessageAPI.MessageCallback() {
                                         @Override
-                                        public void onNotificationsReceived(List<NotifyQuickly> notifications) {
-                                            NotifyQuickly notifyQuickly = new NotifyQuickly();
-                                            notifyQuickly.setUserSendId(myStudent.getUserId());
-                                            notifyQuickly.setUserGetId(studentId);
-                                            notifyQuickly.setContent("Bạn có tin nhắn mới từ " + myStudent.getFullName());
+                                        public void onMessagesReceived(List<Message> messages) {
+                                            // Cấu hình tin nhắn Send
+                                            messSend.setMessageId(messages.size());
+                                            messSend.setMyUserId(myStudent.getUserId());
+                                            messSend.setYourUserId(studentId);
+                                            messSend.setContent(messageContent);
+                                            messSend.setRead(true);
+                                            messSend.setMessageType("Send");
+                                            messSend.setCreateAt(currentDateAndTime);
 
-                                            notifyQuicklyAPI.addNotification(notifyQuickly);
+                                            // Cấu hình tin nhắn Receive
+                                            messReceive.setMessageId(messages.size());
+                                            messReceive.setMyUserId(studentId);
+                                            messReceive.setYourUserId(myStudent.getUserId());
+                                            messReceive.setContent(messageContent);
+                                            messReceive.setMessageType("Receive");
+                                            messReceive.setRead(false);
+                                            messReceive.setCreateAt(currentDateAndTime);
+
+                                            // Lưu tin nhắn vào Firebase
+                                            messageAPI.addMessage(messSend);
+                                            messageAPI.addMessage(messReceive);
+
+                                            NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+                                            notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
+                                                @Override
+                                                public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                                                    NotifyQuickly notifyQuickly = new NotifyQuickly();
+                                                    notifyQuickly.setUserSendId(myStudent.getUserId());
+                                                    notifyQuickly.setUserGetId(studentId);
+                                                    notifyQuickly.setContent("Bạn có tin nhắn mới từ " + myStudent.getFullName());
+
+                                                    notifyQuicklyAPI.addNotification(notifyQuickly);
+                                                }
+                                            });
+
+                                            // Cập nhật giao diện ngay lập tức với chỉ tin nhắn Send
+                                            contentMessage.setText(""); // Xóa nội dung tin nhắn sau khi gửi
+                                            if (!messageIds.contains(messSend.getMessageId())) {
+                                                friendPersonalAdapter.notifyDataSetChanged(); // Cập nhật giao diện
+                                                scrollToBottom(); // Cuộn xuống cuối danh sách tin nhắn
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onMessageAdded(Message message) {
+
                                         }
                                     });
-
-                                    // Cập nhật giao diện ngay lập tức với chỉ tin nhắn Send
-                                    contentMessage.setText(""); // Xóa nội dung tin nhắn sau khi gửi
-                                    if (!messageIds.contains(messSend.getMessageId())) {
-                                        friendPersonalAdapter.notifyDataSetChanged(); // Cập nhật giao diện
-                                        scrollToBottom(); // Cuộn xuống cuối danh sách tin nhắn
-                                    }
                                 }
                             }
 
@@ -219,6 +255,11 @@ public class MessengerDetailActivity extends AppCompatActivity {
                         listMessage.add(message); // Thêm tất cả tin nhắn mới vào danh sách
                     }
                 }
+                if (isInDetailPage) {
+                    for (Message m : listMessage) {
+                        messageAPI.setMessageRead(myUserId, m.getMessageId());
+                    }
+                }
                 friendPersonalAdapter.notifyDataSetChanged(); // Cập nhật giao diện
                 scrollToBottom(); // Cuộn xuống cuối danh sách tin nhắn
             }
@@ -233,4 +274,5 @@ public class MessengerDetailActivity extends AppCompatActivity {
     private void scrollToBottom() {
         recyclerView.scrollToPosition(listMessage.size() - 1);
     }
+
 }

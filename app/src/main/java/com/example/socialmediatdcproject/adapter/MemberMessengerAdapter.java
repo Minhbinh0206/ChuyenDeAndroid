@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -68,15 +69,41 @@ public class MemberMessengerAdapter extends RecyclerView.Adapter<MemberMessenger
                             messageAPI.listenForMessages(myStudent.getUserId(), new MessageAPI.MessageCallback() {
                                 @Override
                                 public void onMessagesReceived(List<Message> messages) {
+                                    int count = 0;
+
                                     for (Message m: messages) {
                                         if (m.getYourUserId() == student.getUserId()) {
+                                            // Cắt chuỗi nội dung nếu nó dài hơn 30 ký tự
+                                            String content = m.getContent();
+                                            if (content.length() > 30) {
+                                                content = content.substring(0, 25) + "..."; // Thêm dấu ba chấm
+                                            }
+
                                             if (m.getMessageType().equals("Send")) {
-                                                holder.memberRecent.setText("Bạn: " + m.getContent());
+                                                holder.memberRecent.setText("Bạn: " + content);
+                                                holder.light.setVisibility(View.GONE);
                                             }
                                             else {
-                                                holder.memberRecent.setText(m.getContent());
+                                                holder.memberRecent.setText(content);
+                                                if (m.isRead()) {
+                                                    holder.memberRecent.setTypeface(null, Typeface.NORMAL);
+                                                }
+                                                else {
+                                                    count++;
+                                                    holder.memberRecent.setTypeface(null, Typeface.BOLD);
+                                                }
                                             }
+
                                         }
+                                    }
+
+                                    holder.light.setText(count + "");
+
+                                    if (count == 0) {
+                                        holder.light.setVisibility(View.GONE);
+                                    }
+                                    else {
+                                        holder.light.setVisibility(View.VISIBLE);
                                     }
                                 }
 
@@ -100,15 +127,51 @@ public class MemberMessengerAdapter extends RecyclerView.Adapter<MemberMessenger
                 }
             });
 
+            studentAPI.listenForOnlineStatus(student.getUserId(), new StudentAPI.OnlineStatusCallback() {
+                @Override
+                public void onOnlineStatusReceived(boolean isOnline) {
+                    if (isOnline) {
+                        holder.online.setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        holder.online.setVisibility(View.GONE);
+                    }
+                }
+            });
         } else {
             Log.e("MemberAdapter", "User at position " + position + " is null");
         }
 
         holder.messengerDetail.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), MessengerDetailActivity.class);
-            intent.putExtra("studentId", student.getUserId());
-            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-            v.getContext().startActivity(intent);
+            MessageAPI messageAPI = new MessageAPI();
+            StudentAPI studentAPI = new StudentAPI();
+            studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                @Override
+                public void onStudentReceived(Student me) {
+                    messageAPI.getAllMessages(me.getUserId(), new MessageAPI.MessageCallback() {
+                        @Override
+                        public void onMessagesReceived(List<Message> messages) {
+                            for (Message m : messages) {
+                                messageAPI.setMessageRead(me.getUserId(), m.getMessageId());
+                            }
+                            intent.putExtra("studentId", student.getUserId());
+                            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                            v.getContext().startActivity(intent);
+                        }
+
+                        @Override
+                        public void onMessageAdded(Message message) {
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onStudentsReceived(List<Student> students) {
+
+                }
+            });
         });
     }
 
@@ -124,6 +187,9 @@ public class MemberMessengerAdapter extends RecyclerView.Adapter<MemberMessenger
         TextView memberName;
         TextView memberRecent;
         CardView messengerDetail;
+        TextView light;
+        TextView online;
+        TextView offline;
 
         public MemberViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -131,6 +197,9 @@ public class MemberMessengerAdapter extends RecyclerView.Adapter<MemberMessenger
             memberName = itemView.findViewById(R.id.member_name);
             memberRecent = itemView.findViewById(R.id.member_messenger_recent);
             messengerDetail = itemView.findViewById(R.id.message_detail);
+            light = itemView.findViewById(R.id.light_message);
+            online = itemView.findViewById(R.id.online);
+            offline = itemView.findViewById(R.id.offline);
         }
     }
 }

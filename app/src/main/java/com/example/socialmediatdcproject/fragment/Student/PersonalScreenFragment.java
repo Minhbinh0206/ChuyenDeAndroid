@@ -77,6 +77,8 @@ public class PersonalScreenFragment extends Fragment {
         frameLayout.setVisibility(view.getVisibility());
         postAdapter = new PostAdapter(postsUser, requireContext());
 
+        recyclerView.setVisibility(View.VISIBLE);
+
         mAuth = FirebaseAuth.getInstance(); // Khởi tạo FirebaseAuth
 
         // Tìm các nút
@@ -128,6 +130,7 @@ public class PersonalScreenFragment extends Fragment {
             fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.third_content_fragment, friendsFragment);
             fragmentTransaction.commit();
+            recyclerView.setVisibility(View.VISIBLE);
 
             // Cập nhật màu cho các nút
             updateButtonColorsActive(personalFriends);
@@ -136,8 +139,11 @@ public class PersonalScreenFragment extends Fragment {
 
         // Sự kiện khi nhấn vào nút group
         personalMyGroup.setOnClickListener(v -> {
-            frameLayout.setVisibility(View.GONE);
-            loadGroupFromFirebase();
+            frameLayout.setVisibility(View.VISIBLE);
+            friendsFragment = new ListEventAndGroupFragment();
+            fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.third_content_fragment, friendsFragment);
+            fragmentTransaction.commit();
 
             // Cập nhật màu cho các nút
             updateButtonColorsActive(personalMyGroup);
@@ -150,61 +156,6 @@ public class PersonalScreenFragment extends Fragment {
             // Chuyển sang màn hình EditScreenActivity (Activity)
             Intent intent = new Intent(requireContext(), EditScreenActivity.class);
             startActivity(intent); // Bắt đầu EditScreenActivity
-        });
-    }
-
-    public void loadGroupFromFirebase() {
-        groupList.clear();
-        String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        StudentAPI studentAPI = new StudentAPI();
-        studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
-            @Override
-            public void onStudentReceived(Student student) {
-                GroupAPI groupAPI = new GroupAPI();
-                GroupUserAPI groupUserAPI = new GroupUserAPI();
-                groupUserAPI.getGroupUserByIdUser(student.getUserId(), new GroupUserAPI.GroupUserCallback() {
-                    @Override
-                    public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                        // Sử dụng CountDownLatch để đợi cho tất cả các nhóm được tải xong
-                        CountDownLatch latch = new CountDownLatch(groupUsers.size());
-                        for (GroupUser gu : groupUsers) {
-                            groupAPI.getGroupById(gu.getGroupId(), new GroupAPI.GroupCallback() {
-                                @Override
-                                public void onGroupReceived(Group group) {
-                                    groupList.add(group);
-                                    latch.countDown(); // Giảm số đếm khi tải xong một nhóm
-                                }
-
-                                @Override
-                                public void onGroupsReceived(List<Group> groups) {
-                                    // Không sử dụng trong trường hợp này
-                                }
-                            });
-                        }
-
-                        // Đợi cho đến khi tất cả các nhóm được thêm vào danh sách
-                        new Thread(() -> {
-                            try {
-                                latch.await(); // Đợi cho đến khi countDownLatch đếm đến 0
-                                requireActivity().runOnUiThread(() -> {
-                                    groupAdapter = new GroupAdapter(groupList, requireContext());
-                                    recyclerView.setAdapter(groupAdapter);
-                                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
-                                    recyclerView.setLayoutManager(linearLayoutManager);
-                                    groupAdapter.notifyDataSetChanged();
-                                });
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }).start();
-                    }
-                });
-            }
-
-            @Override
-            public void onStudentsReceived(List<Student> students) {
-                // Không sử dụng trong trường hợp này
-            }
         });
     }
 

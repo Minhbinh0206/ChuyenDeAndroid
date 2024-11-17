@@ -49,6 +49,9 @@ public class GroupFragment extends Fragment {
         thirdContent = requireActivity().findViewById(R.id.third_content_fragment);
         thirdContent.setVisibility(view.getVisibility());
 
+        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        recyclerView.setVisibility(View.VISIBLE);
+
         // Mặc định vào group list
         loadGroups();
 

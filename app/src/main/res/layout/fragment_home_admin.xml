@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/line_splitt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="10dp"
+        android:text="Sự kiện"
+        android:textSize="25dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/frame_event"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Content 1 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/frame_event"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/line_splitt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/line_split" />
+
+    <TextView
+        android:id="@+id/null_event"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:paddingVertical="10dp"
+        android:text="Hiện chưa có sự kiện nào"
+        android:textSize="20dp"
+        android:textStyle="italic"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@+id/line_splitt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/line_split" />
+
+    <TextView
+        android:id="@+id/line_split"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:textStyle="bold"
+        android:layout_marginVertical="10dp"
+        android:text="Bài viết"
+        android:textSize="25dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/frame_event" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

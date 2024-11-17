@@ -4,8 +4,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="defaultBlue">#0D99FF</color>
     <color name="like">#FF6666</color>
-    <color name="warning">#EEEE00</color>
+    <color name="warning">#FFCC33</color>
     <color name="success">#00CD00</color>
-    <color name="danger">#EE0000</color>
-
+    <color name="danger">#FF3333</color>
+    <color name="coming">#FFCC00</color>
 </resources>

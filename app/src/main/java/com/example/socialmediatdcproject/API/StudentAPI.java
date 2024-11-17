@@ -36,6 +36,33 @@ public class StudentAPI {
                 });
     }
 
+    public void listenForOnlineStatus(int userId, final OnlineStatusCallback callback) {
+        studentDatabase.orderByChild("userId").equalTo(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Boolean isOnline = snapshot.child("online").getValue(Boolean.class);
+                        callback.onOnlineStatusReceived(isOnline != null && isOnline);
+                    }
+                } else {
+                    callback.onOnlineStatusReceived(false); // Trường hợp không tìm thấy người dùng
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Xử lý khi có lỗi xảy ra
+            }
+        });
+    }
+
+    // Định nghĩa interface OnlineStatusCallback
+    public interface OnlineStatusCallback {
+        void onOnlineStatusReceived(boolean isOnline);
+    }
+
+
     // Lấy sinh viên theo classId
     public void getStudentByClassId(int classId, final StudentCallback callback) {
         studentDatabase.orderByChild("classId").equalTo(classId).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -57,7 +84,6 @@ public class StudentAPI {
             }
         });
     }
-
 
     // Cập nhật thông tin sinh viên
     public void updateStudent(Student student, final StudentCallback callback) {
@@ -124,6 +150,19 @@ public class StudentAPI {
                 });
     }
 
+    public void updateOnline(boolean isOnline) {
+        String uniqueKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // Cập nhật trạng thái online vào cơ sở dữ liệu
+        studentDatabase.child(uniqueKey).child("online").setValue(isOnline)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // Gọi lại callback nếu cần
+                    } else {
+                        // Xử lý lỗi nếu cần
+                    }
+                });
+    }
 
     public void getStudentByKey(String key, StudentCallback callback) {
         studentDatabase.child(key).addListenerForSingleValueEvent(new ValueEventListener() {

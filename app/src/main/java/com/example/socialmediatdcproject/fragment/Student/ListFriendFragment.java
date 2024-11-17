@@ -48,7 +48,10 @@ public class ListFriendFragment extends Fragment {
         Button listInvitation = view.findViewById(R.id.button_personal_list_invitation);
         Button listFollowed = view.findViewById(R.id.button_personal_list_follow);
 
+        recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+
         TextView textView = requireActivity().findViewById(R.id.null_content_notify);
+        textView.setVisibility(View.VISIBLE);
 
         displayFriends(textView);
 
@@ -96,7 +99,6 @@ public class ListFriendFragment extends Fragment {
     }
 
     private void displayFriends(TextView textView){
-        recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
         ArrayList<Student> listFriends = new ArrayList<>();
         ArrayList<Student> tempListFriends = new ArrayList<>();
 
@@ -203,7 +205,6 @@ public class ListFriendFragment extends Fragment {
     }
 
     private void displayFriendsInvitation(TextView textView){
-        recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
         ArrayList<Student> listFriends = new ArrayList<>();
 
         FriendAPI friendAPI = new FriendAPI();
@@ -226,7 +227,7 @@ public class ListFriendFragment extends Fragment {
 
                                         if (listFriends.isEmpty()) {
                                             textView.setVisibility(View.VISIBLE);
-                                            textView.setText("Hiện chưa có bài viết nào cần duyệt");
+                                            textView.setText("Hiện chưa có lời mời kết bạn nào");
                                         }
                                         else {
                                             textView.setVisibility(View.GONE);
@@ -261,7 +262,6 @@ public class ListFriendFragment extends Fragment {
     }
 
     private void displayFriendsFollow(TextView textView){
-        recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
         ArrayList<Student> listFriends = new ArrayList<>();
 
         FriendAPI friendAPI = new FriendAPI();
@@ -284,7 +284,7 @@ public class ListFriendFragment extends Fragment {
 
                                         if (listFriends.isEmpty()) {
                                             textView.setVisibility(View.VISIBLE);
-                                            textView.setText("Hiện chưa có bài viết nào cần duyệt");
+                                            textView.setText("Bạn không gửi lời mời kết bạn nào");
                                         }
                                         else {
                                             textView.setVisibility(View.GONE);
