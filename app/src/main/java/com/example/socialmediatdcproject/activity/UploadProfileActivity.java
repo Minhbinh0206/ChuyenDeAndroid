@@ -198,9 +198,17 @@ public class UploadProfileActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        userId = intent.getIntExtra("userId", userId);
-        email = intent.getStringExtra("email");
-        studentNumber = intent.getStringExtra("studentNumber");
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean isRegistering = sharedPreferences.getBoolean("isRegistering" , false);
+        if(isRegistering) {
+            userId = sharedPreferences.getInt("userId" , -1);
+            email = sharedPreferences.getString("email", null);
+            studentNumber = sharedPreferences.getString("studentNumber" , null);
+        }else{
+            userId = intent.getIntExtra("userId", userId);
+            email = intent.getStringExtra("email");
+            studentNumber = intent.getStringExtra("studentNumber");
+        }
 
         Log.d(TAG, "onCreate: " + studentNumber);
         Log.d(TAG, "onCreate: " + userId);
@@ -314,7 +322,7 @@ public class UploadProfileActivity extends AppCompatActivity {
 
 
             // Kiểm tra xem người dùng đã nhập đầy đủ thông tin chưa
-            if (studentNumber.isEmpty() || birthday.isEmpty()) {
+            if (birthday.isEmpty()) {
                 Toast.makeText(UploadProfileActivity.this, "Vui lòng nhập đầy đủ thông tin.", Toast.LENGTH_SHORT).show();
                 return;
             }

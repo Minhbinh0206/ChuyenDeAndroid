@@ -57,7 +57,6 @@ public class SearchGroupFragment extends Fragment {
             @Override
             public void onGroupsReceived(List<Group> groups) {
                 groupList.addAll(groups);
-
                 filteredGroupList = new ArrayList<>(groupList);
                 adapter = new GroupAdapter(filteredGroupList, getContext());
                 adapter.notifyDataSetChanged();

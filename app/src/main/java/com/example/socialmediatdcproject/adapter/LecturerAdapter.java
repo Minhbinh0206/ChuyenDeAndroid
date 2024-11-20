@@ -147,8 +147,8 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
     }
 
     public void changeColorButtonRemove(Button btn){
-        btn.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.white));
-        btn.setTextColor(ContextCompat.getColorStateList(context, R.color.black));
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(context, R.color.defaultBlue));
+        btn.setTextColor(ContextCompat.getColorStateList(context, R.color.white));
     }
 
 //    public void changeColorButtonNormal(Button btn){

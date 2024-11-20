@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -131,6 +132,13 @@ public class AdminDepartmentMemberFragment extends Fragment {
                                     changeColorButtonActive(lecturerButton);
                                     changeColorButtonNormal(studentButton);
                                 });
+
+
+                                Spinner filterBySubject = view.findViewById(R.id.admin_filterBySubject);
+                                Spinner filterByMajor = view.findViewById(R.id.admin_filterByMajor);
+                                Spinner filterByClass = view.findViewById(R.id.admin_filterByClass);
+
+
                             }
 
                             @Override
@@ -176,7 +184,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
                 .replace(R.id.third_content_fragment, fragment)
                 .commit();
     }
-    // Hiển thị sinh viên có trong khoa
+    // Hiển thị toàn bộ sinh viên có trong khoa
     private void loadStudentsByGroupId(int id) {
         ArrayList<Student> memberGroup = new ArrayList<>();
         StudentAPI studentAPI = new StudentAPI();
@@ -238,7 +246,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
             }
         });
     }
-    // Hiển thị giảng viên có trong khoa
+    // Hiển thị toàn bộ giảng viên có trong khoa
     private void loadLecturersByGroupId(int id) {
         ArrayList<Lecturer> memberGroup = new ArrayList<>();
         LecturerAPI lecturerAPI = new LecturerAPI();
@@ -336,6 +344,4 @@ public class AdminDepartmentMemberFragment extends Fragment {
         fragmentTransaction.addToBackStack(null); // Thêm dòng này
         fragmentTransaction.commit();
     }
-
-
 }
