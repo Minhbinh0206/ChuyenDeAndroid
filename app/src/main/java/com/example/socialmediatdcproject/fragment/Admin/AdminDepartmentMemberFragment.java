@@ -1,11 +1,16 @@
 package com.example.socialmediatdcproject.fragment.Admin;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -27,9 +32,11 @@ import com.example.socialmediatdcproject.API.DepartmentAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.LecturerAPI;
+import com.example.socialmediatdcproject.API.MajorAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.UploadProfileActivity;
 import com.example.socialmediatdcproject.adapter.LecturerAdapter;
 import com.example.socialmediatdcproject.adapter.MemberAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
@@ -38,6 +45,7 @@ import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Lecturer;
+import com.example.socialmediatdcproject.model.Major;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
@@ -52,6 +60,11 @@ public class AdminDepartmentMemberFragment extends Fragment {
     FrameLayout frameLayout;
     private LecturerAdapter lecturerAdapter;
     private SharedViewModel sharedViewModel;
+    private EditText searchBar;
+    private List<Lecturer> originalLecturers = new ArrayList<>();
+    private List<Student> originalStudents = new ArrayList<>();
+    private Spinner filterSpinner;
+    private List<String> optionsMajor = new ArrayList<>();
 
     @Nullable
     @Override
@@ -76,6 +89,24 @@ public class AdminDepartmentMemberFragment extends Fragment {
         // Khởi tạo LecturerAdapter rỗng để đảm bảo không bị null
         lecturerAdapter = new LecturerAdapter(new ArrayList<>(), requireContext());
 
+        // lọc danh sách theo keyword nhập vào
+        searchBar = view.findViewById(R.id.search_bar);
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Lọc danh sách khi từ khóa thay đổi
+                filterList(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
         String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
@@ -92,8 +123,6 @@ public class AdminDepartmentMemberFragment extends Fragment {
                                 int groupId = -1;
 
                                 groupId = group.getGroupId();
-
-                                Log.d("AdminDepartmentFragment", "onGroupReceived: " + groupId);
 
                                 TextView nameTraining = view.findViewById(R.id.name_department_admin);
                                 ImageView avatarTraining = view.findViewById(R.id.logo_department_admin);
@@ -114,6 +143,29 @@ public class AdminDepartmentMemberFragment extends Fragment {
                                 changeColorButtonActive(studentButton);
                                 changeColorButtonNormal(lecturerButton);
 
+                                studentButton.setEnabled(false); // Disable nút đã bấm
+                                lecturerButton.setEnabled(true); // Enable nút còn lại
+
+                                loadMajors(adminDepartment.getDepartmentId());
+
+                                //spinner
+                                TextView filterTextView = view.findViewById(R.id.filter_text_view);
+                                filterSpinner = view.findViewById(R.id.admin_filterBySubject);
+
+                                //lọc danh sách theo spinner
+                                filterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                    @Override
+                                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                        int majorId = position;
+                                        loadListByFilter(majorId);
+                                    }
+
+                                    @Override
+                                    public void onNothingSelected(AdapterView<?> parent) {
+
+                                    }
+                                });
+
                                 // Sự kiện khi nhấn vào nút studentButton
                                 int finalGroupId = groupId;
                                 studentButton.setOnClickListener(v -> {
@@ -122,6 +174,9 @@ public class AdminDepartmentMemberFragment extends Fragment {
                                     // Cập nhật màu cho các nút
                                     changeColorButtonActive(studentButton);
                                     changeColorButtonNormal(lecturerButton);
+
+                                    studentButton.setEnabled(false); // Disable nút đã bấm
+                                    lecturerButton.setEnabled(true); // Enable nút còn lại
                                 });
 
                                 // Sự kiện khi nhấn vào nút lecturerButton
@@ -131,14 +186,10 @@ public class AdminDepartmentMemberFragment extends Fragment {
                                     // Cập nhật màu cho các nút
                                     changeColorButtonActive(lecturerButton);
                                     changeColorButtonNormal(studentButton);
+
+                                    lecturerButton.setEnabled(false); // Disable nút đã bấm
+                                    studentButton.setEnabled(true); // Enable nút còn lại
                                 });
-
-
-                                Spinner filterBySubject = view.findViewById(R.id.admin_filterBySubject);
-                                Spinner filterByMajor = view.findViewById(R.id.admin_filterByMajor);
-                                Spinner filterByClass = view.findViewById(R.id.admin_filterByClass);
-
-
                             }
 
                             @Override
@@ -168,11 +219,8 @@ public class AdminDepartmentMemberFragment extends Fragment {
 
         changeFragmentByButtonClick();
     }
-    // Chuyển về RepairButtonFragment
-    public void onCancelEditMode() {
-        // Quay lại RepairButtonFragment
-        repairButtonFragment();
-    }
+
+
     private void changeFragmentByButtonClick(){
         RepairButtonFragment fragment = new RepairButtonFragment();
         fragment.setEditAction(() -> {
@@ -184,11 +232,11 @@ public class AdminDepartmentMemberFragment extends Fragment {
                 .replace(R.id.third_content_fragment, fragment)
                 .commit();
     }
-    // Hiển thị toàn bộ sinh viên có trong khoa
+    // Hiển thị sinh viên có trong khoa
     private void loadStudentsByGroupId(int id) {
-        ArrayList<Student> memberGroup = new ArrayList<>();
-        StudentAPI studentAPI = new StudentAPI();
+        originalStudents.clear();
 
+        StudentAPI studentAPI = new StudentAPI();
         studentAPI.getAllStudents(new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
@@ -214,14 +262,14 @@ public class AdminDepartmentMemberFragment extends Fragment {
                                     // Chỉ thêm vào memberGroup nếu chưa có
                                     for (GroupUser gus : groupUserList) {
                                         for (Student u : students) {
-                                            if (u.getUserId() == gus.getUserId() && !memberGroup.contains(u)) {
-                                                memberGroup.add(u);
+                                            if (u.getUserId() == gus.getUserId() && !originalStudents.contains(u)) {
+                                                originalStudents.add(u);
                                             }
                                         }
                                     }
 
                                     // Cập nhật RecyclerView sau khi thêm tất cả member
-                                    MemberAdapter memberAdapter = new MemberAdapter(memberGroup, requireContext(), sharedViewModel, id);
+                                    MemberAdapter memberAdapter = new MemberAdapter(originalStudents, requireContext(), sharedViewModel, id);
                                     memberAdapter.notifyDataSetChanged();
 
                                     // truyền vào Fragment
@@ -246,9 +294,9 @@ public class AdminDepartmentMemberFragment extends Fragment {
             }
         });
     }
-    // Hiển thị toàn bộ giảng viên có trong khoa
+    // Hiển thị giảng viên có trong khoa
     private void loadLecturersByGroupId(int id) {
-        ArrayList<Lecturer> memberGroup = new ArrayList<>();
+        originalLecturers.clear();
         LecturerAPI lecturerAPI = new LecturerAPI();
         lecturerAPI.getAllLecturers(new LecturerAPI.LecturerCallback() {
             @Override
@@ -271,31 +319,30 @@ public class AdminDepartmentMemberFragment extends Fragment {
 
                         for (GroupUser gus : groupUserList) {
                             for (Lecturer u : lecturers) {
-                                if (u.getUserId() == gus.getUserId() && !memberGroup.contains(u)) {
-                                    memberGroup.add(u);
+                                if (u.getUserId() == gus.getUserId() && !originalLecturers.contains(u)) {
+                                    originalLecturers.add(u);
                                 }
                             }
                         }
 
-                        Log.d("AdminDMemberFragment", "Lecturer List Size: " + memberGroup.size());
-//                            lecturerAdapter.updateData(memberGroup);
-                            lecturerAdapter.notifyDataSetChanged();
-                            lecturerAdapter = new LecturerAdapter(memberGroup, requireContext() , sharedViewModel , id);
+                        Log.d("AdminDMemberFragment", "Lecturer List Size: " + originalLecturers.size());
+                        lecturerAdapter.notifyDataSetChanged();
+                        lecturerAdapter = new LecturerAdapter(originalLecturers, requireContext() , sharedViewModel , id);
 
-                            // truyền vào Fragment
-                            RepairButtonFragment repairButtonFragment = new RepairButtonFragment();
-                            repairButtonFragment.setLecturerAdapter(lecturerAdapter);
+                        // truyền vào Fragment
+                        RepairButtonFragment repairButtonFragment = new RepairButtonFragment();
+                        repairButtonFragment.setLecturerAdapter(lecturerAdapter);
 
-                             // Lấy SharedViewModel từ Activity
-                            sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-                            sharedViewModel.getIsEditMode().observe(getViewLifecycleOwner(), isEditMode -> {
-                                if (lecturerAdapter != null) {
-                                    lecturerAdapter.setEditMode(isEditMode); // Cập nhật chế độ chỉnh sửa cho adapter
-                                }
-                            });
+                        // Lấy SharedViewModel từ Activity
+                        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+                        sharedViewModel.getIsEditMode().observe(getViewLifecycleOwner(), isEditMode -> {
+                            if (lecturerAdapter != null) {
+                                lecturerAdapter.setEditMode(isEditMode); // Cập nhật chế độ chỉnh sửa cho adapter
+                            }
+                        });
 
-                            recyclerView.setAdapter(lecturerAdapter);
-                            recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                        recyclerView.setAdapter(lecturerAdapter);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
                     }
                 });
@@ -312,6 +359,8 @@ public class AdminDepartmentMemberFragment extends Fragment {
             }
         });
     }
+
+
     public void changeColorButtonActive(Button btn){
         btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
@@ -322,6 +371,12 @@ public class AdminDepartmentMemberFragment extends Fragment {
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 
+    /*
+    // Chuyển về RepairButtonFragment
+    public void onCancelEditMode() {
+        // Quay lại RepairButtonFragment
+        repairButtonFragment();
+    }
     public void repairButtonFragment() {
         // Lấy FragmentManager và bắt đầu giao dịch fragment
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
@@ -334,14 +389,135 @@ public class AdminDepartmentMemberFragment extends Fragment {
         // Thực hiện giao dịch
         fragmentTransaction.commit();
     }
+    */
 
     public void replaceFragmentWithAddOrCancel() {
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         fragmentTransaction.replace(R.id.third_content_fragment, new AddOrCancelButtonFragment());
-
         fragmentTransaction.addToBackStack(null); // Thêm dòng này
         fragmentTransaction.commit();
     }
+
+    private void filterList(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            // Nếu keyword rỗng, hiển thị danh sách gốc
+            if (lecturerAdapter != null) {
+                lecturerAdapter.updateList(new ArrayList<>(originalLecturers));
+            }
+            if (recyclerView.getAdapter() instanceof MemberAdapter) {
+                MemberAdapter adapter = (MemberAdapter) recyclerView.getAdapter();
+                adapter.updateList(new ArrayList<>(originalStudents));
+            }
+            return;
+        }
+
+        // Lọc danh sách giảng viên
+        if (lecturerAdapter != null && originalLecturers != null) {
+            List<Lecturer> filteredLecturers = new ArrayList<>();
+            for (Lecturer lecturer : originalLecturers) {
+                if (lecturer.getFullName().toLowerCase().contains(keyword.toLowerCase())) {
+                    filteredLecturers.add(lecturer);
+                }
+            }
+            lecturerAdapter.updateList(filteredLecturers);
+        }
+
+        // Lọc danh sách sinh viên
+        if (recyclerView.getAdapter() instanceof MemberAdapter) {
+            MemberAdapter adapter = (MemberAdapter) recyclerView.getAdapter();
+            List<Student> filteredStudents = new ArrayList<>();
+            for (Student student : originalStudents) {
+                if (student.getFullName().toLowerCase().contains(keyword.toLowerCase())) {
+                    filteredStudents.add(student);
+                }
+            }
+            adapter.updateList(filteredStudents);
+        }
+    }
+
+    private void loadMajors(int departmentId) {
+        optionsMajor.clear();
+        optionsMajor.add(0, "Tất cả bộ môn");
+
+        MajorAPI majorAPI = new MajorAPI();
+        majorAPI.getAllMajors(new MajorAPI.MajorCallback() {
+            @Override
+            public void onMajorReceived(Major major) {
+
+            }
+
+            @Override
+            public void onMajorsReceived(List<Major> majors) {
+                for (Major major : majors) {
+                    if (major != null && major.getDepartmentId() == departmentId) {
+                        optionsMajor.add(major.getMajorName());
+                    }
+                }
+
+                // Cập nhật adapter cho spinner major
+                ArrayAdapter<String> majorAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, optionsMajor);
+                majorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                filterSpinner.setAdapter(majorAdapter);
+            }
+        });
+    }
+
+//    private void loadMajorsForDepartment(String name) {
+//        // Lấy thông tin department theo tên
+//        DepartmentAPI departmentAPI = new DepartmentAPI();
+//        departmentAPI.getAllDepartments(new DepartmentAPI.DepartmentCallback() {
+//            @Override
+//            public void onDepartmentReceived(Department department) {
+//            }
+//
+//            @Override
+//            public void onDepartmentsReceived(List<Department> departments) {
+//                for (Department department : departments) {
+//                    if (department != null && department.getDepartmentName().equals(name)) {
+//                        // Nếu tên khoa trùng khớp, lấy departmentId
+//                        int departmentId = department.getDepartmentId();
+//                        loadMajors(departmentId); // Gọi phương thức để lấy ngành
+//                    }
+//                }
+//            }
+//        });
+//    }
+    private void loadListByFilter(int majorId){
+        if (majorId == -1) {
+            if (lecturerAdapter != null) {
+                lecturerAdapter.updateList(new ArrayList<>(originalLecturers));
+            }
+            if (recyclerView.getAdapter() instanceof MemberAdapter) {
+                MemberAdapter adapter = (MemberAdapter) recyclerView.getAdapter();
+                adapter.updateList(new ArrayList<>(originalStudents));
+            }
+            return;
+        }
+
+        // Lọc danh sách giảng viên
+        if (lecturerAdapter != null && originalLecturers != null) {
+            List<Lecturer> filteredLecturers = new ArrayList<>();
+            for (Lecturer lecturer : originalLecturers) {
+                if (lecturer.getMajorId() == majorId) {
+                    filteredLecturers.add(lecturer);
+                }
+            }
+            lecturerAdapter.updateList(filteredLecturers);
+        }
+
+        // Lọc danh sách sinh viên
+        if (recyclerView.getAdapter() instanceof MemberAdapter) {
+            MemberAdapter adapter = (MemberAdapter) recyclerView.getAdapter();
+            List<Student> filteredStudents = new ArrayList<>();
+            for (Student student : originalStudents) {
+                if (student.getMajorId() == majorId) {
+                    filteredStudents.add(student);
+                }
+            }
+            adapter.updateList(filteredStudents);
+        }
+    }
+
 }

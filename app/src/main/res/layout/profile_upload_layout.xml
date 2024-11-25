@@ -162,43 +162,20 @@ android:layout_height="match_parent">
                     android:text="Ngày sinh: "
                     android:textSize="15dp" />
 
-                <EditText
-                    android:id="@+id/day_born_info"
+                <TextView
+                    android:id="@+id/birth_date_info"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_margin="5dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/field_custom_infomation"
+                    android:layout_weight="3"
                     android:gravity="center"
-                    android:hint="Ngày"
-                    android:inputType="number"
-                    android:textSize="12dp" />
-
-                <EditText
-                    android:id="@+id/month_born_info"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_margin="5dp"
-                    android:layout_weight="1"
+                    android:hint="Chọn"
                     android:background="@drawable/field_custom_infomation"
-                    android:gravity="center"
-                    android:hint="Tháng"
-                    android:inputType="number"
-                    android:textSize="12dp" />
-
-                <EditText
-                    android:id="@+id/year_born_info"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_margin="5dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/field_custom_infomation"
-                    android:gravity="center"
-                    android:hint="Năm"
-                    android:inputType="number"
-                    android:textSize="12dp" />
-
+                    android:padding="5dp"
+                    android:textSize="12dp"
+                    android:focusable="true"
+                    android:clickable="true" />
             </LinearLayout>
+
 
             <LinearLayout
                 android:id="@+id/parent_phone_info"

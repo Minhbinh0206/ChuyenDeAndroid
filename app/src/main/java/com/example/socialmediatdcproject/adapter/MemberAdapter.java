@@ -174,20 +174,13 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
         btn.setTextColor(ContextCompat.getColorStateList(context, R.color.black));
     }
 
-    public void filterMember(String keyword) {
-//        memberList.clear();
-        if (keyword.isEmpty()) {
-            filteredMemberList = new ArrayList<>(memberList);
-        } else {
-            List<Student> filteredList = new ArrayList<>();
-            for (Student student : memberList) {
-                if (student.getFullName().toLowerCase().contains(keyword.toLowerCase())) {
-                    filteredList.add(student);
-                }
-            }
-            filteredMemberList = filteredList;
-        }
+    public void updateList(List<Student> newStudents) {
+        this.memberList = newStudents;
         notifyDataSetChanged();
+    }
+
+    public List<Student> getMembers() {
+        return memberList;
     }
 
 //    public void changeColorButtonNormal(Button btn){

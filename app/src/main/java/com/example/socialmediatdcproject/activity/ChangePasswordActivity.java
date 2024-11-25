@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.socialmediatdcproject.R;
@@ -23,7 +24,8 @@ public class ChangePasswordActivity extends AppCompatActivity {
     private static final String PASSWORD_CHANGED_KEY = "passwordChanged";
 
     private EditText oldPasswordEditText, newPasswordEditText, confirmNewPasswordEditText;
-    private Button changePasswordButton;
+    private EditText otpEditText;
+    private Button changePasswordButton , sendOTPButton;
     private FirebaseAuth mAuth;
     private int userId;
     private DatabaseReference studentsRef, usersRef;
@@ -40,6 +42,8 @@ public class ChangePasswordActivity extends AppCompatActivity {
         initUi();
         setupListeners();
 
+        fetchPhoneNumber(); // Lấy số điện thoại khi vào màn hình
+
         // Kiểm tra trạng thái passwordChanged từ SharedPreferences
         if (isPasswordChanged()) {
             Toast.makeText(this, "Bạn đã thay đổi mật khẩu. Không thể thay đổi lại ngay lập tức.", Toast.LENGTH_SHORT).show();
@@ -52,6 +56,8 @@ public class ChangePasswordActivity extends AppCompatActivity {
         newPasswordEditText = findViewById(R.id.editTextNewPassword);
         confirmNewPasswordEditText = findViewById(R.id.editTextConfirmNewPassword);
         changePasswordButton = findViewById(R.id.button_summit_change);
+        otpEditText = findViewById(R.id.send_otp_field);
+        sendOTPButton = findViewById(R.id.send_captcha_button);
     }
 
     private void setupListeners() {
@@ -65,10 +71,15 @@ public class ChangePasswordActivity extends AppCompatActivity {
         String oldPassword = oldPasswordEditText.getText().toString().trim();
         String newPassword = newPasswordEditText.getText().toString().trim();
         String confirmNewPassword = confirmNewPasswordEditText.getText().toString().trim();
+        String otpConfirm = otpEditText.getText().toString().trim();
 
+        // Kiem tra gia tri
         if (!validateInputs(oldPassword, newPassword, confirmNewPassword)) return;
 
+        // Kiem tra OTP co dung hay khong
+
         FirebaseUser user = mAuth.getCurrentUser();
+
         if (user != null) {
             updatePasswordInAuth(user, newPassword);
         } else {
@@ -76,6 +87,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
         }
     }
 
+    // Kiểm tra gía trị nhập vào có hợp lệ không
     private boolean validateInputs(String oldPassword, String newPassword, String confirmNewPassword) {
         if (oldPassword.isEmpty() || newPassword.isEmpty() || confirmNewPassword.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập toàn bộ trường dữ liệu", Toast.LENGTH_SHORT).show();
@@ -101,7 +113,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
         return true;
     }
 
-    private void updatePasswordInAuth(FirebaseUser user, String newPassword) {
+    private void updatePasswordInAuth(@NonNull FirebaseUser user, String newPassword) {
         user.updatePassword(newPassword).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Toast.makeText(ChangePasswordActivity.this, "Thay đổi mật khẩu thành công", Toast.LENGTH_SHORT).show();
@@ -152,5 +164,28 @@ public class ChangePasswordActivity extends AppCompatActivity {
     private boolean isPasswordChanged() {
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getBoolean(PASSWORD_CHANGED_KEY, false);
+    }
+
+    private void fetchPhoneNumber() {
+        String currentUid = FirebaseAuth.getInstance().getUid(); // Lấy UID người dùng hiện tại
+
+        if (currentUid == null) {
+            Toast.makeText(this, "Không tìm thấy người dùng hiện tại", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        studentsRef.child(currentUid).child("phoneNumber").get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                String phoneNumber = task.getResult().getValue(String.class);
+                if (phoneNumber != null) {
+                    otpEditText.setText(phoneNumber); // Hiển thị số điện thoại vào ô OTP (hoặc xử lý khác)
+                    Log.d("ChangePassword", "Số điện thoại: " + phoneNumber);
+                } else {
+                    Toast.makeText(this, "Không tìm thấy số điện thoại trong hồ sơ", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Log.e("ChangePassword", "Lỗi khi truy vấn số điện thoại", task.getException());
+            }
+        });
     }
 }

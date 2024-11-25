@@ -48,6 +48,15 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
         this.lecturerList = null;
         this.context = null;
     }
+    public void updateList(List<Lecturer> newLecturers) {
+        this.lecturerList = newLecturers;
+        notifyDataSetChanged();
+    }
+
+    public List<Lecturer> getLecturers() {
+        return lecturerList;
+    }
+
 
 
     // Cập nhật chế độ chỉnh sửa và làm mới giao diện
