@@ -53,9 +53,11 @@ public class RollCallAssistFragment extends Fragment {
         eventAPI.getEventById(eventId, new EventAPI.EventCallback() {
             @Override
             public void onEventReceived(Event event) {
-                for (RollCall r : event.getUserJoin()) {
-                    if (r.getIsVerify() == 0) {
-                        rollCallList.add(r);
+                if (event.getUserJoin() != null) {
+                    for (RollCall r : event.getUserJoin()) {
+                        if (r.getIsVerify() == 0) {
+                            rollCallList.add(r);
+                        }
                     }
                 }
 

@@ -83,7 +83,7 @@ public class TrainingFragment extends Fragment {
 
                 // Mặc định vào bài viết trước
                 PostAPI postAPI = new PostAPI();
-                postAPI.getPostByGroupId(group.getGroupId(), new PostAPI.PostCallback() {
+                postAPI.getPostsByGroupId(group.getGroupId(), new PostAPI.PostCallback() {
                     @Override
                     public void onPostReceived(Post post) {
 

@@ -345,6 +345,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         holder.buttonComment.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
             intent.putExtra("postId", post.getPostId());
+            intent.putExtra("groupId", post.getGroupId());
             intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             if (v.getContext() instanceof CommentPostActivity) {
                 //
@@ -353,9 +354,10 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 v.getContext().startActivity(intent);
             }
         });
+
         // Cài đặt hiển thị cho số lượng bình luận realtime
         DatabaseReference commentsRef = FirebaseDatabase.getInstance().getReference("Comments");
-        commentsRef.orderByChild("postId").equalTo(post.getPostId()).addValueEventListener(new ValueEventListener() {
+        commentsRef.child(String.valueOf(post.getGroupId())).child(String.valueOf(post.getPostId())).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 // Cập nhật số lượng bình luận theo postId
@@ -382,63 +384,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    private void setupLikeButton(PostTextViewHolder holder, Post post) {
-        String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        StudentAPI studentAPI = new StudentAPI();
-        studentAPI.getStudentByKey(userKey, new StudentAPI.StudentCallback() {
-            @Override
-            public void onStudentReceived(Student student) {
-                LikeAPI likeAPI = new LikeAPI();
-
-                // Lắng nghe sự thay đổi trong số lượt thích theo thời gian thực
-                likeAPI.listenForLikeCountChanges(post.getPostId(), new LikeAPI.LikeCountCallback() {
-                    @Override
-                    public void onLikeCountUpdated(long newLikeCount) {
-                        post.setPostLike((int) newLikeCount);  // Cập nhật số lượt thích
-                        holder.postLike.setText(String.valueOf(post.getPostLike()));  // Cập nhật TextView hiển thị số lượt thích
-                    }
-
-                    @Override
-                    public void onError(String errorMessage) {
-                        Log.e("TAG", "Error listening for like count changes: " + errorMessage);
-                    }
-                });
-
-                // Kiểm tra trạng thái thích của người dùng hiện tại
-                likeAPI.checkLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
-                    @Override
-                    public void onStatusChecked(boolean isLiked) {
-                        holder.buttonLike.setBackgroundColor(isLiked ? context.getResources().getColor(R.color.like) : context.getResources().getColor(R.color.white));
-                    }
-
-                    @Override
-                    public void onError(String errorMessage) {
-                        Log.e("TAG", "Error checking like status: " + errorMessage);
-                    }
-                });
-
-                // Toggle like status khi người dùng bấm vào nút Like
-                holder.buttonLike.setOnClickListener(v -> {
-                    likeAPI.toggleLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
-                        @Override
-                        public void onStatusChecked(boolean isLiked) {
-                            // Cập nhật trạng thái nút Like
-                            holder.buttonLike.setBackgroundColor(isLiked ? context.getResources().getColor(R.color.like) : context.getResources().getColor(R.color.white));
-                        }
-
-                        @Override
-                        public void onError(String errorMessage) {
-                            Log.e("TAG", "Error toggling like status: " + errorMessage);
-                        }
-                    });
-                });
-            }
-
-            @Override
-            public void onStudentsReceived(List<Student> students) {}
-        });
-    }
-
     private void setupLikeButton(PostImageViewHolder holder, Post post) {
         String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
         StudentAPI studentAPI = new StudentAPI();
@@ -448,7 +393,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 LikeAPI likeAPI = new LikeAPI();
 
                 // Lắng nghe sự thay đổi của số lượt thích theo thời gian thực
-                likeAPI.listenForLikeCountChanges(post.getPostId(), new LikeAPI.LikeCountCallback() {
+                likeAPI.listenForLikeCountChanges(post, new LikeAPI.LikeCountCallback() {
                     @Override
                     public void onLikeCountUpdated(long newLikeCount) {
                         post.setPostLike((int) newLikeCount);  // Cập nhật số lượt thích trong model
@@ -462,7 +407,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 });
 
                 // Kiểm tra trạng thái thích của người dùng hiện tại
-                likeAPI.checkLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
+                likeAPI.checkLikeStatus(student.getUserId(), post, new LikeAPI.LikeStatusCallback() {
                     @Override
                     public void onStatusChecked(boolean isLiked) {
                         // Cập nhật giao diện nút Like
@@ -480,7 +425,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
                 // Toggle trạng thái thích khi nhấn nút Like
                 holder.buttonLike.setOnClickListener(v -> {
-                    likeAPI.toggleLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
+                    likeAPI.toggleLikeStatus(student.getUserId(), post, new LikeAPI.LikeStatusCallback() {
                         @Override
                         public void onStatusChecked(boolean isLiked) {
                             // Cập nhật giao diện nút Like và TextView
@@ -516,7 +461,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 LikeAPI likeAPI = new LikeAPI();
 
                 // Lắng nghe sự thay đổi của số lượt thích theo thời gian thực
-                likeAPI.listenForLikeCountChanges(post.getPostId(), new LikeAPI.LikeCountCallback() {
+                likeAPI.listenForLikeCountChanges(post, new LikeAPI.LikeCountCallback() {
                     @Override
                     public void onLikeCountUpdated(long newLikeCount) {
                         post.setPostLike((int) newLikeCount);  // Cập nhật số lượt thích trong model
@@ -530,7 +475,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 });
 
                 // Kiểm tra trạng thái thích của người dùng hiện tại
-                likeAPI.checkLikeStatus(adminDepartment.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
+                likeAPI.checkLikeStatus(adminDepartment.getUserId(), post, new LikeAPI.LikeStatusCallback() {
                     @Override
                     public void onStatusChecked(boolean isLiked) {
                         // Cập nhật giao diện nút Like
@@ -548,7 +493,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
                 // Toggle trạng thái thích khi nhấn nút Like
                 holder.buttonLike.setOnClickListener(v -> {
-                    likeAPI.toggleLikeStatus(adminDepartment.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
+                    likeAPI.toggleLikeStatus(adminDepartment.getUserId(), post, new LikeAPI.LikeStatusCallback() {
                         @Override
                         public void onStatusChecked(boolean isLiked) {
                             // Cập nhật giao diện nút Like và TextView

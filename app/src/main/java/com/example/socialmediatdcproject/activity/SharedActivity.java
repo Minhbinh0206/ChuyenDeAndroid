@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
@@ -30,6 +31,7 @@ import com.example.socialmediatdcproject.API.AdminDefaultAPI;
 import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.FilterNotifyAPI;
 import com.example.socialmediatdcproject.API.FilterPostsAPI;
+import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.MessageAPI;
 import com.example.socialmediatdcproject.API.NotifyAPI;
 import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
@@ -57,27 +59,34 @@ import com.example.socialmediatdcproject.fragment.Student.YouthTwoFragment;
 import com.example.socialmediatdcproject.model.AdminBusiness;
 import com.example.socialmediatdcproject.model.AdminDefault;
 import com.example.socialmediatdcproject.model.AdminDepartment;
+import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Notify;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class SharedActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     protected DrawerLayout drawerLayout;
-    private FrameLayout firstContentFragment;
-    private int currentNotifyIndex = 0;
-    private NotifyAdapter notifyAdapter;  // Adapter của RecyclerView
+    ArrayList<Post> postList;
+    PostAdapter postAdapter;
     private RecyclerView recyclerView; // Khai báo RecyclerView
-    ArrayList<Notify> countNotify = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,12 +96,16 @@ public class SharedActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
+        postList = new ArrayList<>();
+        recyclerView = findViewById(R.id.second_content_fragment);
+        postAdapter = new PostAdapter(postList, SharedActivity.this);
+        recyclerView.setAdapter(postAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
+
         // Thiết lập DrawerLayout và NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
-        firstContentFragment = findViewById(R.id.first_content_fragment); // Khởi tạo FrameLayout
 
-        //checkUserProfile();
 
         // Xử lý sự kiện nhấn vào icon 3 gạch để mở Navigation Drawer
         ImageButton navigationButton = findViewById(R.id.icon_navigation);
@@ -120,84 +133,136 @@ public class SharedActivity extends AppCompatActivity {
         // Thêm item vào NavigationView
         addNavigationItems(navigationView);
 
+        loadPostsFromFirebase();
+
         // Thiết lập sự kiện click cho icon_back
         ImageButton backButton = navigationView.getHeaderView(0).findViewById(R.id.icon_back);
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
 
     }
-    private void loadPostsFromFirebase() {
-        PostAPI postAPI = new PostAPI();
 
-        postAPI.getAllPosts(new PostAPI.PostCallback() {
+    private void sortPostsByDate() {
+        Collections.sort(postList, (post1, post2) -> {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+            try {
+                Date date1 = format.parse(post1.getCreatedAt());
+                Date date2 = format.parse(post2.getCreatedAt());
+                return date2.compareTo(date1); // Sắp xếp giảm dần
+            } catch (ParseException e) {
+                Log.e("PostAdapter", "Date parsing error for postId: " + post1.getPostId() + " or " + post2.getPostId());
+                e.printStackTrace();
+                return 0; // Không đổi vị trí nếu xảy ra lỗi
+            }
+        });
+    }
+
+    private void loadPostsFromFirebase() {
+        GroupAPI groupAPI = new GroupAPI();
+        groupAPI.getAllGroups(new GroupAPI.GroupCallback() {
             @Override
-            public void onPostReceived(Post post) {
+            public void onGroupReceived(Group group) {
             }
 
             @Override
-            public void onPostsReceived(List<Post> posts) {
-                ArrayList<Post> postList = new ArrayList<>();
-                ArrayList<Post> filteredPosts = new ArrayList<>();
-                int[] processedPostsCount = {0};  // Biến đếm số bài viết đã xử lý
+            public void onGroupsReceived(List<Group> groups) {
+                for (Group g : groups) {
+                    if (g.isGroupDefault()) {
+                        DatabaseReference postReference = FirebaseDatabase.getInstance()
+                                .getReference("Posts")
+                                .child(String.valueOf(g.getGroupId()));
 
-                for (Post p : posts) {
-                    UserAPI userAPI = new UserAPI();
-                    userAPI.getUserById(p.getUserId(), new UserAPI.UserCallback() {
-                        @Override
-                        public void onUserReceived(User user) {
-                            if (!p.isFilter()) {
-                                if (user.getRoleId() == 2 || user.getRoleId() == 3 || user.getRoleId() == 4 || user.getRoleId() == 5) {
-                                    postList.add(p);
+                        postReference.addChildEventListener(new ChildEventListener() {
+                            @Override
+                            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                                Post post = snapshot.getValue(Post.class);
+                                if (post != null) {
+                                    handlePostAddition(post);
                                 }
-                                processedPostsCount[0]++;
-                                if (processedPostsCount[0] == posts.size()) {
-                                    postList.addAll(filteredPosts);  // Thêm tất cả bài viết đã lọc vào danh sách chung
-
-                                    // Setup RecyclerView với Adapter sau khi tất cả các bài viết đã được xử lý
-                                    RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-                                    PostAdapter postAdapter = new PostAdapter(postList, SharedActivity.this);
-                                    recyclerView.setAdapter(postAdapter);
-                                    recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
-                                }
-                            } else {
-                                StudentAPI studentAPI = new StudentAPI();
-                                studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-                                    @Override
-                                    public void onStudentReceived(Student student) {
-                                        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
-                                        filterPostsAPI.findUserInReceive(p.getPostId(), student.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
-                                            @Override
-                                            public void onResult(boolean isFound) {
-                                                if (isFound) {
-                                                    filteredPosts.add(p);
-                                                }
-                                                processedPostsCount[0]++;
-                                                if (processedPostsCount[0] == posts.size()) {
-                                                    postList.addAll(filteredPosts);  // Thêm tất cả bài viết đã lọc vào danh sách chung
-
-                                                    // Setup RecyclerView với Adapter sau khi tất cả các bài viết đã được xử lý
-                                                    RecyclerView recyclerView = findViewById(R.id.second_content_fragment);
-                                                    PostAdapter postAdapter = new PostAdapter(postList, SharedActivity.this);
-                                                    recyclerView.setAdapter(postAdapter);
-                                                    recyclerView.setLayoutManager(new LinearLayoutManager(SharedActivity.this));
-                                                }
-                                            }
-                                        });
-                                    }
-
-                                    @Override
-                                    public void onStudentsReceived(List<Student> students) {
-                                    }
-                                });
                             }
-                        }
 
-                        @Override
-                        public void onUsersReceived(List<User> users) {
-                        }
-                    });
+                            @Override
+                            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                                // Nếu cần lắng nghe bài viết bị chỉnh sửa
+                                Post updatedPost = snapshot.getValue(Post.class);
+                                if (updatedPost != null) {
+                                    handlePostUpdate(updatedPost);
+                                }
+                            }
+
+                            @Override
+                            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                                // Nếu cần lắng nghe bài viết bị xóa
+                                Post removedPost = snapshot.getValue(Post.class);
+                                if (removedPost != null) {
+                                    handlePostRemoval(removedPost);
+                                }
+                            }
+
+                            @Override
+                            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                                // Không cần thiết trong trường hợp này
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                Log.e("PostAPI", "Error listening to post changes: " + error.getMessage());
+                            }
+                        });
+                    }
                 }
             }
         });
+    }
+
+    private void handlePostAddition(Post post) {
+        if (!post.isFilter()) {
+            // Nếu bài viết không cần lọc
+            postList.add(post);
+            sortPostsByDate();
+            postAdapter.notifyDataSetChanged();
+        } else {
+            // Nếu bài viết cần lọc
+            StudentAPI studentAPI = new StudentAPI();
+            studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                @Override
+                public void onStudentReceived(Student student) {
+                    FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
+                    filterPostsAPI.findUserInReceive(post, student.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
+                        @Override
+                        public void onResult(boolean isFound) {
+                            if (isFound) {
+                                postList.add(post);
+                                sortPostsByDate();
+                                postAdapter.notifyDataSetChanged();
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void onStudentsReceived(List<Student> students) {
+                }
+            });
+        }
+    }
+
+    private void handlePostUpdate(Post updatedPost) {
+        for (int i = 0; i < postList.size(); i++) {
+            if (postList.get(i).getPostId() == updatedPost.getPostId()) {
+                postList.set(i, updatedPost);
+                postAdapter.notifyItemChanged(i);
+                break;
+            }
+        }
+    }
+    private void handlePostRemoval(Post removedPost) {
+        for (int i = 0; i < postList.size(); i++) {
+            if (postList.get(i).getPostId() == removedPost.getPostId()) {
+                postList.remove(i);
+                postAdapter.notifyItemRemoved(i);
+                break;
+            }
+        }
     }
 
     private void addNavigationItems(NavigationView navigationView) {
@@ -225,7 +290,6 @@ public class SharedActivity extends AppCompatActivity {
                     case 0:
                         // Home
                         fragment = new HomeFragment();
-                        loadPostsFromFirebase();
                         break;
                     case 1:
                         // Phòng đào tạo
@@ -382,7 +446,6 @@ public class SharedActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         NotifyAPI notifyAPI = new NotifyAPI();
-
         StudentAPI studentAPI = new StudentAPI();
 
         // Kiểm tra trạng thái đăng nhập
