@@ -737,12 +737,12 @@ public class MainFeatureFragment extends Fragment {
         });
     }
 
-    private void processAdditional(int id, List<Integer> users){
+    private void processAdditional(Post post, List<Integer> users){
         FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
         FilterPost filterPost = new FilterPost();
-        filterPost.setPostId(id);
+        filterPost.setPostId(post.getPostId());
         filterPost.setListUserGet(users);
-        filterPostsAPI.addReceivePost(filterPost);
+        filterPostsAPI.addReceivePost(filterPost, post);
     }
 
     private void loadClassFilterByDepartment() {
@@ -982,31 +982,28 @@ public class MainFeatureFragment extends Fragment {
 
         // Cờ để kiểm tra chỉ gọi addPost một lần
         final boolean[] isPostAdded = {false};
-        Post newPost = new Post();
-        uploadImageToFirebaseStorage(selectedImageUri, newPost, loadingDialog);
         adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
             @Override
             public void onUserReceived(AdminDepartment adminDepartment) {
-                postAPI.getAllPosts(new PostAPI.PostCallback() {
+                DepartmentAPI departmentAPI = new DepartmentAPI();
+                departmentAPI.getDepartmentById(adminDepartment.getDepartmentId(), new DepartmentAPI.DepartmentCallback() {
                     @Override
-                    public void onPostReceived(Post post) {
-                        // Không cần xử lý ở đây
-                    }
-
-                    @Override
-                    public void onPostsReceived(List<Post> posts) {
-                        GroupAPI groupAPI = new GroupAPI();
-                        DepartmentAPI departmentAPI = new DepartmentAPI();
-
-                        departmentAPI.getDepartmentById(adminDepartment.getDepartmentId(), new DepartmentAPI.DepartmentCallback() {
+                    public void onDepartmentReceived(Department department) {
+                        postAPI.getPostsByGroupId(department.getGroupId(), new PostAPI.PostCallback() {
                             @Override
-                            public void onDepartmentReceived(Department department) {
+                            public void onPostReceived(Post post) {
+                                // Không cần xử lý ở đây
+                            }
+
+                            @Override
+                            public void onPostsReceived(List<Post> posts) {
+                                GroupAPI groupAPI = new GroupAPI();
                                 groupAPI.getGroupById(department.getGroupId(), new GroupAPI.GroupCallback() {
                                     @Override
                                     public void onGroupReceived(Group group) {
                                         // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
                                         if (adminDepartment.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
-                                            isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
+                                            Post newPost = new Post();
                                             newPost.setPostId(posts.size());
                                             newPost.setUserId(adminDepartment.getUserId());
                                             newPost.setPostLike(0);
@@ -1017,13 +1014,10 @@ public class MainFeatureFragment extends Fragment {
                                             newPost.setCreatedAt(sdf.format(new Date()));
 
                                             if (postsReceive.size() != 0) {
-                                                processAdditional(newPost.getPostId(), postsReceive);
+                                                processAdditional(newPost, postsReceive);
                                             }
 
-                                            postAPI.addPost(newPost);
-
-                                            // Hiển thị Toast thông báo thành công
-                                            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
+                                            uploadImageToFirebaseStorage(selectedImageUri, newPost, loadingDialog);
                                         }
                                     }
 
@@ -1033,12 +1027,12 @@ public class MainFeatureFragment extends Fragment {
                                     }
                                 });
                             }
-
-                            @Override
-                            public void onDepartmentsReceived(List<Department> departments) {
-                                // Không cần xử lý ở đây
-                            }
                         });
+                    }
+
+                    @Override
+                    public void onDepartmentsReceived(List<Department> departments) {
+
                     }
                 });
             }
@@ -1056,27 +1050,25 @@ public class MainFeatureFragment extends Fragment {
         adminBusinessAPI.getAdminBusinessByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
             @Override
             public void onUserReceived(AdminBusiness adminBusiness) {
-                postAPI.getAllPosts(new PostAPI.PostCallback() {
+                BusinessAPI businessAPI = new BusinessAPI();
+                businessAPI.getBusinessById(adminBusiness.getBusinessId(), new BusinessAPI.BusinessCallback() {
                     @Override
-                    public void onPostReceived(Post post) {
-                        // Không cần xử lý ở đây
-                    }
-
-                    @Override
-                    public void onPostsReceived(List<Post> posts) {
-                        GroupAPI groupAPI = new GroupAPI();
-                        BusinessAPI businessAPI = new BusinessAPI();
-
-                        businessAPI.getBusinessById(adminBusiness.getBusinessId(), new BusinessAPI.BusinessCallback() {
+                    public void onBusinessReceived(Business business) {
+                        postAPI.getPostsByGroupId(business.getGroupId(), new PostAPI.PostCallback() {
                             @Override
-                            public void onBusinessReceived(Business business) {
+                            public void onPostReceived(Post post) {
+                                // Không cần xử lý ở đây
+                            }
+
+                            @Override
+                            public void onPostsReceived(List<Post> posts) {
+                                GroupAPI groupAPI = new GroupAPI();
                                 groupAPI.getGroupById(business.getGroupId(), new GroupAPI.GroupCallback() {
                                     @Override
                                     public void onGroupReceived(Group group) {
                                         // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
-                                        if (!isPostAdded[0]) {
-                                            isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
-
+                                        if (adminBusiness.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
+                                            Post newPost = new Post();
                                             newPost.setPostId(posts.size());
                                             newPost.setUserId(adminBusiness.getUserId());
                                             newPost.setPostLike(0);
@@ -1087,13 +1079,10 @@ public class MainFeatureFragment extends Fragment {
                                             newPost.setCreatedAt(sdf.format(new Date()));
 
                                             if (postsReceive.size() != 0) {
-                                                processAdditional(newPost.getPostId(), postsReceive);
+                                                processAdditional(newPost, postsReceive);
                                             }
 
-                                            postAPI.addPost(newPost);
-
-                                            // Hiển thị Toast thông báo thành công
-                                            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
+                                            uploadImageToFirebaseStorage(selectedImageUri, newPost, loadingDialog);
                                         }
                                     }
 
@@ -1103,12 +1092,12 @@ public class MainFeatureFragment extends Fragment {
                                     }
                                 });
                             }
-
-                            @Override
-                            public void onBusinessesReceived(List<Business> businesses) {
-
-                            }
                         });
+                    }
+
+                    @Override
+                    public void onBusinessesReceived(List<Business> businesses) {
+
                     }
                 });
             }
@@ -1127,7 +1116,7 @@ public class MainFeatureFragment extends Fragment {
             @Override
             public void onUserReceived(AdminDefault adminDefault) {
                 if (!adminDefault.getAdminType().equals("Super")) {
-                    postAPI.getAllPosts(new PostAPI.PostCallback() {
+                    postAPI.getPostsByGroupId(adminDefault.getGroupId(), new PostAPI.PostCallback() {
                         @Override
                         public void onPostReceived(Post post) {
                             // Không cần xử lý ở đây
@@ -1136,30 +1125,26 @@ public class MainFeatureFragment extends Fragment {
                         @Override
                         public void onPostsReceived(List<Post> posts) {
                             GroupAPI groupAPI = new GroupAPI();
-                            groupAPI.getGroupById(adminDefault.getUserId(), new GroupAPI.GroupCallback() {
+                            groupAPI.getGroupById(adminDefault.getGroupId(), new GroupAPI.GroupCallback() {
                                 @Override
                                 public void onGroupReceived(Group group) {
                                     // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
-                                    if (!isPostAdded[0]) {
-                                        isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
-
+                                    if (adminDefault.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
+                                        Post newPost = new Post();
                                         newPost.setPostId(posts.size());
                                         newPost.setUserId(adminDefault.getUserId());
                                         newPost.setPostLike(0);
                                         newPost.setContent(content);
                                         newPost.setStatus(Post.APPROVED);
                                         newPost.setFilter(filter);
-                                        newPost.setGroupId(adminDefault.getUserId());
+                                        newPost.setGroupId(adminDefault.getGroupId());
                                         newPost.setCreatedAt(sdf.format(new Date()));
 
                                         if (postsReceive.size() != 0) {
-                                            processAdditional(newPost.getPostId(), postsReceive);
+                                            processAdditional(newPost, postsReceive);
                                         }
 
-                                        postAPI.addPost(newPost);
-
-                                        // Hiển thị Toast thông báo thành công
-                                        Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
+                                        uploadImageToFirebaseStorage(selectedImageUri, newPost, loadingDialog);
                                     }
                                 }
 
@@ -1178,6 +1163,7 @@ public class MainFeatureFragment extends Fragment {
 
             }
         });
+
     }
 
     // Tải ảnh lên Firebase và lưu URL vào post
@@ -1197,10 +1183,11 @@ public class MainFeatureFragment extends Fragment {
                             post.setPostImage(downloadUrl);
 
                             PostAPI postAPI = new PostAPI();
-                            postAPI.updatePost(post);
-
-                            // Dismiss dialog sau khi bài viết được thêm
+                            postAPI.addPost(post);
                             loadingDialog.dismiss();
+
+                            // Hiển thị Toast thông báo thành công
+                            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
                         });
                     })
                     .addOnFailureListener(exception -> {
@@ -1208,9 +1195,13 @@ public class MainFeatureFragment extends Fragment {
                     });
         }
         else {
-            post.setPostImage("");
             PostAPI postAPI = new PostAPI();
-            postAPI.updatePost(post);
+            post.setPostImage("");
+            postAPI.addPost(post);
+            loadingDialog.dismiss();
+
+            // Hiển thị Toast thông báo thành công
+            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
         }
 
     }

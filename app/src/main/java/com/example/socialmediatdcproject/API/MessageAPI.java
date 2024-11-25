@@ -177,6 +177,7 @@ public class MessageAPI {
             }
         });
     }
+
     public void listenForMessages(int userId, MessageCallback callback) {
         DatabaseReference messagesRef = FirebaseDatabase.getInstance().getReference("Messages").child(String.valueOf(userId));
 

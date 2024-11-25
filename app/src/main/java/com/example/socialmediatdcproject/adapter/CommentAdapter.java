@@ -1,6 +1,7 @@
 package com.example.socialmediatdcproject.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +15,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.CommentAPI;
+import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.LikeAPI;
+import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.model.AdminDepartment;
@@ -135,7 +138,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         }
     }
 
-
     // Hàm tính thời gian hiển thị bài viết
     private String getTimeAgo(String createdAt) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
@@ -178,8 +180,10 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             public void onStudentReceived(Student student) {
                 LikeAPI likeAPI = new LikeAPI();
 
+                GroupAPI groupAPI = new GroupAPI();
+
                 // Lắng nghe thay đổi số lượt thích theo thời gian thực
-                likeAPI.listenForLikeCountChangesComment(comment.getId(), new LikeAPI.LikeCountCallback() {
+                likeAPI.listenForLikeCountChangesComment(comment ,new LikeAPI.LikeCountCallback() {
                     @Override
                     public void onLikeCountUpdated(long newLikeCount) {
                         comment.setCommentLike((int) newLikeCount);  // Cập nhật số lượt thích
@@ -193,7 +197,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                 });
 
                 // Kiểm tra trạng thái like cho comment hiện tại
-                likeAPI.checkLikeComment(student.getUserId(), comment.getId(), new LikeAPI.LikeStatusCallback() {
+                likeAPI.checkLikeComment(student.getUserId(), comment, new LikeAPI.LikeStatusCallback() {
                     @Override
                     public void onStatusChecked(boolean isLiked) {
                         // Cập nhật giao diện dựa trên trạng thái like
@@ -210,7 +214,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
                 // Sự kiện khi nhấn vào icon like
                 holder.commentLikeImage.setOnClickListener(v -> {
-                    likeAPI.toggleLikeComment(student.getUserId(), comment.getId(), new LikeAPI.LikeStatusCallback() {
+                    likeAPI.toggleLikeComment(student.getUserId(), comment, new LikeAPI.LikeStatusCallback() {
                         @Override
                         public void onStatusChecked(boolean isLiked) {
                             // Cập nhật số lượt thích
@@ -229,7 +233,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
                             // Cập nhật comment trong cơ sở dữ liệu
                             CommentAPI commentAPI = new CommentAPI();
-                            commentAPI.updateComment(comment);
+                            commentAPI.updateComment(comment, comment.getGroupId());
                         }
 
                         @Override
@@ -250,7 +254,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                 LikeAPI likeAPI = new LikeAPI();
 
                 // Lắng nghe thay đổi số lượt thích theo thời gian thực
-                likeAPI.listenForLikeCountChangesComment(comment.getId(), new LikeAPI.LikeCountCallback() {
+                likeAPI.listenForLikeCountChangesComment(comment, new LikeAPI.LikeCountCallback() {
                     @Override
                     public void onLikeCountUpdated(long newLikeCount) {
                         comment.setCommentLike((int) newLikeCount);  // Cập nhật số lượt thích
@@ -264,7 +268,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                 });
 
                 // Kiểm tra trạng thái like cho comment hiện tại
-                likeAPI.checkLikeComment(adminDepartment.getUserId(), comment.getId(), new LikeAPI.LikeStatusCallback() {
+                likeAPI.checkLikeComment(adminDepartment.getUserId(), comment, new LikeAPI.LikeStatusCallback() {
                     @Override
                     public void onStatusChecked(boolean isLiked) {
                         // Cập nhật giao diện dựa trên trạng thái like
@@ -281,7 +285,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
                 // Sự kiện khi nhấn vào icon like
                 holder.commentLikeImage.setOnClickListener(v -> {
-                    likeAPI.toggleLikeComment(adminDepartment.getUserId(), comment.getId(), new LikeAPI.LikeStatusCallback() {
+                    likeAPI.toggleLikeComment(adminDepartment.getUserId(), comment, new LikeAPI.LikeStatusCallback() {
                         @Override
                         public void onStatusChecked(boolean isLiked) {
                             // Cập nhật số lượt thích
@@ -299,7 +303,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
                             // Cập nhật comment trong cơ sở dữ liệu
                             CommentAPI commentAPI = new CommentAPI();
-                            commentAPI.updateComment(comment);
+                            commentAPI.updateComment(comment , comment.getGroupId());
                         }
 
                         @Override

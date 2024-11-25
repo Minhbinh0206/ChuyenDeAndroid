@@ -322,7 +322,7 @@ public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 LikeAPI likeAPI = new LikeAPI();
 
                 // Lắng nghe sự thay đổi trong số lượt thích theo thời gian thực
-                likeAPI.listenForLikeCountChanges(post.getPostId(), new LikeAPI.LikeCountCallback() {
+                likeAPI.listenForLikeCountChanges(post, new LikeAPI.LikeCountCallback() {
                     @Override
                     public void onLikeCountUpdated(long newLikeCount) {
                         post.setPostLike((int) newLikeCount);  // Cập nhật số lượt thích
@@ -336,7 +336,7 @@ public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 });
 
                 // Kiểm tra trạng thái thích của người dùng hiện tại
-                likeAPI.checkLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
+                likeAPI.checkLikeStatus(student.getUserId(), post, new LikeAPI.LikeStatusCallback() {
                     @Override
                     public void onStatusChecked(boolean isLiked) {
                         holder.buttonLike.setBackgroundColor(isLiked ? context.getResources().getColor(R.color.like) : context.getResources().getColor(R.color.white));
@@ -350,7 +350,7 @@ public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
                 // Toggle like status khi người dùng bấm vào nút Like
                 holder.buttonLike.setOnClickListener(v -> {
-                    likeAPI.toggleLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
+                    likeAPI.toggleLikeStatus(student.getUserId(), post, new LikeAPI.LikeStatusCallback() {
                         @Override
                         public void onStatusChecked(boolean isLiked) {
                             // Cập nhật trạng thái nút Like
@@ -379,7 +379,7 @@ public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 LikeAPI likeAPI = new LikeAPI();
 
                 // Lắng nghe sự thay đổi của số lượt thích theo thời gian thực
-                likeAPI.listenForLikeCountChanges(post.getPostId(), new LikeAPI.LikeCountCallback() {
+                likeAPI.listenForLikeCountChanges(post, new LikeAPI.LikeCountCallback() {
                     @Override
                     public void onLikeCountUpdated(long newLikeCount) {
                         post.setPostLike((int) newLikeCount);  // Cập nhật số lượt thích trong model
@@ -393,7 +393,7 @@ public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 });
 
                 // Kiểm tra trạng thái thích của người dùng hiện tại
-                likeAPI.checkLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
+                likeAPI.checkLikeStatus(student.getUserId(), post, new LikeAPI.LikeStatusCallback() {
                     @Override
                     public void onStatusChecked(boolean isLiked) {
                         // Cập nhật giao diện nút Like
@@ -411,7 +411,7 @@ public class PostApproveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
                 // Toggle trạng thái thích khi nhấn nút Like
                 holder.buttonLike.setOnClickListener(v -> {
-                    likeAPI.toggleLikeStatus(student.getUserId(), post.getPostId(), new LikeAPI.LikeStatusCallback() {
+                    likeAPI.toggleLikeStatus(student.getUserId(), post, new LikeAPI.LikeStatusCallback() {
                         @Override
                         public void onStatusChecked(boolean isLiked) {
                             // Cập nhật giao diện nút Like và TextView
