@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -96,156 +97,12 @@ public class HomeAdminFragment extends Fragment {
 
         loadEventsFromFirebase();
 
-        loadPostsFromFirebase();
-    }
+        ImageButton reloadPost = view.findViewById(R.id.reload_post);
+        reloadPost.setOnClickListener(v -> {
 
-    private void loadPostsFromFirebase() {
-        PostAPI postAPI = new PostAPI();
-
-        postAPI.getAllPosts(new PostAPI.PostCallback() {
-            @Override
-            public void onPostReceived(Post post) {
-            }
-
-            @Override
-            public void onPostsReceived(List<Post> posts) {
-                ArrayList<Post> postList = new ArrayList<>();
-                ArrayList<Post> filteredPosts = new ArrayList<>();
-                int[] processedPostsCount = {0};  // Biến đếm số bài viết đã xử lý
-                AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
-                AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
-                AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
-
-                for (Post p : posts) {
-                    UserAPI userAPI = new UserAPI();
-                    userAPI.getUserById(p.getUserId(), new UserAPI.UserCallback() {
-                        @Override
-                        public void onUserReceived(User user) {
-                            if (!p.isFilter()) {
-                                if (user.getRoleId() == 2 || user.getRoleId() == 3 || user.getRoleId() == 4 || user.getRoleId() == 5) {
-                                    postList.add(p);
-                                }
-                                processedPostsCount[0]++;
-                                if (processedPostsCount[0] == posts.size()) {
-                                    postList.addAll(filteredPosts);  // Thêm tất cả bài viết đã lọc vào danh sách chung
-
-                                    // Setup RecyclerView với Adapter sau khi tất cả các bài viết đã được xử lý
-                                    RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
-                                    PostAdapter postAdapter = new PostAdapter(postList, requireContext());
-                                    recyclerView.setAdapter(postAdapter);
-                                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                                }
-                            } else {
-                                adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
-                                    @Override
-                                    public void onUserReceived(AdminDepartment adminDepartment) {
-                                        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
-                                        filterPostsAPI.findUserInReceive(p.getPostId(), adminDepartment.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
-                                            @Override
-                                            public void onResult(boolean isFound) {
-                                                if (isFound) {
-                                                    filteredPosts.add(p);
-                                                }
-                                                processedPostsCount[0]++;
-                                                if (processedPostsCount[0] == posts.size()) {
-                                                    postList.addAll(filteredPosts);  // Thêm tất cả bài viết đã lọc vào danh sách chung
-
-                                                    // Setup RecyclerView với Adapter sau khi tất cả các bài viết đã được xử lý
-                                                    RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
-                                                    PostAdapter postAdapter = new PostAdapter(postList, requireContext());
-                                                    recyclerView.setAdapter(postAdapter);
-                                                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                                                }
-                                            }
-                                        });
-                                    }
-
-                                    @Override
-                                    public void onUsersReceived(List<AdminDepartment> adminDepartment) {
-
-                                    }
-
-                                    @Override
-                                    public void onError(String s) {
-
-                                    }
-                                });
-                                adminBusinessAPI.getAdminBusinessByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
-                                    @Override
-                                    public void onUserReceived(AdminBusiness adminBusiness) {
-                                        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
-                                        filterPostsAPI.findUserInReceive(p.getPostId(), adminBusiness.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
-                                            @Override
-                                            public void onResult(boolean isFound) {
-                                                if (isFound) {
-                                                    filteredPosts.add(p);
-                                                }
-                                                processedPostsCount[0]++;
-                                                if (processedPostsCount[0] == posts.size()) {
-                                                    postList.addAll(filteredPosts);  // Thêm tất cả bài viết đã lọc vào danh sách chung
-
-                                                    // Setup RecyclerView với Adapter sau khi tất cả các bài viết đã được xử lý
-                                                    RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
-                                                    PostAdapter postAdapter = new PostAdapter(postList, requireContext());
-                                                    recyclerView.setAdapter(postAdapter);
-                                                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                                                }
-                                            }
-                                        });
-                                    }
-
-                                    @Override
-                                    public void onUsersReceived(List<AdminBusiness> adminBusiness) {
-
-                                    }
-
-                                    @Override
-                                    public void onError(String s) {
-
-                                    }
-                                });
-                                adminDefaultAPI.getAdminDefaultByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDefaultAPI.AdminDefaultCallBack() {
-                                    @Override
-                                    public void onUserReceived(AdminDefault adminDefault) {
-                                        if (!adminDefault.getAdminType().equals("Super")) {
-                                            FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
-                                            filterPostsAPI.findUserInReceive(p.getPostId(), adminDefault.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
-                                                @Override
-                                                public void onResult(boolean isFound) {
-                                                    if (isFound) {
-                                                        filteredPosts.add(p);
-                                                    }
-                                                    processedPostsCount[0]++;
-                                                    if (processedPostsCount[0] == posts.size()) {
-                                                        postList.addAll(filteredPosts);  // Thêm tất cả bài viết đã lọc vào danh sách chung
-
-                                                        // Setup RecyclerView với Adapter sau khi tất cả các bài viết đã được xử lý
-                                                        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
-                                                        PostAdapter postAdapter = new PostAdapter(postList, requireContext());
-                                                        recyclerView.setAdapter(postAdapter);
-                                                        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onUsersReceived(List<AdminDefault> adminDefault) {
-
-                                    }
-                                });
-                            }
-                        }
-
-                        @Override
-                        public void onUsersReceived(List<User> users) {
-                        }
-                    });
-                }
-            }
         });
     }
+
 
     private void loadEventsFromFirebase() {
         TextView textView = getView().findViewById(R.id.null_event);
@@ -260,6 +117,7 @@ public class HomeAdminFragment extends Fragment {
 
             @Override
             public void onEventsReceived(List<Event> events) {
+                eventList.clear();
                 eventList.addAll(events);
 
                 if (eventList.isEmpty()) {

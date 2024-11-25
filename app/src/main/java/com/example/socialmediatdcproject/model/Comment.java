@@ -4,6 +4,7 @@ public class Comment {
     private int id;
     private int postId;
     private int userId;
+    private int groupId;
     private String content;
     private int commentLike;
     private String commentCreateAt;
@@ -28,6 +29,8 @@ public class Comment {
         this.commentCreateAt = "";
     }
 
+
+
     // Getters and Setters
     public int getId() {
         return id;
@@ -35,6 +38,14 @@ public class Comment {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
     }
 
     public int getPostId() {

@@ -228,7 +228,7 @@ public class AdminFragment extends Fragment {
         PostAPI postAPI = new PostAPI();
 
         // Lấy bài viết theo groupId
-        postAPI.getPostByGroupId(id, new PostAPI.PostCallback() {
+        postAPI.getPostsByGroupId(id, new PostAPI.PostCallback() {
             @Override
             public void onPostReceived(Post post) {
 

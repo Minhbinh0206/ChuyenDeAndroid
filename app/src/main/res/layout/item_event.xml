@@ -22,6 +22,7 @@
             android:layout_height="match_parent"
             android:layout_marginRight="20dp"
             android:layout_weight="3"
+            android:textColor="@color/like"
             android:gravity="end"
             android:padding="10dp"
             android:text="Trạng thái"
@@ -68,7 +69,6 @@
             android:layout_height="wrap_content"
             android:paddingVertical="15dp"
             android:layout_gravity="center"
-            android:layout_marginHorizontal="10dp"
             android:layout_weight="1"
             android:text="Xem thêm" />
     </LinearLayout>

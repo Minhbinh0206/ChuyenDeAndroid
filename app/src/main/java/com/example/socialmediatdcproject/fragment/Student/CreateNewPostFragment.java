@@ -356,7 +356,7 @@ public class CreateNewPostFragment extends Fragment {
                     uploadImageToFirebaseStorage(selectedImageUri, post, loadingDialog);
 
                     final boolean[] isPostAdded = {false};
-                    postAPI.getAllPosts(new PostAPI.PostCallback() {
+                    postAPI.getPostsByGroupId(groupId ,new PostAPI.PostCallback() {
                         @Override
                         public void onPostReceived(Post post) {
 

@@ -2,6 +2,9 @@ package com.example.socialmediatdcproject.API;
 
 import com.example.socialmediatdcproject.dataModels.UserLikeComment;
 import com.example.socialmediatdcproject.dataModels.UserLikePost;
+import com.example.socialmediatdcproject.model.Comment;
+import com.example.socialmediatdcproject.model.Group;
+import com.example.socialmediatdcproject.model.Post;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -16,11 +19,11 @@ public class LikeAPI {
         likeDatabase = FirebaseDatabase.getInstance().getReference("Like");
     }
 
-    public void likePost(UserLikePost userLikePost, LikeCallback callback) {
-        String key = "PostLikes/" + userLikePost.getPostId() + "/" + userLikePost.getUserId();
+    public void likePost(UserLikePost userLikePost, Post post, LikeCallback callback) {
+        String key = "PostLikes/" + post.getGroupId() + "/" + userLikePost.getPostId() + "/" + userLikePost.getUserId();
         likeDatabase.child(key).setValue(userLikePost).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Posts").child(String.valueOf(userLikePost.getPostId()));
+                DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Posts").child(String.valueOf(post.getGroupId())).child(String.valueOf(userLikePost.getPostId()));
                 postRef.child("postLike").setValue(ServerValue.increment(1));
                 callback.onSuccess("Liked successfully");
             } else {
@@ -29,11 +32,11 @@ public class LikeAPI {
         });
     }
 
-    public void unlikePost(int userId, int postId, LikeCallback callback) {
-        String key = "PostLikes/" + postId + "/" + userId;
+    public void unlikePost(int userId, Post post, LikeCallback callback) {
+        String key = "PostLikes/" + post.getGroupId() + "/" + post.getPostId() + "/" + userId;
         likeDatabase.child(key).removeValue().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Posts").child(String.valueOf(postId));
+                DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Posts").child(String.valueOf(post.getGroupId())).child(String.valueOf(post.getPostId()));
                 postRef.child("postLike").setValue(ServerValue.increment(-1));
                 callback.onSuccess("Unliked successfully");
             } else {
@@ -42,11 +45,11 @@ public class LikeAPI {
         });
     }
 
-    public void likeComment(UserLikeComment userLikeComment, LikeCallback callback) {
-        String key = "CommentLikes/" + userLikeComment.getCommentId() + "/" + userLikeComment.getUserId();
+    public void likeComment(UserLikeComment userLikeComment, Comment comment ,LikeCallback callback) {
+        String key = "CommentLikes/" + comment.getGroupId() + "/" + comment.getPostId() + "/" + userLikeComment.getCommentId() + "/" + userLikeComment.getUserId();
         likeDatabase.child(key).setValue(userLikeComment).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                DatabaseReference commentRef = FirebaseDatabase.getInstance().getReference("Comments").child(String.valueOf(userLikeComment.getCommentId()));
+                DatabaseReference commentRef = FirebaseDatabase.getInstance().getReference("Comments").child(String.valueOf(comment.getGroupId())).child(String.valueOf(comment.getPostId())).child(String.valueOf(userLikeComment.getCommentId()));
                 commentRef.child("commentLike").setValue(ServerValue.increment(1));
                 callback.onSuccess("Liked comment successfully");
             } else {
@@ -55,11 +58,11 @@ public class LikeAPI {
         });
     }
 
-    public void unlikeComment(int userId, int commentId, LikeCallback callback) {
-        String key = "CommentLikes/" + commentId + "/" + userId;
+    public void unlikeComment(int userId, Comment comment, LikeCallback callback) {
+        String key = "CommentLikes/" + comment.getGroupId() + "/" + comment.getPostId() + "/" + comment.getId() + "/" + userId;
         likeDatabase.child(key).removeValue().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                DatabaseReference commentRef = FirebaseDatabase.getInstance().getReference("Comments").child(String.valueOf(commentId));
+                DatabaseReference commentRef = FirebaseDatabase.getInstance().getReference("Comments").child(String.valueOf(comment.getGroupId())).child(String.valueOf(comment.getPostId())).child(String.valueOf(comment.getId()));
                 commentRef.child("commentLike").setValue(ServerValue.increment(-1));
                 callback.onSuccess("Unliked comment successfully");
             } else {
@@ -68,8 +71,8 @@ public class LikeAPI {
         });
     }
 
-    public void checkLikeStatus(int userId, int postId, LikeStatusCallback callback) {
-        String key = "PostLikes/" + postId + "/" + userId;
+    public void checkLikeStatus(int userId, Post post, LikeStatusCallback callback) {
+        String key = "PostLikes/" + post.getGroupId() + "/" + post.getPostId() + "/" + userId;
         likeDatabase.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -83,8 +86,8 @@ public class LikeAPI {
         });
     }
 
-    public void checkLikeComment(int userId, int commentId, LikeStatusCallback callback) {
-        String key = "CommentLikes/" + commentId + "/" + userId;
+    public void checkLikeComment(int userId, Comment comment, LikeStatusCallback callback) {
+        String key = "CommentLikes/" + comment.getGroupId() + "/" + comment.getPostId() + "/" + comment.getId() + "/" + userId;
         likeDatabase.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -98,27 +101,13 @@ public class LikeAPI {
         });
     }
 
-    public void checkStatusPost(int postId, LikeStatusCallback callback) {
-        likeDatabase.child(String.valueOf(postId)).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                callback.onStatusChecked(dataSnapshot.exists());
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                callback.onError("Error checking like status: " + databaseError.getMessage());
-            }
-        });
-    }
-
-    public void toggleLikeStatus(int userId, int postId, LikeStatusCallback callback) {
-        String key = "PostLikes/" + postId + "/" + userId;
+    public void toggleLikeStatus(int userId, Post post, LikeStatusCallback callback) {
+        String key = "PostLikes/" + post.getGroupId() + "/" + post.getPostId() + "/" + userId;
         likeDatabase.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    unlikePost(userId, postId, new LikeCallback() {
+                    unlikePost(userId, post, new LikeCallback() {
                         @Override
                         public void onSuccess(String message) {
                             callback.onStatusChecked(false);
@@ -130,8 +119,8 @@ public class LikeAPI {
                         }
                     });
                 } else {
-                    UserLikePost userLikePost = new UserLikePost(userId, postId, true);
-                    likePost(userLikePost, new LikeCallback() {
+                    UserLikePost userLikePost = new UserLikePost(userId, post.getPostId(), true);
+                    likePost(userLikePost, post, new LikeCallback() {
                         @Override
                         public void onSuccess(String message) {
                             callback.onStatusChecked(true);
@@ -152,13 +141,13 @@ public class LikeAPI {
         });
     }
 
-    public void toggleLikeComment(int userId, int commentId, LikeStatusCallback callback) {
-        String key = "CommentLikes/" + commentId + "/" + userId;
+    public void toggleLikeComment(int userId, Comment comment, LikeStatusCallback callback) {
+        String key = "CommentLikes/" + comment.getGroupId() + "/" + comment.getPostId() + "/" + comment.getId() + "/" + userId;
         likeDatabase.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    unlikeComment(userId, commentId, new LikeCallback() {
+                    unlikeComment(userId, comment, new LikeCallback() {
                         @Override
                         public void onSuccess(String message) {
                             callback.onStatusChecked(false);
@@ -170,8 +159,8 @@ public class LikeAPI {
                         }
                     });
                 } else {
-                    UserLikeComment userLikeComment = new UserLikeComment(userId, commentId, true);
-                    likeComment(userLikeComment, new LikeCallback() {
+                    UserLikeComment userLikeComment = new UserLikeComment(userId, comment.getId(), true);
+                    likeComment(userLikeComment, comment, new LikeCallback() {
                         @Override
                         public void onSuccess(String message) {
                             callback.onStatusChecked(true);
@@ -192,8 +181,8 @@ public class LikeAPI {
         });
     }
 
-    public void listenForLikeCountChanges(int postId, LikeCountCallback callback) {
-        DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Posts").child(String.valueOf(postId));
+    public void listenForLikeCountChanges(Post post, LikeCountCallback callback) {
+        DatabaseReference postRef = FirebaseDatabase.getInstance().getReference("Posts").child(String.valueOf(post.getGroupId())).child(String.valueOf(post.getPostId()));
         postRef.child("postLike").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -210,8 +199,8 @@ public class LikeAPI {
         });
     }
 
-    public void listenForLikeCountChangesComment(int commentId, LikeCountCallback callback) {
-        DatabaseReference commentRef = FirebaseDatabase.getInstance().getReference("Comments").child(String.valueOf(commentId));
+    public void listenForLikeCountChangesComment(Comment comment, LikeCountCallback callback) {
+        DatabaseReference commentRef = FirebaseDatabase.getInstance().getReference("Comments").child(String.valueOf(comment.getGroupId())).child(String.valueOf(comment.getPostId())).child(String.valueOf(comment.getId()));
         commentRef.child("commentLike").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
