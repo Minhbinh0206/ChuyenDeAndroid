@@ -11,6 +11,7 @@ public class Post implements Serializable {
     private int postLike;
     private String postImage;
     private String content;
+    private boolean isCommentAllow;
     private int status;
     private int groupId;
     private boolean isFilter;
@@ -54,6 +55,14 @@ public class Post implements Serializable {
 
     public String getContent() {
         return content;
+    }
+
+    public boolean isCommentAllow() {
+        return isCommentAllow;
+    }
+
+    public void setCommentAllow(boolean commentAllow) {
+        isCommentAllow = commentAllow;
     }
 
     public void setContent(String content) {

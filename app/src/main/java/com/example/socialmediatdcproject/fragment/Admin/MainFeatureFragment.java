@@ -30,6 +30,7 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -109,9 +110,9 @@ public class MainFeatureFragment extends Fragment {
         Button eventBtn = view.findViewById(R.id.admin_create_event);
         showImagePost = view.findViewById(R.id.post_image_filter);
 
-        changeColorButtonNormal(postBtn);
-        changeColorButtonNormal(noticeBtn);
-        changeColorButtonNormal(eventBtn);
+        changeColorButtonActive(postBtn);
+        changeColorButtonActive(noticeBtn);
+        changeColorButtonActive(eventBtn);
 
         postBtn.setOnClickListener(v -> {
             showCustomDialog();
@@ -269,6 +270,8 @@ public class MainFeatureFragment extends Fragment {
         EditText postContent = dialog.findViewById(R.id.post_content);
         Spinner filterMain = dialog.findViewById(R.id.filter_main);
         recyclerView = dialog.findViewById(R.id.filter_recycle);
+
+        ToggleButton commentAllow = dialog.findViewById(R.id.custom_toggle);
 
         ImageButton addImage = dialog.findViewById(R.id.post_add_image);
         ImageButton changeBanckground = dialog.findViewById(R.id.post_change_background);
@@ -502,6 +505,8 @@ public class MainFeatureFragment extends Fragment {
 
             String content = postContent.getText().toString();
 
+            boolean readonly = commentAllow.isChecked();
+
             // Kiểm tra xem title hoặc content có null hoặc rỗng không
             if (content.isEmpty()) {
                 // Hiển thị Toast nếu title hoặc content rỗng
@@ -552,7 +557,7 @@ public class MainFeatureFragment extends Fragment {
                             latch.await(); // Chờ latch về 0
                             requireActivity().runOnUiThread(() -> {
                                 Log.d("Collab", "showCustomDialog: Final list " + receivePostUser);
-                                processCreatePost(content, isFilterPost[0], receivePostUser);
+                                processCreatePost(content, isFilterPost[0], receivePostUser, readonly);
                                 dialog.dismiss();
                             });
                         } catch (InterruptedException e) {
@@ -596,7 +601,7 @@ public class MainFeatureFragment extends Fragment {
                             }
                         });
                     }
-                    processCreatePost(content, isFilterPost[0], receivePostUser);
+                    processCreatePost(content, isFilterPost[0], receivePostUser, readonly);
                     dialog.dismiss(); // Đóng dialog sau khi processCreatePost hoàn tất
                 }
                 else if (selectedFilter.get(0).substring(0, 4).equals("Khoa")) {
@@ -614,7 +619,7 @@ public class MainFeatureFragment extends Fragment {
                                     Group group = groups.get(0);
                                     receivePostUser.add(group.getAdminUserId());
                                     Log.d("LKDU", "onGroupReceived: " + receivePostUser.size());
-                                    processCreatePost(content, isFilterPost[0], receivePostUser);
+                                    processCreatePost(content, isFilterPost[0], receivePostUser, readonly);
                                 }
                             });
                         }
@@ -639,7 +644,7 @@ public class MainFeatureFragment extends Fragment {
                                             }
                                         }
                                     });
-                                    processCreatePost(content, isFilterPost[0], receivePostUser);
+                                    processCreatePost(content, isFilterPost[0], receivePostUser, readonly);
                                 }
                             });
                         }
@@ -662,12 +667,12 @@ public class MainFeatureFragment extends Fragment {
                             }
                         });
                     }
-                    processCreatePost(content, isFilterPost[0], receivePostUser);
+                    processCreatePost(content, isFilterPost[0], receivePostUser, readonly);
                     dialog.dismiss(); // Đóng dialog sau khi processCreatePost hoàn tất
                 }
             } else {
                 // Nếu không dùng bộ lọc, chỉ gọi processCreatePost một lần
-                processCreatePost(content, isFilterPost[0], receivePostUser);
+                processCreatePost(content, isFilterPost[0], receivePostUser, readonly);
                 dialog.dismiss(); // Đóng dialog
             }
 
@@ -696,6 +701,11 @@ public class MainFeatureFragment extends Fragment {
     }
 
     public void changeColorButtonNormal(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+    }
+
+    public void changeColorButtonActive(Button btn){
         btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
@@ -978,7 +988,7 @@ public class MainFeatureFragment extends Fragment {
         });
     }
 
-    private void processCreatePost(String content, boolean filter, List<Integer> postsReceive) {
+    private void processCreatePost(String content, boolean filter, List<Integer> postsReceive, boolean isCheck) {
         PostAPI postAPI = new PostAPI();
         AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
         AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
@@ -1027,6 +1037,7 @@ public class MainFeatureFragment extends Fragment {
                                             newPost.setUserId(adminDepartment.getUserId());
                                             newPost.setPostLike(0);
                                             newPost.setContent(content);
+                                            newPost.setCommentAllow(isCheck);
                                             newPost.setStatus(Post.APPROVED);
                                             newPost.setFilter(filter);
                                             newPost.setGroupId(department.getGroupId());
@@ -1093,6 +1104,7 @@ public class MainFeatureFragment extends Fragment {
                                             newPost.setUserId(adminBusiness.getUserId());
                                             newPost.setPostLike(0);
                                             newPost.setContent(content);
+                                            newPost.setCommentAllow(isCheck);
                                             newPost.setStatus(Post.APPROVED);
                                             newPost.setFilter(filter);
                                             newPost.setGroupId(business.getGroupId());
@@ -1151,12 +1163,12 @@ public class MainFeatureFragment extends Fragment {
                                     // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
                                     if (adminDefault.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
                                         isPostAdded[0] = true;
-
                                         Post newPost = new Post();
                                         newPost.setPostId(posts.size());
                                         newPost.setUserId(adminDefault.getUserId());
                                         newPost.setPostLike(0);
                                         newPost.setContent(content);
+                                        newPost.setCommentAllow(isCheck);
                                         newPost.setStatus(Post.APPROVED);
                                         newPost.setFilter(filter);
                                         newPost.setGroupId(adminDefault.getGroupId());
