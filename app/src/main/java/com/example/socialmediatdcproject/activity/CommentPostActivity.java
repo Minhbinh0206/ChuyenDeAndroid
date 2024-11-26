@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminBusinessAPI;
+import com.example.socialmediatdcproject.API.AdminDefaultAPI;
 import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.CommentAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
@@ -26,6 +28,8 @@ import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.CommentAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
+import com.example.socialmediatdcproject.model.AdminBusiness;
+import com.example.socialmediatdcproject.model.AdminDefault;
 import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Comment;
 import com.example.socialmediatdcproject.model.Post;
@@ -137,6 +141,8 @@ public class CommentPostActivity extends AppCompatActivity {
         StudentAPI studentAPI = new StudentAPI();
         userId = -1;
         AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+        AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+        AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
 
         studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
             @Override
@@ -172,6 +178,45 @@ public class CommentPostActivity extends AppCompatActivity {
             @Override
             public void onError(String s) {
                 // Xử lý lỗi ở đây
+            }
+        });
+
+        adminBusinessAPI.getAdminBusinessByKey(key, new AdminBusinessAPI.AdminBusinessCallBack() {
+            @Override
+            public void onUserReceived(AdminBusiness adminBusiness) {
+                Glide.with(CommentPostActivity.this)
+                        .load(adminBusiness.getAvatar())
+                        .circleCrop()
+                        .into(avatarUser);
+                userId = adminBusiness.getUserId();
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+            }
+
+            @Override
+            public void onError(String s) {
+
+            }
+        });
+
+        adminDefaultAPI.getAdminDefaultByKey(key, new AdminDefaultAPI.AdminDefaultCallBack() {
+            @Override
+            public void onUserReceived(AdminDefault adminDefault) {
+                if (!adminDefault.getAdminType().equals("Super")) {
+                    Glide.with(CommentPostActivity.this)
+                            .load(adminDefault.getAvatar())
+                            .circleCrop()
+                            .into(avatarUser);
+                    userId = adminDefault.getUserId();
+                }
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDefault> adminDefault) {
+
             }
         });
 

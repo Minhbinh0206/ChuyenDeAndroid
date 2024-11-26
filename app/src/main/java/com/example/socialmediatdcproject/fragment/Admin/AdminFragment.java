@@ -49,8 +49,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class AdminFragment extends Fragment {
     RecyclerView recyclerView;
@@ -201,91 +205,53 @@ public class AdminFragment extends Fragment {
     }
 
     private void loadPostsFromFirebase(int groupId) {
-        GroupAPI groupAPI = new GroupAPI();
-        groupAPI.getGroupById(groupId ,new GroupAPI.GroupCallback() {
+        DatabaseReference postReference = FirebaseDatabase.getInstance()
+                .getReference("Posts")
+                .child(String.valueOf(groupId));
+
+        // Lắng nghe sự kiện cho bài viết của nhóm
+        postReference.addChildEventListener(new ChildEventListener() {
+
             @Override
-            public void onGroupReceived(Group group) {
-                DatabaseReference postReference = FirebaseDatabase.getInstance()
-                        .getReference("Posts")
-                        .child(String.valueOf(group.getGroupId()));
-
-                postReference.addChildEventListener(new ChildEventListener() {
-                    @Override
-                    public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                        Post post = snapshot.getValue(Post.class);
-                        if (post != null) {
-                            handlePostAddition(post);
-                        }
-                    }
-
-                    @Override
-                    public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                        // Nếu cần lắng nghe bài viết bị chỉnh sửa
-                        Post updatedPost = snapshot.getValue(Post.class);
-                        if (updatedPost != null) {
-                            handlePostUpdate(updatedPost);
-                        }
-                    }
-
-                    @Override
-                    public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                        // Nếu cần lắng nghe bài viết bị xóa
-                        Post removedPost = snapshot.getValue(Post.class);
-                        if (removedPost != null) {
-                            handlePostRemoval(removedPost);
-                        }
-                    }
-
-                    @Override
-                    public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                        // Không cần thiết trong trường hợp này
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("PostAPI", "Error listening to post changes: " + error.getMessage());
-                    }
-                });
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                Post post = snapshot.getValue(Post.class);
+                if (post != null) {
+                    // Thêm bài viết vào danh sách chung
+                    handlePostAddition(post);
+                }
             }
 
             @Override
-            public void onGroupsReceived(List<Group> groups) {
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                Post updatedPost = snapshot.getValue(Post.class);
+                if (updatedPost != null) {
+                    handlePostUpdate(updatedPost);
+                }
+            }
 
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                Post removedPost = snapshot.getValue(Post.class);
+                if (removedPost != null) {
+                    handlePostRemoval(removedPost);
+                }
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                // Không cần thiết trong trường hợp này
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("PostAPI", "Error listening to post changes: " + error.getMessage());
             }
         });
     }
 
     private void handlePostAddition(Post post) {
-        if (!post.isFilter()) {
-            // Nếu bài viết không cần lọc
-            postList.add(0, post); // Thêm bài viết mới vào đầu danh sách
-            postAdapter.notifyItemInserted(0); // Thông báo RecyclerView rằng có phần tử mới ở đầu
-            recyclerView.scrollToPosition(0); // Cuộn lên đầu để hiển thị bài viết mới
-        } else {
-            // Nếu bài viết cần lọc
-            StudentAPI studentAPI = new StudentAPI();
-            studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-                @Override
-                public void onStudentReceived(Student student) {
-                    FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
-                    filterPostsAPI.findUserInReceive(post, student.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
-                        @Override
-                        public void onResult(boolean isFound) {
-                            if (isFound) {
-                                // Nếu bài viết không cần lọc
-                                postList.add(0, post); // Thêm bài viết mới vào đầu danh sách
-                                postAdapter.notifyItemInserted(0); // Thông báo RecyclerView rằng có phần tử mới ở đầu
-                                recyclerView.scrollToPosition(0); // Cuộn lên đầu để hiển thị bài viết mới
-                            }
-                        }
-                    });
-                }
-
-                @Override
-                public void onStudentsReceived(List<Student> students) {
-                }
-            });
-        }
+        postList.add(0, post);
+        postAdapter.notifyItemInserted(0);
     }
 
     private void handlePostUpdate(Post updatedPost) {

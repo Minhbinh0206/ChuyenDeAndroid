@@ -131,6 +131,40 @@ public class GroupUserAPI {
         void onStudentReceived(Integer newUserId);  // Trả về newUserId
     }
 
+    public void getAllGroupsByUserId(int userId, final GroupsCallback callback) {
+        groupUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Integer> groupIds = new ArrayList<>();
+                if (snapshot.exists()) {
+                    for (DataSnapshot groupSnapshot : snapshot.getChildren()) {
+                        String groupId = groupSnapshot.getKey(); // Lấy groupId
+                        if (groupSnapshot.exists()) {
+                            for (DataSnapshot userSnapshot : groupSnapshot.getChildren()) {
+                                Integer currentUserId = userSnapshot.child("userId").getValue(Integer.class);
+                                if (currentUserId != null && currentUserId == userId) {
+                                    groupIds.add(Integer.parseInt(groupId)); // Thêm groupId vào danh sách
+                                    break; // Dừng duyệt khi tìm thấy userId trong nhóm
+                                }
+                            }
+                        }
+                    }
+                }
+                callback.onGroupsReceived(groupIds); // Trả về danh sách groupIds qua callback
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("GroupUserAPI", "Failed to retrieve groups by userId.", error.toException());
+            }
+        });
+    }
+
+    // Callback interface để trả về danh sách groupId
+    public interface GroupsCallback {
+        void onGroupsReceived(List<Integer> groupIds);
+    }
+
     // Lấy tất cả người dùng trong nhóm theo groupId
     public void getAllUsersInGroup(int groupId, final GroupUsersCallback callback) {
         groupUserRef.child(String.valueOf(groupId))

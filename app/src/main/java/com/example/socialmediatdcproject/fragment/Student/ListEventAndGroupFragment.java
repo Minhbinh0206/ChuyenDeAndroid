@@ -181,43 +181,43 @@ public class ListEventAndGroupFragment extends Fragment {
             public void onStudentReceived(Student student) {
                 GroupAPI groupAPI = new GroupAPI();
                 GroupUserAPI groupUserAPI = new GroupUserAPI();
-//                groupUserAPI.getGroupUserByIdUser(student.getUserId(), new GroupUserAPI.GroupUserCallback() {
-//                    @Override
-//                    public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-//                        // Sử dụng CountDownLatch để đợi cho tất cả các nhóm được tải xong
-//                        CountDownLatch latch = new CountDownLatch(groupUsers.size());
-//                        for (GroupUser gu : groupUsers) {
-//                            groupAPI.getGroupById(gu.getGroupId(), new GroupAPI.GroupCallback() {
-//                                @Override
-//                                public void onGroupReceived(Group group) {
-//                                    groupList.add(group);
-//                                    latch.countDown(); // Giảm số đếm khi tải xong một nhóm
-//                                }
-//
-//                                @Override
-//                                public void onGroupsReceived(List<Group> groups) {
-//                                    // Không sử dụng trong trường hợp này
-//                                }
-//                            });
-//                        }
-//
-//                        // Đợi cho đến khi tất cả các nhóm được thêm vào danh sách
-//                        new Thread(() -> {
-//                            try {
-//                                latch.await(); // Đợi cho đến khi countDownLatch đếm đến 0
-//                                requireActivity().runOnUiThread(() -> {
-//                                    GroupAdapter groupAdapter = new GroupAdapter(groupList, requireContext());
-//                                    recyclerView.setAdapter(groupAdapter);
-//                                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
-//                                    recyclerView.setLayoutManager(linearLayoutManager);
-//                                    groupAdapter.notifyDataSetChanged();
-//                                });
-//                            } catch (InterruptedException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }).start();
-//                    }
-//                });
+                groupUserAPI.getAllGroupsByUserId(student.getUserId(), new GroupUserAPI.GroupsCallback() {
+                    @Override
+                    public void onGroupsReceived(List<Integer> groupIds) {
+                        // Sử dụng CountDownLatch để đợi cho tất cả các nhóm được tải xong
+                        CountDownLatch latch = new CountDownLatch(groupIds.size());
+                        for (Integer i : groupIds) {
+                            groupAPI.getGroupById(i, new GroupAPI.GroupCallback() {
+                                @Override
+                                public void onGroupReceived(Group group) {
+                                    groupList.add(group);
+                                    latch.countDown(); // Giảm số đếm khi tải xong một nhóm
+                                }
+
+                                @Override
+                                public void onGroupsReceived(List<Group> groups) {
+                                    // Không sử dụng trong trường hợp này
+                                }
+                            });
+                        }
+
+                        // Đợi cho đến khi tất cả các nhóm được thêm vào danh sách
+                        new Thread(() -> {
+                            try {
+                                latch.await(); // Đợi cho đến khi countDownLatch đếm đến 0
+                                requireActivity().runOnUiThread(() -> {
+                                    GroupAdapter groupAdapter = new GroupAdapter(groupList, requireContext());
+                                    recyclerView.setAdapter(groupAdapter);
+                                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
+                                    recyclerView.setLayoutManager(linearLayoutManager);
+                                    groupAdapter.notifyDataSetChanged();
+                                });
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }).start();
+                    }
+                });
             }
 
             @Override

@@ -483,6 +483,7 @@ public class HomeAdminActivity extends AppCompatActivity {
         groupAPI.getAllGroups(new GroupAPI.GroupCallback() {
             @Override
             public void onGroupReceived(Group group) {
+                // Xử lý nếu cần
             }
 
             @Override
@@ -493,18 +494,20 @@ public class HomeAdminActivity extends AppCompatActivity {
                                 .getReference("Posts")
                                 .child(String.valueOf(g.getGroupId()));
 
+                        // Lắng nghe sự kiện cho bài viết của nhóm
                         postReference.addChildEventListener(new ChildEventListener() {
+
                             @Override
                             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                                 Post post = snapshot.getValue(Post.class);
                                 if (post != null) {
+                                    // Thêm bài viết vào danh sách chung
                                     handlePostAddition(post);
                                 }
                             }
 
                             @Override
                             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                                // Nếu cần lắng nghe bài viết bị chỉnh sửa
                                 Post updatedPost = snapshot.getValue(Post.class);
                                 if (updatedPost != null) {
                                     handlePostUpdate(updatedPost);
@@ -513,7 +516,6 @@ public class HomeAdminActivity extends AppCompatActivity {
 
                             @Override
                             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                                // Nếu cần lắng nghe bài viết bị xóa
                                 Post removedPost = snapshot.getValue(Post.class);
                                 if (removedPost != null) {
                                     handlePostRemoval(removedPost);
@@ -537,93 +539,165 @@ public class HomeAdminActivity extends AppCompatActivity {
     }
 
     private void handlePostAddition(Post post) {
-        if (!post.isFilter()) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+        try {
+            Date date1 = format.parse(post.getCreatedAt());
+
+            // Kiểm tra nếu date1 hợp lệ
+            if (date1 == null) {
+                return;
+            }
+
+            final boolean[] isAdded = {false};
+            int insertPosition = -1; // Vị trí để thêm bài viết
+
+            // Duyệt qua từng bài viết trong postList để so sánh với bài viết mới
+            for (int i = 0; i < postList.size(); i++) {
+                Post p = postList.get(i);
+                Date date2 = format.parse(p.getCreatedAt());
+
+                // Kiểm tra nếu date2 hợp lệ
+                if (date2 == null) {
+                    continue;
+                }
+
+                // So sánh ngày
+                if (date1.after(date2)) {
+                    // Nếu bài viết mới hơn bài viết hiện tại
+                    insertPosition = i; // Ghi nhận vị trí cần chèn bài viết mới
+                    break; // Dừng lại khi tìm được vị trí thích hợp
+                }
+            }
+
+            // Nếu không tìm thấy vị trí thích hợp, bài viết mới nhất sẽ được thêm vào cuối danh sách
+            if (insertPosition == -1) {
+                insertPosition = postList.size(); // Thêm vào cuối danh sách
+            }
+
             // Nếu bài viết không cần lọc
-            postList.add(post);
-            sortPostsByDate();
-            postAdapter.notifyDataSetChanged();
-        } else {
-            // Nếu bài viết cần lọc
-            String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
-            adminDepartmentAPI.getAdminDepartmentByKey(key, new AdminDepartmentAPI.AdminDepartmentCallBack() {
-                @Override
-                public void onUserReceived(AdminDepartment adminDepartment) {
-                    FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
-                    filterPostsAPI.findUserInReceive(post, adminDepartment.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
-                        @Override
-                        public void onResult(boolean isFound) {
-                            if (isFound) {
-                                postList.add(post);
-                                sortPostsByDate();
-                                postAdapter.notifyDataSetChanged();
+            if (!post.isFilter()) {
+                postList.add(insertPosition, post); // Thêm bài viết vào vị trí thích hợp
+                isAdded[0] = true;
+            } else {
+                // Nếu bài viết cần lọc
+                StudentAPI studentAPI = new StudentAPI();
+                studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                    @Override
+                    public void onStudentReceived(Student student) {
+                        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
+                        filterPostsAPI.findUserInReceive(post, student.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
+                            @Override
+                            public void onResult(boolean isFound) {
+                                if (isFound) {
+                                    postList.add(0, post); // Thêm bài viết vào đầu danh sách nếu được lọc
+                                    postAdapter.notifyItemInserted(0); // Thông báo RecyclerView có phần tử mới ở đầu
+                                    recyclerView.scrollToPosition(0); // Cuộn lên đầu để hiển thị bài viết mới
+
+                                    isAdded[0] = true;
+                                }
                             }
-                        }
-                    });
-                }
+                        });
+                    }
 
-                @Override
-                public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+                    @Override
+                    public void onStudentsReceived(List<Student> students) {
+                    }
+                });
 
-                }
+                AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+                adminDefaultAPI.getAdminDefaultByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDefaultAPI.AdminDefaultCallBack() {
+                    @Override
+                    public void onUserReceived(AdminDefault adminDefault) {
+                        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
+                        filterPostsAPI.findUserInReceive(post, adminDefault.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
+                            @Override
+                            public void onResult(boolean isFound) {
+                                if (isFound) {
+                                    postList.add(0, post); // Thêm bài viết vào đầu danh sách nếu được lọc
+                                    postAdapter.notifyItemInserted(0); // Thông báo RecyclerView có phần tử mới ở đầu
+                                    recyclerView.scrollToPosition(0); // Cuộn lên đầu để hiển thị bài viết mới
 
-                @Override
-                public void onError(String s) {
-
-                }
-            });
-
-            AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
-            adminBusinessAPI.getAdminBusinessByKey(key, new AdminBusinessAPI.AdminBusinessCallBack() {
-                @Override
-                public void onUserReceived(AdminBusiness adminBusiness) {
-                    FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
-                    filterPostsAPI.findUserInReceive(post, adminBusiness.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
-                        @Override
-                        public void onResult(boolean isFound) {
-                            Log.d("KH", "onResult: " + isFound);
-                            if (isFound) {
-                                postList.add(post);
-                                sortPostsByDate();
-                                postAdapter.notifyDataSetChanged();
+                                    isAdded[0] = true;
+                                }
                             }
-                        }
-                    });
-                }
+                        });
+                    }
 
-                @Override
-                public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+                    @Override
+                    public void onUsersReceived(List<AdminDefault> adminDefault) {
 
-                }
+                    }
+                });
 
-                @Override
-                public void onError(String s) {
+                AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+                adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                    @Override
+                    public void onUserReceived(AdminDepartment adminDepartment) {
+                        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
+                        filterPostsAPI.findUserInReceive(post, adminDepartment.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
+                            @Override
+                            public void onResult(boolean isFound) {
+                                if (isFound) {
+                                    postList.add(0, post); // Thêm bài viết vào đầu danh sách nếu được lọc
+                                    postAdapter.notifyItemInserted(0); // Thông báo RecyclerView có phần tử mới ở đầu
+                                    recyclerView.scrollToPosition(0); // Cuộn lên đầu để hiển thị bài viết mới
 
-                }
-            });
-
-            AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
-            adminDefaultAPI.getAdminDefaultByKey(key, new AdminDefaultAPI.AdminDefaultCallBack() {
-                @Override
-                public void onUserReceived(AdminDefault adminDefault) {
-                    FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
-                    filterPostsAPI.findUserInReceive(post, adminDefault.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
-                        @Override
-                        public void onResult(boolean isFound) {
-                            if (isFound) {
-                                postList.add(post);
-                                sortPostsByDate();
-                                postAdapter.notifyDataSetChanged();
+                                    isAdded[0] = true;
+                                }
                             }
-                        }
-                    });
-                }
+                        });
+                    }
 
-                @Override
-                public void onUsersReceived(List<AdminDefault> adminDefault) {
+                    @Override
+                    public void onUsersReceived(List<AdminDepartment> adminDepartment) {
 
-                }
-            });
+                    }
+
+                    @Override
+                    public void onError(String s) {
+
+                    }
+                });
+
+                AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+                adminBusinessAPI.getAdminBusinessByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
+                    @Override
+                    public void onUserReceived(AdminBusiness adminBusiness) {
+                        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
+                        filterPostsAPI.findUserInReceive(post, adminBusiness.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
+                            @Override
+                            public void onResult(boolean isFound) {
+                                if (isFound) {
+                                    postList.add(0, post); // Thêm bài viết vào đầu danh sách nếu được lọc
+                                    postAdapter.notifyItemInserted(0); // Thông báo RecyclerView có phần tử mới ở đầu
+                                    recyclerView.scrollToPosition(0); // Cuộn lên đầu để hiển thị bài viết mới
+
+                                    isAdded[0] = true;
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                    }
+
+                    @Override
+                    public void onError(String s) {
+
+                    }
+                });
+            }
+
+            // Cập nhật RecyclerView nếu bài viết được thêm vào danh sách
+            if (isAdded[0]) {
+                postAdapter.notifyItemInserted(insertPosition); // Thông báo RecyclerView về sự thay đổi
+                recyclerView.scrollToPosition(insertPosition); // Cuộn đến vị trí bài viết mới thêm
+            }
+
+        } catch (ParseException e) {
+            Log.e("DateParse", "Error parsing date: " + e.getMessage());
         }
     }
 
@@ -645,20 +719,5 @@ public class HomeAdminActivity extends AppCompatActivity {
                 break;
             }
         }
-    }
-
-    private void sortPostsByDate() {
-        Collections.sort(postList, (post1, post2) -> {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
-            try {
-                Date date1 = format.parse(post1.getCreatedAt());
-                Date date2 = format.parse(post2.getCreatedAt());
-                return date2.compareTo(date1); // Sắp xếp giảm dần
-            } catch (ParseException e) {
-                Log.e("PostAdapter", "Date parsing error for postId: " + post1.getPostId() + " or " + post2.getPostId());
-                e.printStackTrace();
-                return 0; // Không đổi vị trí nếu xảy ra lỗi
-            }
-        });
     }
 }

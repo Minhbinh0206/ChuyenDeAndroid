@@ -130,6 +130,12 @@ public class FriendsScreenFragment extends Fragment {
             public void onStudentsReceived(List<Student> students) {}
         });
 
+        friendsFragment = new ListFriendFragment();
+        fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.third_content_fragment, friendsFragment);
+        fragmentTransaction.commit();
+        recyclerView.setVisibility(View.VISIBLE);
+
         // Thiết lập nút cho giao diện
         personalFriends.setOnClickListener(v -> {
             displayFriends(3);
