@@ -20,8 +20,8 @@ public class Business {
         return businessId;
     }
 
-    public void setBusinessId(int bussinessId) {
-        this.businessId = bussinessId;
+    public void setBusinessId(int businessId) {
+        this.businessId = businessId;
     }
 
     public String getAddress() {
@@ -36,16 +36,16 @@ public class Business {
         return businessAdminId;
     }
 
-    public void setBusinessAdminId(int bussinessAdminId) {
-        this.businessAdminId = bussinessAdminId;
+    public void setBusinessAdminId(int businessAdminId) {
+        this.businessAdminId = businessAdminId;
     }
 
-    public String getBussinessName() {
+    public String getBusinessName() {
         return businessName;
     }
 
-    public void setBussinessName(String bussinessName) {
-        this.businessName = bussinessName;
+    public void setBusinessName(String businessName) {
+        this.businessName = businessName;
     }
 
     public int getGroupId() {
@@ -56,18 +56,15 @@ public class Business {
         this.groupId = groupId;
     }
 
-    public Business(int bussinessId, String bussinessName, String address, int bussinessAdminId, int groupId) {
-        this.businessId = bussinessId;
-        this.businessName = bussinessName;
+    public Business(int businessId, String businessName, String address, int businessAdminId, int groupId) {
+        this.businessId = businessId;
+        this.businessName = businessName;
         this.address = address;
-        this.businessAdminId = bussinessAdminId;
+        this.businessAdminId = businessAdminId;
         this.groupId = groupId;
     }
 
     public Business() {
-        this.businessId = -1;
-        this.businessName = "";
-        this.address = "";
-        this.businessAdminId = -1;
+
     }
 }

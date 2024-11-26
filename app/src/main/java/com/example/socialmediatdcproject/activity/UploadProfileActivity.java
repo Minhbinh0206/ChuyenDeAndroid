@@ -325,43 +325,36 @@ public class UploadProfileActivity extends AppCompatActivity {
             student = new Student(userId, email, password, fullnameStudent, avatarUrl, phoneNumberInfo, roleId , studentNumber, birthday, departmentId, majorId, classId, description , gender);
 
             GroupUserAPI groupUserAPI = new GroupUserAPI();
-            groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
+            departmentAPI.getDepartmentById(departmentId, new DepartmentAPI.DepartmentCallback() {
                 @Override
-                public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                    int lastId = groupUsers.size();
-                    departmentAPI.getDepartmentById(departmentId, new DepartmentAPI.DepartmentCallback() {
+                public void onDepartmentReceived(Department department) {
+                    GroupAPI groupAPI = new GroupAPI();
+                    String name = "Khoa "+ department.getDepartmentName();
+                    groupAPI.getGroupByName(name, new GroupAPI.GroupCallback() {
                         @Override
-                        public void onDepartmentReceived(Department department) {
-                            GroupAPI groupAPI = new GroupAPI();
-                            String name = "Khoa "+ department.getDepartmentName();
-                            groupAPI.getGroupByName(name, new GroupAPI.GroupCallback() {
-                                @Override
-                                public void onGroupReceived(Group group) {
-                                    GroupUser groupUser = new GroupUser(group.getGroupId(), userId);
-                                    GroupUser groupUser1 = new GroupUser(User.ID_ADMIN_PHONGDAOTAO, userId);
-                                    GroupUser groupUser2 = new GroupUser(User.ID_ADMIN_DOANTHANHNIEN, userId);
-                                    GroupUser groupUser3 = new GroupUser(2, userId);
-                                    GroupUser groupUser4 = new GroupUser(3, userId);
+                        public void onGroupReceived(Group group) {
+                            GroupUser groupUser = new GroupUser(group.getGroupId(), userId);
+                            GroupUser groupUser1 = new GroupUser(User.ID_ADMIN_PHONGDAOTAO, userId);
+                            GroupUser groupUser2 = new GroupUser(User.ID_ADMIN_DOANTHANHNIEN, userId);
+                            GroupUser groupUser3 = new GroupUser(2, userId);
+                            GroupUser groupUser4 = new GroupUser(3, userId);
 
-                                    groupUserAPI.addGroupUser(groupUser);
-                                    groupUserAPI.addGroupUser(groupUser2);
-                                    groupUserAPI.addGroupUser(groupUser1);
-                                    groupUserAPI.addGroupUser(groupUser3);
-                                    groupUserAPI.addGroupUser(groupUser4);
-                                }
-
-                                @Override
-                                public void onGroupsReceived(List<Group> groups) {
-
-                                }
-                            });
+                            groupUserAPI.addGroupUser(groupUser);
+                            groupUserAPI.addGroupUser(groupUser2);
+                            groupUserAPI.addGroupUser(groupUser1);
+                            groupUserAPI.addGroupUser(groupUser3);
+                            groupUserAPI.addGroupUser(groupUser4);
                         }
 
                         @Override
-                        public void onDepartmentsReceived(List<Department> departments) {
+                        public void onGroupsReceived(List<Group> groups) {
 
                         }
                     });
+                }
+
+                @Override
+                public void onDepartmentsReceived(List<Department> departments) {
 
                 }
             });

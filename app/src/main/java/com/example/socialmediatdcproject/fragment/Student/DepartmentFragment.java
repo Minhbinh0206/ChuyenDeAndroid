@@ -185,51 +185,33 @@ public class DepartmentFragment extends Fragment {
         });
     }
 
-    private void loadUsersByGroupId(int id) {
-        ArrayList<Student> memberGroup = new ArrayList<>();
-        StudentAPI studentAPI = new StudentAPI();
-        studentAPI.getAllStudents(new StudentAPI.StudentCallback() {
+    public void loadUsersByGroupId(int groupId){
+        ArrayList<Student> memberList = new ArrayList<>();
+
+        // Cập nhật RecyclerView với dữ liệu bài viết
+        MemberAdapter memberAdapter = new MemberAdapter(memberList, requireContext());
+        recyclerView.setAdapter(memberAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        GroupUserAPI groupUserAPI = new GroupUserAPI();
+        groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
             @Override
-            public void onStudentReceived(Student student) {
-
-            }
-
-            @Override
-            public void onStudentsReceived(List<Student> students) {
-                GroupUserAPI groupUserAPI = new GroupUserAPI();
-                groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
-                    @Override
-                    public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                        for (GroupUser gu : groupUsers) {
-                            groupUserAPI.getGroupUserByIdGroup(gu.getGroupId(), new GroupUserAPI.GroupUserCallback() {
-                                @Override
-                                public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                                    List<GroupUser> groupUserList = new ArrayList<>();
-                                    for (GroupUser gu : groupUsers) {
-                                        if (gu.getGroupId() == id) {
-                                            groupUserList.add(gu);
-                                        }
-                                    }
-
-                                    // Chỉ thêm vào memberGroup nếu chưa có
-                                    for (GroupUser gus : groupUserList) {
-                                        for (Student u : students) {
-                                            if (u.getUserId() == gus.getUserId() && !memberGroup.contains(u)) {
-                                                memberGroup.add(u);
-                                            }
-                                        }
-                                    }
-
-                                    // Cập nhật RecyclerView sau khi thêm tất cả member
-                                    MemberAdapter memberAdapter = new MemberAdapter(memberGroup, requireContext());
-                                    recyclerView.removeAllViews();
-                                    recyclerView.setAdapter(memberAdapter);
-                                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                                }
-                            });
+            public void onUsersReceived(List<Integer> userIds) {
+                for (Integer i : userIds) {
+                    StudentAPI studentAPI = new StudentAPI();
+                    studentAPI.getStudentById(i, new StudentAPI.StudentCallback() {
+                        @Override
+                        public void onStudentReceived(Student student) {
+                            memberList.add(student);
+                            memberAdapter.notifyDataSetChanged();
                         }
-                    }
-                });
+
+                        @Override
+                        public void onStudentsReceived(List<Student> students) {
+
+                        }
+                    });
+                }
             }
         });
     }

@@ -62,17 +62,22 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
         if (group != null) {
             // Set dữ liệu cho các view
             holder.groupName.setText(group.getGroupName());
-            if (!group.getAvatar().isEmpty()) {
-                Glide.with(context)
-                        .load(group.getAvatar())
-                        .circleCrop()
-                        .into(holder.groupAvatar);
-            } else {
-                Glide.with(context)
-                        .load(R.drawable.avatar_group_default)
-                        .circleCrop()
-                        .into(holder.groupAvatar);
+
+            Context context = this.context;
+            if (context != null) {
+                if (!group.getAvatar().isEmpty()) {
+                    Glide.with(context)
+                            .load(group.getAvatar())
+                            .circleCrop()
+                            .into(holder.groupAvatar);
+                } else {
+                    Glide.with(context)
+                            .load(R.drawable.avatar_group_default)
+                            .circleCrop()
+                            .into(holder.groupAvatar);
+                }
             }
+
 
             StudentAPI studentAPI = new StudentAPI();
             studentAPI.getStudentById(group.getAdminUserId(), new StudentAPI.StudentCallback() {
@@ -140,47 +145,6 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.GroupViewHol
                 final boolean[] isWaiting = {false};
                 Intent intent = new Intent(v.getContext(), GroupDetaiActivity.class);
                 intent.putExtra("groupId", group.getGroupId());
-                studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-                    @Override
-                    public void onStudentReceived(Student student) {
-                        AnswerAPI answerAPI = new AnswerAPI();
-                        answerAPI.getAllAnswers(new AnswerAPI.AnswersCallback() {
-                            @Override
-                            public void onAnswerReceived(Answer answer) {
-
-                            }
-
-                            @Override
-                            public void onAnswersReceived(List<Answer> answers) {
-                                QuestionAPI questionAPI = new QuestionAPI();
-                                for (Answer a : answers) {
-                                    questionAPI.getQuestionById(a.getQuestionId(), new QuestionAPI.QuestionCallback() {
-                                        @Override
-                                        public void onQuestionReceived(Question question) {
-                                            if (a.getUserId() == student.getUserId() && question.getGroupId() == group.getGroupId()) {
-                                                isWaiting[0] = true;
-                                            } else {
-                                                isWaiting[0] = false;
-                                            }
-                                            intent.putExtra("isWaiting", isWaiting[0]);
-                                            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-                                        }
-
-                                        @Override
-                                        public void onQuestionsReceived(List<Question> questions) {
-
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onStudentsReceived(List<Student> students) {
-
-                    }
-                });
                 v.getContext().startActivity(intent);
             });
         } else {

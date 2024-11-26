@@ -48,6 +48,15 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/first_content_fragment" />
 
+                <FrameLayout
+                    android:id="@+id/admin_content_fragment"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="10dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/first_content_fragment" />
+
                 <!-- Content 2 -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/second_content_fragment"

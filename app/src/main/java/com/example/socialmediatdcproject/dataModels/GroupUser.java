@@ -1,6 +1,7 @@
 package com.example.socialmediatdcproject.dataModels;
 
 public class GroupUser {
+    private int id;
     private int groupId;
     private int userId;
 
@@ -12,6 +13,14 @@ public class GroupUser {
     public GroupUser() {
         this.groupId = -1;
         this.userId = -1;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getGroupId() {

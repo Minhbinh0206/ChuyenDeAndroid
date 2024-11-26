@@ -102,6 +102,9 @@ public class AdminGroupFragment extends Fragment {
 
                             }
                         });
+
+                        loadGroupsOfAdmin(adminBusiness.getUserId(), textView, business.getBusinessId());
+
                     }
 
                     @Override
@@ -110,7 +113,7 @@ public class AdminGroupFragment extends Fragment {
                     }
                 });
 
-                loadGroupsOfAdmin(adminBusiness.getUserId(), textView);
+
             }
 
             @Override
@@ -133,7 +136,7 @@ public class AdminGroupFragment extends Fragment {
 
                 nameAdmin.setText(adminDefault.getFullName());
 
-                loadGroupsOfAdmin(adminDefault.getUserId(), textView);
+                loadGroupsOfAdmin(adminDefault.getUserId(), textView, adminDefault.getGroupId());
             }
 
             @Override
@@ -165,6 +168,9 @@ public class AdminGroupFragment extends Fragment {
 
                             }
                         });
+
+                        loadGroupsOfAdmin(adminDepartment.getUserId(), textView, department.getGroupId());
+
                     }
 
                     @Override
@@ -173,7 +179,6 @@ public class AdminGroupFragment extends Fragment {
                     }
                 });
 
-                loadGroupsOfAdmin(adminDepartment.getUserId(), textView);
             }
 
             @Override
@@ -190,20 +195,20 @@ public class AdminGroupFragment extends Fragment {
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
     }
 
-    public void loadGroupsOfAdmin(int userId, TextView textView) {
+    public void loadGroupsOfAdmin(int userId, TextView textView, int groupId) {
         ArrayList<Group> groupsList = new ArrayList<>(); // Khởi tạo lại danh sách mỗi lần gọi
         GroupAPI groupAPI = new GroupAPI();
         GroupUserAPI groupUserAPI = new GroupUserAPI();
 
-        groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
+        groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
             @Override
-            public void onGroupUsersReceived(List<GroupUser> groupUsers) {
+            public void onUsersReceived(List<Integer> userIds) {
                 List<Integer> userGroupIds = new ArrayList<>();
 
                 // Lọc danh sách các GroupUser có userId phù hợp
-                for (GroupUser gu : groupUsers) {
-                    if (gu.getUserId() == userId) {
-                        userGroupIds.add(gu.getGroupId());
+                for (Integer gu : userIds) {
+                    if (gu == userId) {
+                        userGroupIds.add(Integer.valueOf(gu));
                     }
                 }
 

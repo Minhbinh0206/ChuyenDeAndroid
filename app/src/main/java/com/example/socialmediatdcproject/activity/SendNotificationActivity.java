@@ -301,7 +301,7 @@ public class SendNotificationActivity extends AppCompatActivity {
                             @Override
                             public void onBusinessesReceived(List<Business> businesses) {
                                 for (Business b : businesses) {
-                                    if (s.equals(b.getBussinessName())) {
+                                    if (s.equals(b.getBusinessName())) {
                                         receivePostUser.add(b.getBusinessAdminId());
                                     }
                                 }
@@ -381,11 +381,11 @@ public class SendNotificationActivity extends AppCompatActivity {
                                 public void onGroupsReceived(List<Group> groups) {
                                     GroupUserAPI groupUserAPI = new GroupUserAPI();
                                     Group group = groups.get(0);
-                                    groupUserAPI.getGroupUserByIdGroup(group.getGroupId(), new GroupUserAPI.GroupUserCallback() {
+                                    groupUserAPI.getAllUsersInGroup(group.getGroupId(), new GroupUserAPI.GroupUsersCallback() {
                                         @Override
-                                        public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                                            for (GroupUser g : groupUsers) {
-                                                receivePostUser.add(g.getUserId());
+                                        public void onUsersReceived(List<Integer> userIds) {
+                                            for (Integer g : userIds) {
+                                                receivePostUser.add(g);
                                                 processCreatePostAdminDepartment(title, content, isFilterNotify[0], receivePostUser);
                                             }
                                         }
@@ -499,8 +499,8 @@ public class SendNotificationActivity extends AppCompatActivity {
                             businessAPI.getBusinessById(c.getBusinessId(), new BusinessAPI.BusinessCallback() {
                                 @Override
                                 public void onBusinessReceived(Business business) {
-                                    filterList.add(business.getBussinessName());
-                                    Log.d("NAM", "onBusinessReceived: " + business.getBussinessName());
+                                    filterList.add(business.getBusinessName());
+                                    Log.d("NAM", "onBusinessReceived: " + business.getBusinessName());
 
                                     // Kiểm tra khi đã hoàn thành tất cả các yêu cầu business
                                     completedCount[0]++;
@@ -692,7 +692,7 @@ public class SendNotificationActivity extends AppCompatActivity {
             @Override
             public void onBusinessesReceived(List<Business> businesses) {
                 for (Business b : businesses) {
-                    filterList.add(b.getBussinessName());
+                    filterList.add(b.getBusinessName());
                 }
                 updateRecyclerView(filterList);
             }

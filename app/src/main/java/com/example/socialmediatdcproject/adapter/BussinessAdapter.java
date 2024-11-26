@@ -46,7 +46,7 @@ public class BussinessAdapter extends RecyclerView.Adapter<BussinessAdapter.Buss
         Business bussiness = bussinessList.get(position);
         if (bussiness != null) {
             // Set dữ liệu cho các view
-            holder.bussinessName.setText(bussiness.getBussinessName());
+            holder.bussinessName.setText(bussiness.getBusinessName());
             holder.bussinessAddress.setText(bussiness.getAddress());
 
             if (context != null && holder.bussinessImage != null) {
