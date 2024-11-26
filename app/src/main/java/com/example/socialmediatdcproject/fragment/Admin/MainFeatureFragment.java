@@ -82,6 +82,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class MainFeatureFragment extends Fragment {
     private List<String> optionsOfAdminDepartment = new ArrayList<>();
@@ -520,27 +521,44 @@ public class MainFeatureFragment extends Fragment {
 
                 Log.d("AdminBusiness", "Lựa chọn đầu: " + selectedFilter.get(0));
                 if (selectedFilter.get(0).substring(0, 5).equals("Doanh")) {
-                    // Xử lý các phần tử là doanh nghiệp
+                    // Tạo một CountDownLatch với số lượng phần tử cần xử lý
+                    CountDownLatch latch = new CountDownLatch(selectedFilter.size());
+
                     for (String s : selectedFilter) {
                         BusinessAPI businessAPI = new BusinessAPI();
                         businessAPI.getAllBusinesses(new BusinessAPI.BusinessCallback() {
                             @Override
                             public void onBusinessReceived(Business business) {
-
+                                // Không sử dụng
                             }
 
                             @Override
                             public void onBusinessesReceived(List<Business> businesses) {
                                 for (Business b : businesses) {
-                                    if (s.equals(b.getBussinessName())) {
+                                    if (s.equals(b.getBusinessName())) {
                                         receivePostUser.add(b.getBusinessAdminId());
+                                        Log.d("Collab", "showCustomDialog: Added " + b.getBusinessAdminId());
                                     }
                                 }
+                                // Giảm giá trị latch sau khi hoàn thành xử lý
+                                latch.countDown();
                             }
                         });
                     }
-                    processCreatePost(content, isFilterPost[0], receivePostUser);
-                    dialog.dismiss();
+
+                    // Chờ tất cả các tác vụ bất đồng bộ hoàn thành
+                    new Thread(() -> {
+                        try {
+                            latch.await(); // Chờ latch về 0
+                            requireActivity().runOnUiThread(() -> {
+                                Log.d("Collab", "showCustomDialog: Final list " + receivePostUser);
+                                processCreatePost(content, isFilterPost[0], receivePostUser);
+                                dialog.dismiss();
+                            });
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
                 }
                 else if (selectedFilter.get(0).substring(0, 2).equals("CD")) {
                     for (String s : selectedFilter) {
@@ -613,11 +631,11 @@ public class MainFeatureFragment extends Fragment {
                                 public void onGroupsReceived(List<Group> groups) {
                                     Group group = groups.get(0);
                                     GroupUserAPI groupUserAPI = new GroupUserAPI();
-                                    groupUserAPI.getGroupUserByIdGroup(group.getGroupId(), new GroupUserAPI.GroupUserCallback() {
+                                    groupUserAPI.getAllUsersInGroup(group.getGroupId(), new GroupUserAPI.GroupUsersCallback() {
                                         @Override
-                                        public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                                            for (GroupUser g : groupUsers) {
-                                                receivePostUser.add(g.getUserId());
+                                        public void onUsersReceived(List<Integer> userIds) {
+                                            for (Integer g : userIds) {
+                                                receivePostUser.add(g);
                                             }
                                         }
                                     });
@@ -707,8 +725,8 @@ public class MainFeatureFragment extends Fragment {
                             businessAPI.getBusinessById(c.getBusinessId(), new BusinessAPI.BusinessCallback() {
                                 @Override
                                 public void onBusinessReceived(Business business) {
-                                    filterList.add(business.getBussinessName());
-                                    Log.d("NAM", "onBusinessReceived: " + business.getBussinessName());
+                                    filterList.add(business.getBusinessName());
+                                    Log.d("NAM", "onBusinessReceived: " + business.getBusinessName());
 
                                     // Kiểm tra khi đã hoàn thành tất cả các yêu cầu business
                                     completedCount[0]++;
@@ -823,7 +841,7 @@ public class MainFeatureFragment extends Fragment {
             @Override
             public void onBusinessesReceived(List<Business> businesses) {
                 for (Business b : businesses) {
-                    filterList.add(b.getBussinessName());
+                    filterList.add(b.getBusinessName());
                 }
                 updateRecyclerView(filterList);
             }
@@ -1003,6 +1021,7 @@ public class MainFeatureFragment extends Fragment {
                                     public void onGroupReceived(Group group) {
                                         // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
                                         if (adminDepartment.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
+                                            isPostAdded[0] = true;
                                             Post newPost = new Post();
                                             newPost.setPostId(posts.size());
                                             newPost.setUserId(adminDepartment.getUserId());
@@ -1068,6 +1087,7 @@ public class MainFeatureFragment extends Fragment {
                                     public void onGroupReceived(Group group) {
                                         // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
                                         if (adminBusiness.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
+                                            isPostAdded[0] = true;
                                             Post newPost = new Post();
                                             newPost.setPostId(posts.size());
                                             newPost.setUserId(adminBusiness.getUserId());
@@ -1130,6 +1150,8 @@ public class MainFeatureFragment extends Fragment {
                                 public void onGroupReceived(Group group) {
                                     // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
                                     if (adminDefault.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
+                                        isPostAdded[0] = true;
+
                                         Post newPost = new Post();
                                         newPost.setPostId(posts.size());
                                         newPost.setUserId(adminDefault.getUserId());

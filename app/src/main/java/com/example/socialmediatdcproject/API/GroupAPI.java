@@ -58,6 +58,28 @@ public class GroupAPI {
         });
     }
 
+    // Lấy danh sách tất cả các nhóm từ Firebase
+    public void getAllGroupsByAdminId(int id, final GroupCallback callback) {
+        groupRef.orderByChild("adminUserId").equalTo(String.valueOf(id)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Group> groupList = new ArrayList<>();
+                for (DataSnapshot groupSnapshot : snapshot.getChildren()) {
+                    Group group = groupSnapshot.getValue(Group.class);
+                    if (group != null) {
+                        groupList.add(group);
+                    }
+                }
+                callback.onGroupsReceived(groupList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("GroupAPI", "Error getting all groups.", error.toException());
+            }
+        });
+    }
+
     // Lấy một nhóm dựa trên groupId
     public void getGroupById(int groupId, final GroupCallback callback) {
         groupRef.child(String.valueOf(groupId)).addListenerForSingleValueEvent(new ValueEventListener() {

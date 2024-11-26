@@ -220,7 +220,10 @@ public class CreateNewPostFragment extends Fragment {
                             post.setPostImage(downloadUrl);
 
                             PostAPI postAPI = new PostAPI();
-                            postAPI.updatePost(post);
+                            postAPI.addPost(post);
+
+                            // Hiển thị Toast thông báo thành công
+                            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
 
                             // Dismiss dialog sau khi bài viết được thêm
                             loadingDialog.dismiss();
@@ -233,7 +236,13 @@ public class CreateNewPostFragment extends Fragment {
         else {
             post.setPostImage("");
             PostAPI postAPI = new PostAPI();
-            postAPI.updatePost(post);
+            postAPI.addPost(post);
+
+            // Hiển thị Toast thông báo thành công
+            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
+
+            // Dismiss dialog sau khi bài viết được thêm
+            loadingDialog.dismiss();
         }
 
     }
@@ -353,7 +362,6 @@ public class CreateNewPostFragment extends Fragment {
 
                     PostAPI postAPI = new PostAPI();
                     Post post = new Post();
-                    uploadImageToFirebaseStorage(selectedImageUri, post, loadingDialog);
 
                     final boolean[] isPostAdded = {false};
                     postAPI.getPostsByGroupId(groupId ,new PostAPI.PostCallback() {
@@ -384,7 +392,6 @@ public class CreateNewPostFragment extends Fragment {
                                                     post.setStatus(Post.APPROVED);
                                                     post.setGroupId(groupId);
                                                     post.setCreatedAt(sdf.format(new Date()));
-                                                    postAPI.addPost(post);
 
                                                 } else {
                                                     post.setPostId(posts.size());
@@ -395,7 +402,6 @@ public class CreateNewPostFragment extends Fragment {
                                                     post.setStatus(Post.WAITING);
                                                     post.setGroupId(groupId);
                                                     post.setCreatedAt(sdf.format(new Date()));
-                                                    postAPI.addPost(post);
 
                                                     notifyQuickly.setNotifyId(notifications.size());
                                                     notifyQuickly.setUserSendId(student.getUserId());
@@ -405,8 +411,7 @@ public class CreateNewPostFragment extends Fragment {
                                                 }
                                                 isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
 
-                                                // Hiển thị Toast thông báo thành công
-                                                Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
+                                                uploadImageToFirebaseStorage(selectedImageUri, post, loadingDialog);
                                             }
                                             dialog.dismiss();
                                         }

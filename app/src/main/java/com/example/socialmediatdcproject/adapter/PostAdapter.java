@@ -73,7 +73,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public PostAdapter(ArrayList<Post> postList, Context context) {
         this.postList = postList;
         this.context = context;
-        sortPostsByDate();
     }
 
     @Override
@@ -342,6 +341,7 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         });
 
         setupLikeButton(holder, post);
+
         holder.buttonComment.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
             intent.putExtra("postId", post.getPostId());

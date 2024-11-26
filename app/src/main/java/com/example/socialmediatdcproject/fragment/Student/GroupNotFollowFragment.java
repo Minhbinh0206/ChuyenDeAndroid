@@ -74,6 +74,7 @@ public class GroupNotFollowFragment extends Fragment {
         ImageView avatarGroup = view.findViewById(R.id.image_group_user_follow);
         TextView nameGroup = view.findViewById(R.id.name_group_user_follow);
         Button button = view.findViewById(R.id.button_group_user_follow);
+        isWaiting = false;
 
         int groupId;
 
@@ -81,7 +82,6 @@ public class GroupNotFollowFragment extends Fragment {
 
         Intent intent = requireActivity().getIntent();
         groupId = intent.getIntExtra("groupId", -1);
-        isWaiting = intent.getBooleanExtra("isWaiting", false);
 
         GroupAPI groupAPI = new GroupAPI();
         groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
@@ -97,6 +97,8 @@ public class GroupNotFollowFragment extends Fragment {
 
                 }
 
+                loadPostFromFirebase(group.getGroupId());
+
                 nameGroup.setText(group.getGroupName());
             }
 
@@ -105,53 +107,112 @@ public class GroupNotFollowFragment extends Fragment {
 
             }
         });
-
-        if (isWaiting) {
-            button.setText("Đang chờ duyệt");
-
-        }else {
-            button.setText("Tham gia");
-
-            button.setOnClickListener(v -> {
-                groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+        StudentAPI studentAPI = new StudentAPI();
+        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+            @Override
+            public void onStudentReceived(Student student) {
+                QuestionAPI questionAPI = new QuestionAPI();
+                questionAPI.getQuestionByGroupId(groupId, new QuestionAPI.QuestionCallback() {
                     @Override
-                    public void onGroupReceived(Group group) {
-                        if (group.isPrivate()) {
-                            showCustomDialog(groupId, button);
-                        }
-                        else {
-                            StudentAPI studentAPI = new StudentAPI();
-                            studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-                                @Override
-                                public void onStudentReceived(Student student) {
-                                    GroupUserAPI groupUserAPI = new GroupUserAPI();
-                                    GroupUser groupUser = new GroupUser();
-                                    groupUser.setGroupId(group.getGroupId());
-                                    groupUser.setUserId(student.getUserId());
+                    public void onQuestionReceived(Question question) {
+                        AnswerAPI answerAPI = new AnswerAPI();
+                        answerAPI.getAnswersByQuestionId(question.getQuestionId(), new AnswerAPI.AnswersCallback() {
+                            @Override
+                            public void onAnswerReceived(Answer answer) {
 
-                                    groupUserAPI.addGroupUser(groupUser);
+                            }
 
-                                    Fragment searchGroupFragment = new GroupFollowedFragment();
-                                    FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
-                                    fragmentTransaction.replace(R.id.first_content_fragment, searchGroupFragment);
-                                    fragmentTransaction.commit();
+                            @Override
+                            public void onAnswersReceived(List<Answer> answers) {
+                                for (Answer a : answers) {
+                                    if (a.getUserId() == student.getUserId()) {
+                                        isWaiting = true;
+                                    }
                                 }
 
-                                @Override
-                                public void onStudentsReceived(List<Student> students) {
+                                if (isWaiting) {
 
+                                    button.setText("Đang chờ duyệt");
+
+                                    button.setEnabled(false);
+
+                                }else {
+                                    button.setText("Tham gia");
+
+                                    button.setOnClickListener(v -> {
+                                        groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                                            @Override
+                                            public void onGroupReceived(Group group) {
+                                                if (group.isPrivate()) {
+                                                    showCustomDialog(groupId, button);
+
+                                                    // Lắng nghe người dùng mới tham gia nhóm
+                                                    GroupUserAPI groupUserAPI = new GroupUserAPI();
+                                                    groupUserAPI.listenForNewUsersInGroup(groupId, new GroupUserAPI.StudentCallback() {
+                                                        @Override
+                                                        public void onStudentReceived(Integer newUserId) {
+                                                            Log.d("HII", "onStudentReceived: " + newUserId);
+
+                                                            // Kiểm tra nếu userId của người tham gia là của sinh viên hiện tại
+                                                            if (newUserId == student.getUserId()) {
+                                                                // Nếu đúng, thay thế Fragment sang GroupFollowedFragment
+                                                                Fragment searchGroupFragment = new GroupFollowedFragment();
+                                                                FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                                                fragmentTransaction.replace(R.id.first_content_fragment, searchGroupFragment);
+                                                                fragmentTransaction.commit();
+                                                            }
+                                                        }
+                                                    });
+                                                }
+                                                else {
+                                                    StudentAPI studentAPI = new StudentAPI();
+                                                    studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                                                        @Override
+                                                        public void onStudentReceived(Student student) {
+                                                            GroupUserAPI groupUserAPI = new GroupUserAPI();
+                                                            GroupUser groupUser = new GroupUser();
+                                                            groupUser.setGroupId(group.getGroupId());
+                                                            groupUser.setUserId(student.getUserId());
+
+                                                            groupUserAPI.addGroupUser(groupUser);
+
+                                                            Fragment searchGroupFragment = new GroupFollowedFragment();
+                                                            FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                                            fragmentTransaction.replace(R.id.first_content_fragment, searchGroupFragment);
+                                                            fragmentTransaction.commit();
+                                                        }
+
+                                                        @Override
+                                                        public void onStudentsReceived(List<Student> students) {
+
+                                                        }
+                                                    });
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onGroupsReceived(List<Group> groups) {
+
+                                            }
+                                        });
+                                    });
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
 
                     @Override
-                    public void onGroupsReceived(List<Group> groups) {
+                    public void onQuestionsReceived(List<Question> questions) {
 
                     }
                 });
-            });
-        }
+            }
+
+            @Override
+            public void onStudentsReceived(List<Student> students) {
+
+            }
+        });
     }
     public void changeColorButtonActive(Button btn){
         btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
@@ -234,6 +295,7 @@ public class GroupNotFollowFragment extends Fragment {
                         questionTitle.setText(question.getGroupQuestion());
 
                         submitButton.setOnClickListener(v -> {
+                            button.setEnabled(false);
                             // Tiến hành các bước xử lý sau khi submit
                             AnswerAPI answerAPI = new AnswerAPI();
                             answerAPI.getAllAnswers(new AnswerAPI.AnswersCallback() {

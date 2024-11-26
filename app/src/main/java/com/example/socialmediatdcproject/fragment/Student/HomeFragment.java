@@ -93,8 +93,6 @@ public class HomeFragment extends Fragment {
             startActivity(intent);
         });
 
-        loadPostsFromFirebase();
-
         TextView textView = view.findViewById(R.id.count_message);
 
         StudentAPI studentAPI = new StudentAPI();
@@ -141,75 +139,57 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void sortPostsByDate() {
-        Collections.sort(postList, (post1, post2) -> {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
-            try {
-                Date date1 = format.parse(post1.getCreatedAt());
-                Date date2 = format.parse(post2.getCreatedAt());
-                return date2.compareTo(date1); // Sắp xếp giảm dần
-            } catch (ParseException e) {
-                Log.e("PostAdapter", "Date parsing error for postId: " + post1.getPostId() + " or " + post2.getPostId());
-                e.printStackTrace();
-                return 0; // Không đổi vị trí nếu xảy ra lỗi
-            }
-        });
-    }
-
-    private void loadPostsFromFirebase() {
+    private void loadPostsFromFirebase(int groupId) {
         GroupAPI groupAPI = new GroupAPI();
-        groupAPI.getAllGroups(new GroupAPI.GroupCallback() {
+        groupAPI.getGroupById(groupId ,new GroupAPI.GroupCallback() {
             @Override
             public void onGroupReceived(Group group) {
+                DatabaseReference postReference = FirebaseDatabase.getInstance()
+                        .getReference("Posts")
+                        .child(String.valueOf(group.getGroupId()));
+
+                postReference.addChildEventListener(new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                        Post post = snapshot.getValue(Post.class);
+                        if (post != null) {
+                            handlePostAddition(post);
+                        }
+                    }
+
+                    @Override
+                    public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                        // Nếu cần lắng nghe bài viết bị chỉnh sửa
+                        Post updatedPost = snapshot.getValue(Post.class);
+                        if (updatedPost != null) {
+                            handlePostUpdate(updatedPost);
+                        }
+                    }
+
+                    @Override
+                    public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                        // Nếu cần lắng nghe bài viết bị xóa
+                        Post removedPost = snapshot.getValue(Post.class);
+                        if (removedPost != null) {
+                            handlePostRemoval(removedPost);
+                        }
+                    }
+
+                    @Override
+                    public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                        // Không cần thiết trong trường hợp này
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("PostAPI", "Error listening to post changes: " + error.getMessage());
+                    }
+                });
             }
 
             @Override
             public void onGroupsReceived(List<Group> groups) {
-                for (Group g : groups) {
-                    if (g.isGroupDefault()) {
-                        DatabaseReference postReference = FirebaseDatabase.getInstance()
-                                .getReference("Posts")
-                                .child(String.valueOf(g.getGroupId()));
 
-                        postReference.addChildEventListener(new ChildEventListener() {
-                            @Override
-                            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                                Post post = snapshot.getValue(Post.class);
-                                if (post != null) {
-                                    handlePostAddition(post);
-                                }
-                            }
-
-                            @Override
-                            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                                // Nếu cần lắng nghe bài viết bị chỉnh sửa
-                                Post updatedPost = snapshot.getValue(Post.class);
-                                if (updatedPost != null) {
-                                    handlePostUpdate(updatedPost);
-                                }
-                            }
-
-                            @Override
-                            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                                // Nếu cần lắng nghe bài viết bị xóa
-                                Post removedPost = snapshot.getValue(Post.class);
-                                if (removedPost != null) {
-                                    handlePostRemoval(removedPost);
-                                }
-                            }
-
-                            @Override
-                            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                                // Không cần thiết trong trường hợp này
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-                                Log.e("PostAPI", "Error listening to post changes: " + error.getMessage());
-                            }
-                        });
-                    }
-                }
             }
         });
     }
@@ -217,9 +197,9 @@ public class HomeFragment extends Fragment {
     private void handlePostAddition(Post post) {
         if (!post.isFilter()) {
             // Nếu bài viết không cần lọc
-            postList.add(post);
-            sortPostsByDate();
-            postAdapter.notifyDataSetChanged();
+            postList.add(0, post); // Thêm bài viết mới vào đầu danh sách
+            postAdapter.notifyItemInserted(0); // Thông báo RecyclerView rằng có phần tử mới ở đầu
+            recyclerView.scrollToPosition(0); // Cuộn lên đầu để hiển thị bài viết mới
         } else {
             // Nếu bài viết cần lọc
             StudentAPI studentAPI = new StudentAPI();
@@ -231,9 +211,10 @@ public class HomeFragment extends Fragment {
                         @Override
                         public void onResult(boolean isFound) {
                             if (isFound) {
-                                postList.add(post);
-                                sortPostsByDate();
-                                postAdapter.notifyDataSetChanged();
+                                // Nếu bài viết không cần lọc
+                                postList.add(0, post); // Thêm bài viết mới vào đầu danh sách
+                                postAdapter.notifyItemInserted(0); // Thông báo RecyclerView rằng có phần tử mới ở đầu
+                                recyclerView.scrollToPosition(0); // Cuộn lên đầu để hiển thị bài viết mới
                             }
                         }
                     });
@@ -255,6 +236,7 @@ public class HomeFragment extends Fragment {
             }
         }
     }
+
     private void handlePostRemoval(Post removedPost) {
         for (int i = 0; i < postList.size(); i++) {
             if (postList.get(i).getPostId() == removedPost.getPostId()) {

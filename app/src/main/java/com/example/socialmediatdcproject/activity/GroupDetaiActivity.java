@@ -3,6 +3,7 @@ package com.example.socialmediatdcproject.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
@@ -11,6 +12,7 @@ import android.widget.PopupWindow;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -52,9 +54,10 @@ public class GroupDetaiActivity extends AppCompatActivity {
         if (groupId != -1) {
             // Thực hiện việc lấy dữ liệu và kiểm tra người dùng có tham gia group không
             GroupUserAPI groupUserAPI = new GroupUserAPI();
-            groupUserAPI.getGroupUserByIdGroup(groupId, new GroupUserAPI.GroupUserCallback() {
+            groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
                 @Override
-                public void onGroupUsersReceived(List<GroupUser> groupUsers) {
+                public void onUsersReceived(List<Integer> userIds) {
+                    Log.d("NM", "onUsersReceived: " + userIds);
                     String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
                     studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
@@ -63,8 +66,8 @@ public class GroupDetaiActivity extends AppCompatActivity {
                             boolean isJoin = intent.getBooleanExtra("isJoin", false);
 
                             // Kiểm tra xem user đã tham gia nhóm chưa
-                            for (GroupUser gu : groupUsers) {
-                                if (gu.getUserId() == student.getUserId()) {
+                            for (Integer s : userIds) {
+                                if (s == student.getUserId()) {
                                     isJoin = true;
                                 }
                             }
@@ -72,34 +75,36 @@ public class GroupDetaiActivity extends AppCompatActivity {
                             FragmentManager fragmentManager = getSupportFragmentManager();
                             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-                            // Nếu user chưa tham gia, hiển thị GroupNotFollowFragment
+                            // Nếu người dùng đã tham gia, hiển thị GroupFollowedFragment
                             if (isJoin) {
                                 fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
-
+                                // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
                                 fragmentTransaction.commit();
                             } else {
+                                // Nếu người dùng chưa tham gia, gọi API để lấy thông tin nhóm
                                 GroupAPI groupAPI = new GroupAPI();
                                 groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
                                     @Override
                                     public void onGroupReceived(Group group) {
-                                        if (group.isGroupDefault()){
+                                        // Nếu nhóm là nhóm mặc định, chuyển trực tiếp sang GroupFollowedFragment
+                                        if (group.isGroupDefault()) {
                                             fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
-                                        }
-                                        else {
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        } else {
+                                            // Nếu nhóm không phải mặc định, hiển thị GroupNotFollowFragment trước
                                             fragmentTransaction.replace(R.id.first_content_fragment, new GroupNotFollowFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
                                         }
-
-                                        fragmentTransaction.commit();
                                     }
 
                                     @Override
                                     public void onGroupsReceived(List<Group> groups) {
-
+                                        // Xử lý nếu cần khi nhận được danh sách nhóm
                                     }
                                 });
-
                             }
-
                         }
 
                         @Override
@@ -109,9 +114,10 @@ public class GroupDetaiActivity extends AppCompatActivity {
             });
         }
     }
-    private void showNotifyQuicklyPopup(int id ,List<NotifyQuickly> notifications) {
-        if (notifications == null || notifications.isEmpty()) {
-            return;  // Nếu không có thông báo thì không làm gì
+
+    private void showNotifyQuicklyPopup(int id, List<NotifyQuickly> notifications) {
+        if (notifications == null || notifications.isEmpty() || isFinishing() || isDestroyed()) {
+            return; // Nếu không có thông báo hoặc Activity không còn hoạt động thì không làm gì
         }
 
         // Tạo View từ layout của PopupWindow
@@ -128,12 +134,16 @@ public class GroupDetaiActivity extends AppCompatActivity {
         RecyclerView recyclerView = popupView.findViewById(R.id.recycler_notify_quickly);
         NotifyQuicklyAdapter notifyQuicklyAdapter = new NotifyQuicklyAdapter(new ArrayList<>());
         recyclerView.setAdapter(notifyQuicklyAdapter);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(GroupDetaiActivity.this);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
 
         // Hiển thị PopupWindow ở vị trí mong muốn
         View notifyButton = findViewById(R.id.icon_back);
-        popupWindow.showAsDropDown(notifyButton, 0, 0);
+        if (notifyButton != null) {
+            popupWindow.showAsDropDown(notifyButton, 0, 0);
+        } else {
+            return; // Nếu notifyButton null, không thể hiển thị PopupWindow
+        }
 
         // Handler để hiển thị từng thông báo tuần tự
         final Handler handler = new Handler();
@@ -143,6 +153,11 @@ public class GroupDetaiActivity extends AppCompatActivity {
         Runnable updateNotification = new Runnable() {
             @Override
             public void run() {
+                if (isFinishing() || isDestroyed()) {
+                    popupWindow.dismiss();
+                    return; // Ngừng chạy nếu Activity bị hủy
+                }
+
                 if (currentIndex[0] < notifications.size()) {
                     // Cập nhật danh sách thông báo với thông báo hiện tại
                     NotifyQuickly currentNotification = notifications.get(currentIndex[0]);
@@ -152,13 +167,13 @@ public class GroupDetaiActivity extends AppCompatActivity {
 
                     // Gọi API để xóa thông báo khỏi Firebase
                     NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
-                    notifyQuicklyAPI.deleteNotification(id ,currentNotification.getNotifyId()); // Gọi phương thức xóa với ID của thông báo
+                    notifyQuicklyAPI.deleteNotification(id, currentNotification.getNotifyId());
 
                     // Tăng chỉ mục lên cho thông báo tiếp theo
                     currentIndex[0]++;
 
                     // Gọi lại runnable sau 5 giây để hiển thị thông báo tiếp theo
-                    handler.postDelayed(this, 5000); // Điều chỉnh thời gian nếu cần
+                    handler.postDelayed(this, 5000);
                 } else {
                     // Đã hiển thị hết thông báo, đóng PopupWindow
                     popupWindow.dismiss();
