@@ -3,6 +3,7 @@ package com.example.socialmediatdcproject.activity;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -79,7 +80,6 @@ public class UploadProfileActivity extends AppCompatActivity {
     private Spinner departmentSpinner;
     private Spinner majorSpinner;
     private Spinner classSpinner;
-    private EditText yearInput, monthInput, dayInput;
     private List<String> optionsDepartment = new ArrayList<>();
     private List<String> optionsMajor = new ArrayList<>();
     private List<String> optionsClass = new ArrayList<>();
@@ -105,6 +105,7 @@ public class UploadProfileActivity extends AppCompatActivity {
     String gender;
     private Uri selectedImageUri; // Declare this variable to store the selected image URI
     private Student student;
+    private TextView birthDateInfo;
 
 //    //Kiểm tra quyền camera
     private void onClickRequestCameraPermission() {
@@ -186,6 +187,7 @@ public class UploadProfileActivity extends AppCompatActivity {
     private void initUi() {
         imgFromGallery = findViewById(R.id.pfofileImages);
         btnSelectImage = findViewById(R.id.button_upload_image);
+        birthDateInfo = findViewById(R.id.birth_date_info);
     }
 
 
@@ -198,9 +200,17 @@ public class UploadProfileActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        userId = intent.getIntExtra("userId", userId);
-        email = intent.getStringExtra("email");
-        studentNumber = intent.getStringExtra("studentNumber");
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        boolean isRegistering = sharedPreferences.getBoolean("isRegistering" , false);
+        if(isRegistering) {
+            userId = sharedPreferences.getInt("userId" , -1);
+            email = sharedPreferences.getString("email", null);
+            studentNumber = sharedPreferences.getString("studentNumber" , null);
+        }else{
+            userId = intent.getIntExtra("userId", userId);
+            email = intent.getStringExtra("email");
+            studentNumber = intent.getStringExtra("studentNumber");
+        }
 
         Log.d(TAG, "onCreate: " + studentNumber);
         Log.d(TAG, "onCreate: " + userId);
@@ -233,9 +243,6 @@ public class UploadProfileActivity extends AppCompatActivity {
         studentClass = findViewById(R.id.class_infomation);
         departmentSpinner = findViewById(R.id.department_infomation);
         majorSpinner = findViewById(R.id.major_infomation);
-        yearInput = findViewById(R.id.year_born_info);
-        monthInput = findViewById(R.id.month_born_info);
-        dayInput = findViewById(R.id.day_born_info);
         studentNumberEditText = findViewById(R.id.student_number_infomation);
         phoneNumber = findViewById(R.id.phone_infomation);
         Button buttonUploadProfile = findViewById(R.id.button_upload_profile);
@@ -282,18 +289,27 @@ public class UploadProfileActivity extends AppCompatActivity {
                 optionsClass.clear();
             }
         });
+        birthDateInfo.setOnClickListener(v -> {
+            Calendar calendar = Calendar.getInstance();
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        // Xử lý chọn năm sinh
-        setupYearInput();
-
-        // Xử lý chọn tháng và ngày
-        setupDateInput();
+            DatePickerDialog datePickerDialog = new DatePickerDialog(
+                    this,
+                    (view, selectedYear, selectedMonth, selectedDay) -> {
+                        String formattedDate = String.format("%04d-%02d-%02d", selectedYear , selectedMonth + 1 , selectedDay);
+                        birthDateInfo.setText(formattedDate);
+                    },
+                    year, month, day
+            );
+            datePickerDialog.show();
+        });
 
         // Xử lý chuyển trang qua trang home
         buttonUploadProfile.setOnClickListener(v -> {
             // Lấy dữ liệu từ các trường
-
-            String birthday = yearInput.getText().toString() + "-" + monthInput.getText().toString() + "-" + dayInput.getText().toString();
+            String birthday = birthDateInfo.getText().toString().trim();
             // Lấy ID từ spinner
             int departmentId = departmentSpinner.getSelectedItemPosition(); // Thay đổi nếu bạn cần lấy ID thực sự từ đối tượng Department
             int majorId = majorSpinner.getSelectedItemPosition(); // Tương tự
@@ -314,7 +330,7 @@ public class UploadProfileActivity extends AppCompatActivity {
 
 
             // Kiểm tra xem người dùng đã nhập đầy đủ thông tin chưa
-            if (studentNumber.isEmpty() || birthday.isEmpty()) {
+            if (birthday.isEmpty()) {
                 Toast.makeText(UploadProfileActivity.this, "Vui lòng nhập đầy đủ thông tin.", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -439,7 +455,7 @@ public class UploadProfileActivity extends AppCompatActivity {
 
     private void loadClasses(int majorId) {
         optionsClass.clear();
-//        optionsClass.add(0,"Chọn Lớp"); // Thêm lựa chọn mặc định
+        optionsClass.add(0,"Chọn Lớp"); // Thêm lựa chọn mặc định
 
         classAPI.getAllClasses(new ClassAPI.ClassCallback() {
             @Override
@@ -461,6 +477,7 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
         });
     }
+
     private void loadClassesForMajor(String selectedMajorName){
         optionsClass.clear();
         optionsClass.add(0,"Chọn Lớp");
@@ -482,122 +499,6 @@ public class UploadProfileActivity extends AppCompatActivity {
             }
         });
     }
-
-
-    private void setupYearInput() {
-        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-        yearInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (!s.toString().isEmpty()) {
-                    try {
-                        int enteredYear = Integer.parseInt(s.toString());
-                        if (enteredYear > currentYear) {
-                            yearInput.setText(String.valueOf(currentYear));
-                            yearInput.setSelection(yearInput.getText().length());
-                            Toast.makeText(getApplicationContext(), "Năm không hợp lệ", Toast.LENGTH_SHORT).show();
-                        }
-                    } catch (NumberFormatException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
-    }
-
-    private void setupDateInput() {
-        monthInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (!s.toString().isEmpty()) {
-                    try {
-                        int enteredMonth = Integer.parseInt(s.toString());
-                        if (enteredMonth < 1 || enteredMonth > 12) {
-                            monthInput.setText(String.valueOf(12));
-                            monthInput.setSelection(monthInput.getText().length());
-                            Toast.makeText(getApplicationContext(), "Tháng không hợp lệ", Toast.LENGTH_SHORT).show();
-                        } else {
-                            updateMaxDay(enteredMonth);
-                        }
-                    } catch (NumberFormatException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
-
-        dayInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (!s.toString().isEmpty()) {
-                    try {
-                        int enteredDay = Integer.parseInt(s.toString());
-                        int maxDay = getMaxDayForMonth(Integer.parseInt(monthInput.getText().toString()), Integer.parseInt(yearInput.getText().toString()));
-                        if (enteredDay < 1 || enteredDay > maxDay) {
-                            dayInput.setText(String.valueOf(maxDay));
-                            dayInput.setSelection(dayInput.getText().length());
-                            Toast.makeText(getApplicationContext(), "Ngày không hợp lệ", Toast.LENGTH_SHORT).show();
-                        }
-                    } catch (NumberFormatException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
-    }
-
-    // Hàm kiểm tra xem năm có phải năm nhuận hay không
-    private boolean isLeapYear(int year) {
-        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-    }
-
-    private int getMaxDayForMonth(int month, int year) {
-        switch (month) {
-            case 2:
-                return isLeapYear(year) ? 29 : 28;
-            case 4:
-            case 6:
-            case 9:
-            case 11:
-                return 30;
-            default:
-                return 31;
-        }
-    }
-
-    private void updateMaxDay(int month) {
-        int year = Integer.parseInt(yearInput.getText().toString());
-        int maxDay = getMaxDayForMonth(month, year);
-        int enteredDay = Integer.parseInt(dayInput.getText().toString().isEmpty() ? "1" : dayInput.getText().toString());
-        if (enteredDay > maxDay) {
-            dayInput.setText(String.valueOf(maxDay));
-        }
-    }
-
     // Cấp quyền mở file ảnh trong thiết bị và camera
     private void onClickRequestPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.CUR_DEVELOPMENT) {
@@ -656,6 +557,7 @@ public class UploadProfileActivity extends AppCompatActivity {
         mActivityResultLauncher.launch(intent);
     }
 
+    // Chuyển đổi ảnh từ dạng Uri sang dạng bitmap
     private Uri getImageUriFromBitmap(Context context, Bitmap bitmap) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
@@ -704,7 +606,7 @@ public class UploadProfileActivity extends AppCompatActivity {
     }
 
 
-    // New method to save the Student object
+    // Hàm lưu người dùng vào database
     private void saveStudentToDatabase(Student student) {
         StudentAPI studentAPI = new StudentAPI();
         studentAPI.addStudent(student, new StudentAPI.StudentCallback() {
