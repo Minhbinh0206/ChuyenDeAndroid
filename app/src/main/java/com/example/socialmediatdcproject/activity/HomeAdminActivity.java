@@ -83,9 +83,6 @@ public class HomeAdminActivity extends AppCompatActivity {
                 drawerLayout.closeDrawer(GravityCompat.START);
             }
         });
-
-        implementFragmentDefault();
-
         // Xử lý sự kiện nhấn vào icon thông báo
         ImageButton notifyButton = findViewById(R.id.icon_notify);
         notifyButton.setOnClickListener(v -> {
@@ -106,16 +103,16 @@ public class HomeAdminActivity extends AppCompatActivity {
         ImageButton backButton = navigationView.getHeaderView(0).findViewById(R.id.icon_back);
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
     }
-    private void implementFragmentDefault(){
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment fragment = new AdminFragment();
-
-        // Thay thế nội dung của FrameLayout bằng Fragment tương ứng
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.first_content_fragment, fragment);
-
-        fragmentTransaction.commit();
-    }
+//    private void implementFragmentDefault(){
+//        FragmentManager fragmentManager = getSupportFragmentManager();
+//        Fragment fragment = new AdminFragment();
+//
+//        // Thay thế nội dung của FrameLayout bằng Fragment tương ứng
+//        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//        fragmentTransaction.replace(R.id.first_content_fragment, fragment);
+//
+//        fragmentTransaction.commit();
+//    }
 
     private void addNavigationItems(NavigationView navigationView) {
         LinearLayout navLayout = (LinearLayout) navigationView.getHeaderView(0).findViewById(R.id.nav_container);

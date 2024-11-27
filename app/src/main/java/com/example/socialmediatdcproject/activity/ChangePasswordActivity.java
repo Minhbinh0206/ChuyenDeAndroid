@@ -13,10 +13,16 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.socialmediatdcproject.R;
+import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.PhoneAuthCredential;
+import com.google.firebase.auth.PhoneAuthOptions;
+import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.concurrent.TimeUnit;
 
 public class ChangePasswordActivity extends AppCompatActivity {
 
@@ -25,10 +31,12 @@ public class ChangePasswordActivity extends AppCompatActivity {
 
     private EditText oldPasswordEditText, newPasswordEditText, confirmNewPasswordEditText;
     private EditText otpEditText;
+    private EditText phoneEditText;
     private Button changePasswordButton , sendOTPButton;
     private FirebaseAuth mAuth;
     private int userId;
     private DatabaseReference studentsRef, usersRef;
+    private String verificationId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +65,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
         confirmNewPasswordEditText = findViewById(R.id.editTextConfirmNewPassword);
         changePasswordButton = findViewById(R.id.button_summit_change);
         otpEditText = findViewById(R.id.send_otp_field);
+        phoneEditText = findViewById(R.id.phoneNumber);
         sendOTPButton = findViewById(R.id.send_captcha_button);
     }
 
@@ -64,27 +73,80 @@ public class ChangePasswordActivity extends AppCompatActivity {
         ImageButton iconBack = findViewById(R.id.icon_back);
         iconBack.setOnClickListener(v -> finish());
 
+        sendOTPButton.setOnClickListener(v -> sendOTP());
         changePasswordButton.setOnClickListener(v -> changePassword());
     }
 
+    private void sendOTP() {
+        String phoneNumber = phoneEditText.getText().toString().trim();
+        String formatPhoneNumber = "";
+
+        if (phoneNumber.startsWith("0")) {
+            formatPhoneNumber = "+84" + phoneNumber.substring(1);
+        } else {
+            Toast.makeText(this, "Số điện thoại phải bắt đầu bằng 0", Toast.LENGTH_SHORT).show();
+        }
+
+        if (phoneNumber.isEmpty()) {
+            Toast.makeText(this, "Vui lòng nhập số điện thoại", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Gửi OTP qua Firebase Authentication
+        PhoneAuthOptions options = PhoneAuthOptions.newBuilder(mAuth)
+                .setPhoneNumber(formatPhoneNumber) // Số điện thoại
+                .setTimeout(60L, TimeUnit.SECONDS) // Thời gian timeout
+                .setActivity(this) // Activity hiện tại
+                .setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                    @Override
+                    public void onVerificationCompleted(@NonNull PhoneAuthCredential credential) {
+                        otpEditText.setText(credential.getSmsCode());
+                        Toast.makeText(ChangePasswordActivity.this, "Xác minh OTP thành công", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onVerificationFailed(@NonNull FirebaseException e) {
+
+                    }
+                    @Override
+                    public void onCodeSent(@NonNull String verificationId, @NonNull PhoneAuthProvider.ForceResendingToken token) {
+                        Toast.makeText(ChangePasswordActivity.this, "OTP đã được gửi", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .build();
+
+        PhoneAuthProvider.verifyPhoneNumber(options);
+    }
+
+    // Thay đổi mật khẩu
     private void changePassword() {
         String oldPassword = oldPasswordEditText.getText().toString().trim();
         String newPassword = newPasswordEditText.getText().toString().trim();
         String confirmNewPassword = confirmNewPasswordEditText.getText().toString().trim();
         String otpConfirm = otpEditText.getText().toString().trim();
 
+        // Kiem tra OTP co dung hay khong
+        if (otpConfirm.isEmpty()) {
+            Toast.makeText(this, "Vui lòng nhập mã OTP", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Kiem tra gia tri
         if (!validateInputs(oldPassword, newPassword, confirmNewPassword)) return;
 
-        // Kiem tra OTP co dung hay khong
-
         FirebaseUser user = mAuth.getCurrentUser();
 
-        if (user != null) {
-            updatePasswordInAuth(user, newPassword);
-        } else {
-            Toast.makeText(this, "No user is signed in", Toast.LENGTH_SHORT).show();
-        }
+        // Kiem tra OTP co dung hay khong
+        PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationId, otpConfirm);
+        mAuth.getCurrentUser().reauthenticate(credential)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // Tiếp tục đổi mật khẩu
+                        updatePasswordInAuth(user, newPassword);
+                    } else {
+                        Toast.makeText(this, "Xác minh OTP thất bại", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     // Kiểm tra gía trị nhập vào có hợp lệ không
@@ -113,6 +175,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
         return true;
     }
 
+    // Cập nhật mật khẩu vào Firebase Authentication
     private void updatePasswordInAuth(@NonNull FirebaseUser user, String newPassword) {
         user.updatePassword(newPassword).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -125,6 +188,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
         });
     }
 
+    // Cập nhật mật khẩu vào bảng Student và User
     private void updatePasswordInDatabase(String studentId, String newPassword) {
         studentsRef.child(studentId).child("userId").get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -154,6 +218,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
         });
     }
 
+    // Lưu trạng thái passwordChanged vào SharedPreferences
     private void savePasswordChanged(boolean isChanged) {
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -161,11 +226,13 @@ public class ChangePasswordActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    // Kiểm tra trạng thái passwordChanged từ SharedPreferences
     private boolean isPasswordChanged() {
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getBoolean(PASSWORD_CHANGED_KEY, false);
     }
 
+    // Lấy số điện thoại từ Firebase và hiển thị trong ô số điện thoại
     private void fetchPhoneNumber() {
         String currentUid = FirebaseAuth.getInstance().getUid(); // Lấy UID người dùng hiện tại
 
@@ -178,7 +245,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
             if (task.isSuccessful()) {
                 String phoneNumber = task.getResult().getValue(String.class);
                 if (phoneNumber != null) {
-                    otpEditText.setText(phoneNumber); // Hiển thị số điện thoại vào ô OTP (hoặc xử lý khác)
+                    phoneEditText.setText(phoneNumber); // Hiển thị số điện thoại vào ô OTP (hoặc xử lý khác)
                     Log.d("ChangePassword", "Số điện thoại: " + phoneNumber);
                 } else {
                     Toast.makeText(this, "Không tìm thấy số điện thoại trong hồ sơ", Toast.LENGTH_SHORT).show();

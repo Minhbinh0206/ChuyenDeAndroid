@@ -75,20 +75,22 @@ public class AdminFragment extends Fragment {
             @Override
             public void onUserReceived(AdminDepartment adminDepartment) {
                 if (adminDepartment.getAvatar() == null) {
-                    if(getContext()!= null) {
+                    if(getContext() != null) {
                         Glide.with(getContext())
                                 .load(R.drawable.avatar_macdinh)
                                 .circleCrop()
                                 .into(avatar);
                     }
+
                 } else {
                     // Thiết kế giao diện cho avatar
-                    if(getContext()!= null) {
+                    if(getContext()!= null){
                         Glide.with(getContext())
                                 .load(adminDepartment.getAvatar())
                                 .circleCrop()
                                 .into(avatar);
                     }
+
                 }
                 name.setText(adminDepartment.getFullName());
 

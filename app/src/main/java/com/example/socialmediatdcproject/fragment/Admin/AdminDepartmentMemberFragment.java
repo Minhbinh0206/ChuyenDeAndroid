@@ -62,7 +62,9 @@ public class AdminDepartmentMemberFragment extends Fragment {
     private SharedViewModel sharedViewModel;
     private EditText searchBar;
     private List<Lecturer> originalLecturers = new ArrayList<>();
+//    private List<Lecturer> filterLecturers = new ArrayList<>();
     private List<Student> originalStudents = new ArrayList<>();
+//    private List<Student> filterStudents = new ArrayList<>();
     private Spinner filterSpinner;
     private List<String> optionsMajor = new ArrayList<>();
 
@@ -149,15 +151,15 @@ public class AdminDepartmentMemberFragment extends Fragment {
                                 loadMajors(adminDepartment.getDepartmentId());
 
                                 //spinner
-                                TextView filterTextView = view.findViewById(R.id.filter_text_view);
+//                                TextView filterTextView = view.findViewById(R.id.filter_text_view);
                                 filterSpinner = view.findViewById(R.id.admin_filterBySubject);
 
                                 //lọc danh sách theo spinner
                                 filterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                     @Override
                                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                        int majorId = position;
-                                        loadListByFilter(majorId);
+                                        String selectedMajorName = optionsMajor.get(position);
+                                        loadListByFilter(selectedMajorName);
                                     }
 
                                     @Override
@@ -297,6 +299,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
     // Hiển thị giảng viên có trong khoa
     private void loadLecturersByGroupId(int id) {
         originalLecturers.clear();
+
         LecturerAPI lecturerAPI = new LecturerAPI();
         lecturerAPI.getAllLecturers(new LecturerAPI.LecturerCallback() {
             @Override
@@ -400,6 +403,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
         fragmentTransaction.commit();
     }
 
+    // Bộ lọc cho danh sách tìm kiếm
     private void filterList(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             // Nếu keyword rỗng, hiển thị danh sách gốc
@@ -463,61 +467,55 @@ public class AdminDepartmentMemberFragment extends Fragment {
             }
         });
     }
-
-//    private void loadMajorsForDepartment(String name) {
-//        // Lấy thông tin department theo tên
-//        DepartmentAPI departmentAPI = new DepartmentAPI();
-//        departmentAPI.getAllDepartments(new DepartmentAPI.DepartmentCallback() {
-//            @Override
-//            public void onDepartmentReceived(Department department) {
-//            }
-//
-//            @Override
-//            public void onDepartmentsReceived(List<Department> departments) {
-//                for (Department department : departments) {
-//                    if (department != null && department.getDepartmentName().equals(name)) {
-//                        // Nếu tên khoa trùng khớp, lấy departmentId
-//                        int departmentId = department.getDepartmentId();
-//                        loadMajors(departmentId); // Gọi phương thức để lấy ngành
-//                    }
-//                }
-//            }
-//        });
-//    }
-    private void loadListByFilter(int majorId){
-        if (majorId == -1) {
-            if (lecturerAdapter != null) {
-                lecturerAdapter.updateList(new ArrayList<>(originalLecturers));
-            }
-            if (recyclerView.getAdapter() instanceof MemberAdapter) {
-                MemberAdapter adapter = (MemberAdapter) recyclerView.getAdapter();
-                adapter.updateList(new ArrayList<>(originalStudents));
-            }
-            return;
+    private void loadListByFilter(String majorName) {
+    if (majorName == null) {
+        if (lecturerAdapter != null) {
+            lecturerAdapter.updateList(new ArrayList<>(originalLecturers));
         }
-
-        // Lọc danh sách giảng viên
-        if (lecturerAdapter != null && originalLecturers != null) {
-            List<Lecturer> filteredLecturers = new ArrayList<>();
-            for (Lecturer lecturer : originalLecturers) {
-                if (lecturer.getMajorId() == majorId) {
-                    filteredLecturers.add(lecturer);
-                }
-            }
-            lecturerAdapter.updateList(filteredLecturers);
-        }
-
-        // Lọc danh sách sinh viên
         if (recyclerView.getAdapter() instanceof MemberAdapter) {
             MemberAdapter adapter = (MemberAdapter) recyclerView.getAdapter();
-            List<Student> filteredStudents = new ArrayList<>();
-            for (Student student : originalStudents) {
-                if (student.getMajorId() == majorId) {
-                    filteredStudents.add(student);
+            adapter.updateList(new ArrayList<>(originalStudents));
+        }
+        return;
+    }
+
+    // Lọc danh sách giảng viên và sinh viên
+    MajorAPI majorAPI = new MajorAPI();
+    majorAPI.getMajorByName(majorName, new MajorAPI.MajorCallback() {
+        @Override
+        public void onMajorReceived(Major major) {
+            if (major != null) {
+                // Lọc giảng viên
+                if (lecturerAdapter != null && originalLecturers != null) {
+                    List<Lecturer> filteredLecturers = new ArrayList<>();
+                    for (Lecturer lecturer : originalLecturers) {
+                        if (lecturer.getMajorId() == major.getMajorId()) {
+                            filteredLecturers.add(lecturer);
+                        }
+                    }
+                    lecturerAdapter.updateList(filteredLecturers);
+                }
+
+                // Lọc sinh viên
+                if (recyclerView.getAdapter() instanceof MemberAdapter && originalStudents != null) {
+                    MemberAdapter adapter = (MemberAdapter) recyclerView.getAdapter();
+                    List<Student> filteredStudents = new ArrayList<>();
+                    for (Student student : originalStudents) {
+                        if (student.getMajorId() == major.getMajorId()) {
+                            filteredStudents.add(student);
+                        }
+                    }
+                    adapter.updateList(filteredStudents);
                 }
             }
-            adapter.updateList(filteredStudents);
         }
-    }
+
+        @Override
+        public void onMajorsReceived(List<Major> majors) {
+            // Không dùng trong trường hợp này
+        }
+    });
+}
+
 
 }
