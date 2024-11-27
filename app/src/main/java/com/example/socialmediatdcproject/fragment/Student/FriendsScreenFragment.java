@@ -130,6 +130,12 @@ public class FriendsScreenFragment extends Fragment {
             public void onStudentsReceived(List<Student> students) {}
         });
 
+        friendsFragment = new ListFriendFragment();
+        fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.third_content_fragment, friendsFragment);
+        fragmentTransaction.commit();
+        recyclerView.setVisibility(View.VISIBLE);
+
         // Thiết lập nút cho giao diện
         personalFriends.setOnClickListener(v -> {
             displayFriends(3);
@@ -359,47 +365,6 @@ public class FriendsScreenFragment extends Fragment {
         });
     }
 
-    public void loadGroupFromFirebase(int id) {
-        StudentAPI studentAPI = new StudentAPI();
-        studentAPI.getStudentById(id, new StudentAPI.StudentCallback() {
-            @Override
-            public void onStudentReceived(Student student) {
-                groupList.clear();
-                GroupAPI groupAPI = new GroupAPI();
-                GroupUserAPI groupUserAPI = new GroupUserAPI();
-                groupUserAPI.getGroupUserByIdUser(student.getUserId(), new GroupUserAPI.GroupUserCallback() {
-                    @Override
-                    public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                        CountDownLatch latch = new CountDownLatch(groupUsers.size()); // Đếm số lượng nhóm
-
-                        for (GroupUser gu : groupUsers) {
-                            groupAPI.getGroupById(gu.getGroupId(), new GroupAPI.GroupCallback() {
-                                @Override
-                                public void onGroupReceived(Group group) {
-                                    Log.d("New 1", "onGroupReceived: " + group.getGroupName());
-                                    groupList.add(group);
-                                    latch.countDown(); // Giảm số lượng đếm
-
-                                    if (latch.getCount() == 0) {
-                                        // Thiết lập adapter khi tất cả nhóm đã được lấy
-                                        GroupAdapter groupAdapter = new GroupAdapter(groupList, requireContext());
-                                        recyclerView.setAdapter(groupAdapter);
-                                        groupAdapter.notifyDataSetChanged();
-                                    }
-                                }
-
-                                @Override
-                                public void onGroupsReceived(List<Group> groups) {}
-                            });
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onStudentsReceived(List<Student> students) {}
-        });
-    }
     //Set sự kiện màu cho các nút
     private void updateButtonColorsActive(Button activeButton){
         // Cập nhật nút đang hoạt động

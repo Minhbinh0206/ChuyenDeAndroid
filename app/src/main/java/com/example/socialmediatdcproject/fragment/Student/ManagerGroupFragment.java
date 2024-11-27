@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.socialmediatdcproject.API.AnswerAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
+import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.QuestionAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.activity.CreateNewGroupActivity;
@@ -76,7 +77,7 @@ public class ManagerGroupFragment extends Fragment {
         });
 
         buttonPost.setOnClickListener(v -> {
-            loadPostApproveFromFirebase(groupId,0, textView);
+            loadPostApproveFromFirebase(groupId, textView);
 
             changeColorButtonActive(buttonPost);
             changeColorButtonNormal(buttonUser);
@@ -93,95 +94,97 @@ public class ManagerGroupFragment extends Fragment {
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 
-    public void loadPostApproveFromFirebase(int id, int status, TextView textView) {
-        ArrayList<Post> postsList = new ArrayList<>(); // Danh sách bài viết
-
-        // Tham chiếu đến bảng "posts" trong Firebase Realtime Database
-        FirebaseDatabase.getInstance().getReference("Posts")
-                .orderByChild("groupId") // Giả sử bạn có trường "groupId" để lọc bài viết theo nhóm
-                .equalTo(id)
-                .addValueEventListener(new ValueEventListener() {
+    public void loadPostApproveFromFirebase(int id, TextView textView) {
+        ArrayList<Post> postsApprove = new ArrayList<>();
+        GroupAPI groupAPI = new GroupAPI();
+        groupAPI.getGroupById(id ,new GroupAPI.GroupCallback() {
+            @Override
+            public void onGroupReceived(Group group) {
+                PostAPI postAPI = new PostAPI();
+                postAPI.getPostsByGroupId(group.getGroupId(), new PostAPI.PostCallback() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        postsList.clear(); // Xóa danh sách bài viết cũ
+                    public void onPostReceived(Post post) {
 
-                        // Duyệt qua từng bài viết trong "posts"
-                        for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                            Post post = postSnapshot.getValue(Post.class);
-                            if (post.getStatus() == status) {
-                                postsList.add(post); // Thêm bài viết vào danh sách
-                            }
+                    }
 
-                            if (postsList.isEmpty()) {
-                                textView.setVisibility(View.VISIBLE);
-                                textView.setText("Hiện chưa có bài viết nào cần duyệt");
-                            }
-                            else {
-                                textView.setVisibility(View.GONE);
+                    @Override
+                    public void onPostsReceived(List<Post> posts) {
+                        postsApprove.clear();
+
+                        for (Post p : posts) {
+                            if (p.getStatus() == 0) {
+                                postsApprove.add(p);
                             }
                         }
 
-                        // Cập nhật RecyclerView với dữ liệu bài viết
-                        PostApproveAdapter postAdapter = new PostApproveAdapter(postsList, requireContext());
-                        recyclerView.setAdapter(postAdapter);
+                        if (postsApprove.isEmpty()) {
+                            textView.setVisibility(View.VISIBLE);
+                            textView.setText("Chưa có bài viết nào cần duyệt");
+                        }
+                        else {
+                            textView.setVisibility(View.GONE);
+                        }
+
+                        PostApproveAdapter postMyselfAdapter = new PostApproveAdapter(postsApprove, requireContext());
+                        recyclerView.setAdapter(postMyselfAdapter);
                         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
                     }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        // Xử lý lỗi nếu cần
-                        Toast.makeText(requireContext(), "Failed to load posts: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
                 });
+            }
+
+            @Override
+            public void onGroupsReceived(List<Group> groups) {
+
+            }
+        });
     }
 
     public void loadUserApply(int groupId, TextView textView){
         ArrayList<Answer> answerList = new ArrayList<>();
-
-        AnswerAPI answerAPI = new AnswerAPI();
-        answerAPI.getAllAnswers(new AnswerAPI.AnswersCallback() {
+        QuestionAPI questionAPI = new QuestionAPI();
+        questionAPI.getQuestionByGroupId(groupId, new QuestionAPI.QuestionCallback() {
             @Override
-            public void onAnswerReceived(Answer answer) {
-
-            }
-
-            @Override
-            public void onAnswersReceived(List<Answer> answers) {
-                Log.d("LOH", "onAnswersReceived: " + answers.size());
-                QuestionAPI questionAPI = new QuestionAPI();
-                questionAPI.getQuestionByGroupId(groupId, new QuestionAPI.QuestionCallback() {
+            public void onQuestionReceived(Question question) {
+                AnswerAPI answerAPI = new AnswerAPI();
+                answerAPI.getAnswersByQuestionId(question.getQuestionId(), new AnswerAPI.AnswersCallback() {
                     @Override
-                    public void onQuestionReceived(Question question) {
+                    public void onAnswerReceived(Answer answer) {
+
+                    }
+
+                    @Override
+                    public void onAnswersReceived(List<Answer> answers) {
                         answerList.clear();
 
                         for (Answer a : answers) {
                             if (a.getQuestionId() == question.getQuestionId()) {
                                 answerList.add(a);
                             }
-
-                            if (answerList.isEmpty()) {
-                                textView.setVisibility(View.VISIBLE);
-                                textView.setText("Hiện chưa có đơn xin tham gia nào");
-                            }
-                            else {
-                                textView.setVisibility(View.GONE);
-                            }
-
-                            // Cập nhật RecyclerView với dữ liệu bài viết
-                            AnswerAdapter answerAdapter = new AnswerAdapter(answerList, requireContext());
-                            recyclerView.setAdapter(answerAdapter);
-                            recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
                         }
-                    }
 
-                    @Override
-                    public void onQuestionsReceived(List<Question> questions) {
+                        if (answerList.isEmpty()) {
+                            textView.setVisibility(View.VISIBLE);
+                            textView.setText("Hiện chưa có đơn xin tham gia nào");
+                        }
+                        else {
+                            textView.setVisibility(View.GONE);
+                        }
 
+                        // Cập nhật RecyclerView với dữ liệu bài viết
+                        AnswerAdapter answerAdapter = new AnswerAdapter(answerList, requireContext());
+                        recyclerView.setAdapter(answerAdapter);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
                     }
                 });
 
             }
+
+            @Override
+            public void onQuestionsReceived(List<Question> questions) {
+
+            }
         });
+
     }
 }
 

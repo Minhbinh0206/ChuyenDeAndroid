@@ -370,6 +370,26 @@ public class CreateNewGroupActivity extends AppCompatActivity {
             String nameGroup = fieldNameGroup.getText().toString();
             boolean isPrivate = fieldIsPrivate.isChecked();
 
+            if (nameGroup.isEmpty()) {
+                // Hiển thị Toast nếu title hoặc content rỗng
+                Toast.makeText(getApplicationContext(), "Vui lòng điền đầy đủ các dữ liệu trên", Toast.LENGTH_SHORT).show();
+
+                // Bật lại nút submit để người dùng có thể thử lại
+                submitAction.setEnabled(true);
+
+                return; // Dừng tiếp tục xử lý nếu title hoặc content rỗng
+            }else if (isPrivate){
+                if (fieldQuestion.getText().toString().isEmpty()) {
+                    // Hiển thị Toast nếu title hoặc content rỗng
+                    Toast.makeText(getApplicationContext(), "Vui lòng điền đầy đủ các dữ liệu trên", Toast.LENGTH_SHORT).show();
+
+                    // Bật lại nút submit để người dùng có thể thử lại
+                    submitAction.setEnabled(true);
+
+                    return; // Dừng tiếp tục xử lý nếu title hoặc content rỗng
+                }
+            }
+
             // Tạo Dialog
             Dialog loadingDialog = new Dialog(CreateNewGroupActivity.this);
             loadingDialog.setContentView(R.layout.dialog_loading);
@@ -385,15 +405,6 @@ public class CreateNewGroupActivity extends AppCompatActivity {
 
             submitAction.setEnabled(false);
 
-            if (nameGroup.isEmpty()) {
-                // Hiển thị Toast nếu title hoặc content rỗng
-                Toast.makeText(getApplicationContext(), "Vui lòng điền đầy đủ các dữ liệu trên", Toast.LENGTH_SHORT).show();
-
-                // Bật lại nút submit để người dùng có thể thử lại
-                submitAction.setEnabled(true);
-
-                return; // Dừng tiếp tục xử lý nếu title hoặc content rỗng
-            }
 
             GroupAPI groupAPI = new GroupAPI();
             Group g = new Group();

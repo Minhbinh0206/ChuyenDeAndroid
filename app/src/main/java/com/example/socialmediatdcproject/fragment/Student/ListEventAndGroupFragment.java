@@ -181,13 +181,13 @@ public class ListEventAndGroupFragment extends Fragment {
             public void onStudentReceived(Student student) {
                 GroupAPI groupAPI = new GroupAPI();
                 GroupUserAPI groupUserAPI = new GroupUserAPI();
-                groupUserAPI.getGroupUserByIdUser(student.getUserId(), new GroupUserAPI.GroupUserCallback() {
+                groupUserAPI.getAllGroupsByUserId(student.getUserId(), new GroupUserAPI.GroupsCallback() {
                     @Override
-                    public void onGroupUsersReceived(List<GroupUser> groupUsers) {
+                    public void onGroupsReceived(List<Integer> groupIds) {
                         // Sử dụng CountDownLatch để đợi cho tất cả các nhóm được tải xong
-                        CountDownLatch latch = new CountDownLatch(groupUsers.size());
-                        for (GroupUser gu : groupUsers) {
-                            groupAPI.getGroupById(gu.getGroupId(), new GroupAPI.GroupCallback() {
+                        CountDownLatch latch = new CountDownLatch(groupIds.size());
+                        for (Integer i : groupIds) {
+                            groupAPI.getGroupById(i, new GroupAPI.GroupCallback() {
                                 @Override
                                 public void onGroupReceived(Group group) {
                                     groupList.add(group);

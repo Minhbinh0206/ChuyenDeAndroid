@@ -21,10 +21,7 @@ public class AnswerAPI {
     }
 
     public void deleteAnswer(Answer answer) {
-        String uniqueKey = String.valueOf(answer.getAnswerId());  // Lấy khóa của câu trả lời từ answerId
-
-        // Xóa câu trả lời khỏi Firebase theo khóa (uniqueKey)
-        answerDatabase.child(uniqueKey).removeValue()
+        answerDatabase.child(String.valueOf(answer.getQuestionId())).child(String.valueOf(answer.getAnswerId())).removeValue()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
 
@@ -37,10 +34,7 @@ public class AnswerAPI {
 
     // Thêm một câu hỏi mới vào database
     public void addAnswer(Answer answer) {
-        String uniqueKey = String.valueOf(answer.getAnswerId());
-
-        // Thêm câu hỏi vào Firebase với uniqueKey
-        answerDatabase.child(uniqueKey).setValue(answer)
+        answerDatabase.child(String.valueOf(answer.getQuestionId())).child(String.valueOf(answer.getAnswerId())).setValue(answer)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
 
@@ -56,13 +50,16 @@ public class AnswerAPI {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Answer> answerList = new ArrayList<>();
-                for (DataSnapshot answerSnapshot : snapshot.getChildren()) {
-                    Answer answer = answerSnapshot.getValue(Answer.class);
-                    if (answer != null) {
-                        answerList.add(answer);  // Thêm câu hỏi vào danh sách
+                // Duyệt qua tất cả các câu trả lời
+                for (DataSnapshot questionSnapshot : snapshot.getChildren()) {
+                    for (DataSnapshot answerSnapshot : questionSnapshot.getChildren()) {
+                        Answer answer = answerSnapshot.getValue(Answer.class);
+                        if (answer != null) {
+                            answerList.add(answer);  // Thêm câu trả lời vào danh sách
+                        }
                     }
                 }
-                callback.onAnswersReceived(answerList);  // Trả về danh sách câu hỏi
+                callback.onAnswersReceived(answerList);  // Trả về danh sách câu trả lời
             }
 
             @Override
@@ -74,17 +71,18 @@ public class AnswerAPI {
 
     // Lấy câu hỏi theo groupId
     public void getAnswersByQuestionId(int id, final AnswersCallback callback) {
-        answerDatabase.orderByChild("questionId").equalTo(id).addListenerForSingleValueEvent(new ValueEventListener() {
+        answerDatabase.child(String.valueOf(id)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Answer> answerList = new ArrayList<>();
-                for (DataSnapshot questionSnapshot : snapshot.getChildren()) {
-                    Answer answer = questionSnapshot.getValue(Answer.class);
+                // Duyệt qua các câu trả lời cho câu hỏi với questionId = id
+                for (DataSnapshot answerSnapshot : snapshot.getChildren()) {
+                    Answer answer = answerSnapshot.getValue(Answer.class);
                     if (answer != null) {
-                        answerList.add(answer);  // Thêm câu hỏi vào danh sách
+                        answerList.add(answer);  // Thêm câu trả lời vào danh sách
                     }
                 }
-                callback.onAnswersReceived(answerList);  // Trả về danh sách câu hỏi
+                callback.onAnswersReceived(answerList);  // Trả về danh sách câu trả lời
             }
 
             @Override

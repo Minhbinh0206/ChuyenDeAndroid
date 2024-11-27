@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -220,7 +221,10 @@ public class CreateNewPostFragment extends Fragment {
                             post.setPostImage(downloadUrl);
 
                             PostAPI postAPI = new PostAPI();
-                            postAPI.updatePost(post);
+                            postAPI.addPost(post);
+
+                            // Hiển thị Toast thông báo thành công
+                            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
 
                             // Dismiss dialog sau khi bài viết được thêm
                             loadingDialog.dismiss();
@@ -233,7 +237,13 @@ public class CreateNewPostFragment extends Fragment {
         else {
             post.setPostImage("");
             PostAPI postAPI = new PostAPI();
-            postAPI.updatePost(post);
+            postAPI.addPost(post);
+
+            // Hiển thị Toast thông báo thành công
+            Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
+
+            // Dismiss dialog sau khi bài viết được thêm
+            loadingDialog.dismiss();
         }
 
     }
@@ -283,6 +293,7 @@ public class CreateNewPostFragment extends Fragment {
         Button postButtonCreate = dialog.findViewById(R.id.button_post_user_create_new);
         Button postButtonCancle = dialog.findViewById(R.id.button_post_user_create_cancle);
         EditText postContent = dialog.findViewById(R.id.post_content);
+        ToggleButton readonly = dialog.findViewById(R.id.custom_toggle);
 
         ImageButton addImage = dialog.findViewById(R.id.post_add_image);
         ImageButton changeBanckground = dialog.findViewById(R.id.post_change_background);
@@ -338,6 +349,8 @@ public class CreateNewPostFragment extends Fragment {
                         return; // Dừng tiếp tục xử lý nếu title hoặc content rỗng
                     }
 
+                    boolean blockComment = readonly.isChecked();
+
                     // Tạo Dialog
                     Dialog loadingDialog = new Dialog(getContext());
                     loadingDialog.setContentView(R.layout.dialog_loading);
@@ -353,7 +366,6 @@ public class CreateNewPostFragment extends Fragment {
 
                     PostAPI postAPI = new PostAPI();
                     Post post = new Post();
-                    uploadImageToFirebaseStorage(selectedImageUri, post, loadingDialog);
 
                     final boolean[] isPostAdded = {false};
                     postAPI.getPostsByGroupId(groupId ,new PostAPI.PostCallback() {
@@ -380,22 +392,22 @@ public class CreateNewPostFragment extends Fragment {
                                                     post.setPostId(posts.size());
                                                     post.setUserId(student.getUserId());
                                                     post.setPostLike(0);
+                                                    post.setCommentAllow(blockComment);
                                                     post.setContent(content);
                                                     post.setStatus(Post.APPROVED);
                                                     post.setGroupId(groupId);
                                                     post.setCreatedAt(sdf.format(new Date()));
-                                                    postAPI.addPost(post);
 
                                                 } else {
                                                     post.setPostId(posts.size());
                                                     post.setUserId(student.getUserId());
                                                     post.setPostLike(0);
                                                     post.setContent(content);
+                                                    post.setCommentAllow(blockComment);
                                                     post.setFilter(false);
                                                     post.setStatus(Post.WAITING);
                                                     post.setGroupId(groupId);
                                                     post.setCreatedAt(sdf.format(new Date()));
-                                                    postAPI.addPost(post);
 
                                                     notifyQuickly.setNotifyId(notifications.size());
                                                     notifyQuickly.setUserSendId(student.getUserId());
@@ -405,8 +417,7 @@ public class CreateNewPostFragment extends Fragment {
                                                 }
                                                 isPostAdded[0] = true; // Đánh dấu là đã thêm bài viết
 
-                                                // Hiển thị Toast thông báo thành công
-                                                Toast.makeText(getContext(), "Đăng bài thành công!", Toast.LENGTH_SHORT).show();
+                                                uploadImageToFirebaseStorage(selectedImageUri, post, loadingDialog);
                                             }
                                             dialog.dismiss();
                                         }

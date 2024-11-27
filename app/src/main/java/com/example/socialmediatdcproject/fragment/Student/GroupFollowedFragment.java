@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.fragment.Student;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +21,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.FilterPostsAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
+import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.MemberAdapter;
@@ -33,9 +36,12 @@ import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -44,6 +50,8 @@ import java.util.List;
 public class GroupFollowedFragment extends Fragment {
     FrameLayout frameLayout;
     RecyclerView recyclerView;
+    ArrayList<Post> postList;
+    PostAdapter postAdapter;
 
     @Nullable
     @Override
@@ -58,7 +66,9 @@ public class GroupFollowedFragment extends Fragment {
 
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
         frameLayout.setVisibility(view.GONE);
+        postList = new ArrayList<>();
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        recyclerView.setVisibility(View.VISIBLE);
 
         ImageView avatarGroup = view.findViewById(R.id.image_group_user_follow);
         TextView nameGroup = view.findViewById(R.id.name_group_user_follow);
@@ -78,7 +88,7 @@ public class GroupFollowedFragment extends Fragment {
         Intent intent = requireActivity().getIntent();
         groupId = intent.getIntExtra("groupId", -1);
 
-        loadPostFromFirebase(groupId, 1, textView);
+        loadPostFromFirebase(groupId, textView);
 
         iconSetting.setVisibility(View.GONE);
 
@@ -123,7 +133,7 @@ public class GroupFollowedFragment extends Fragment {
                                 fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
                                 fragmentTransaction.commit();
 
-                                loadPostFromFirebase(groupId, 1, textView);
+                                loadPostFromFirebase(groupId, textView);
 
                                 changeColorButtonActive(postBtn);
                                 changeColorButtonNormal(memberBtn);
@@ -138,7 +148,6 @@ public class GroupFollowedFragment extends Fragment {
                                     fragmentTransaction.commit();
                                 }else {
                                     frameLayout.setVisibility(View.GONE);
-                                    loadPostApproveFromFirebase(groupId, 0, textView);
                                 }
 
                                 changeColorButtonActive(myselfBtn);
@@ -154,7 +163,7 @@ public class GroupFollowedFragment extends Fragment {
                                 fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
                                 fragmentTransaction.commit();
 
-                                loadUsersByGroupId(groupId, textView);
+                                loadUsersByGroupId(groupId);
 
                                 changeColorButtonActive(memberBtn);
                                 changeColorButtonNormal(myselfBtn);
@@ -167,7 +176,7 @@ public class GroupFollowedFragment extends Fragment {
                             myselfBtn.setText("Tôi");
 
                             postBtn.setOnClickListener(v -> {
-                                loadPostFromFirebase(groupId, 1, textView);
+                                loadPostFromFirebase(groupId, textView);
 
                                 changeColorButtonActive(postBtn);
                                 changeColorButtonNormal(memberBtn);
@@ -183,7 +192,7 @@ public class GroupFollowedFragment extends Fragment {
                             });
 
                             memberBtn.setOnClickListener(v -> {
-                                loadUsersByGroupId(groupId, textView);
+                                loadUsersByGroupId(groupId);
 
                                 changeColorButtonActive(memberBtn);
                                 changeColorButtonNormal(myselfBtn);
@@ -216,192 +225,190 @@ public class GroupFollowedFragment extends Fragment {
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 
-    public void loadPostFromFirebase(int id, int status, TextView textView) {
-        ArrayList<Post> postsList = new ArrayList<>(); // Danh sách bài viết
+    public void loadPostFromFirebase(int id, TextView textView) {
+        postList.clear();
 
-        // Tham chiếu đến bảng "posts" trong Firebase Realtime Database
-        FirebaseDatabase.getInstance().getReference("Posts")
-                .orderByChild("groupId") // Giả sử bạn có trường "groupId" để lọc bài viết theo nhóm
-                .equalTo(id)
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        postsList.clear(); // Xóa danh sách bài viết cũ
+        postAdapter = new PostAdapter(postList, requireContext());
+        recyclerView.setAdapter(postAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-                        // Duyệt qua từng bài viết trong "posts"
-                        for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                            Post post = postSnapshot.getValue(Post.class);
-                            if (post.getStatus() == status) {
-                                postsList.add(post); // Thêm bài viết vào danh sách
-                            }
-                        }
+        if (postList.isEmpty()) {
+            textView.setVisibility(View.VISIBLE);
+            textView.setText("Hiện chưa có bài viết nào");
+        }
+        else {
+            textView.setVisibility(View.GONE);
+        }
 
-                        if (postsList.isEmpty()) {
-                            textView.setVisibility(View.VISIBLE);
-                            textView.setText("Hiện chưa có bài viết nào");
-                        }
-                        else {
-                            textView.setVisibility(View.GONE);
-                        }
-
-                        // Cập nhật RecyclerView với dữ liệu bài viết
-                        PostAdapter postAdapter = new PostAdapter(postsList, getContext());
-                        recyclerView.setAdapter(postAdapter);
-                        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        // Xử lý lỗi nếu cần
-                        Toast.makeText(requireContext(), "Failed to load posts: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    public void loadPostApproveFromFirebase(int id, int status, TextView textView) {
-        ArrayList<Post> postsList = new ArrayList<>(); // Danh sách bài viết
-
-        // Tham chiếu đến bảng "posts" trong Firebase Realtime Database
-        FirebaseDatabase.getInstance().getReference("Posts")
-                .orderByChild("groupId") // Giả sử bạn có trường "groupId" để lọc bài viết theo nhóm
-                .equalTo(id)
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        postsList.clear(); // Xóa danh sách bài viết cũ
-
-                        // Duyệt qua từng bài viết trong "posts"
-                        for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                            Post post = postSnapshot.getValue(Post.class);
-                            if (post.getStatus() == status) {
-                                postsList.add(post); // Thêm bài viết vào danh sách
-                            }
-                        }
-
-                        if (postsList.isEmpty()) {
-                            textView.setVisibility(View.VISIBLE);
-                            textView.setText("Hiện chưa có bài viết nào cần duyêt");
-                        }
-                        else {
-                            textView.setVisibility(View.GONE);
-                        }
-
-                        // Cập nhật RecyclerView với dữ liệu bài viết
-                        PostApproveAdapter postAdapter = new PostApproveAdapter(postsList, requireContext());
-                        recyclerView.setAdapter(postAdapter);
-                        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        // Xử lý lỗi nếu cần
-                        Toast.makeText(requireContext(), "Failed to load posts: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-
-    }
-
-    public void loadPostMyselfFromFirebase(int id, TextView textView) {
-        ArrayList<Post> postsList = new ArrayList<>(); // Danh sách bài viết
-
-        // Tham chiếu đến bảng "posts" trong Firebase Realtime Database
-        FirebaseDatabase.getInstance().getReference("Posts")
-                .orderByChild("groupId") // Giả sử bạn có trường "groupId" để lọc bài viết theo nhóm
-                .equalTo(id)
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        postsList.clear(); // Xóa danh sách bài viết cũ
-
-                        // Duyệt qua từng bài viết trong "posts"
-                        for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                            Post post = postSnapshot.getValue(Post.class);
-                            StudentAPI studentAPI = new StudentAPI();
-                            studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-                                @Override
-                                public void onStudentReceived(Student student) {
-                                    if (post.getUserId() == student.getUserId()) {
-                                        postsList.add(post);
-                                    }
-
-                                    if (postsList.isEmpty()) {
-                                        textView.setVisibility(View.VISIBLE);
-                                        textView.setText("Bạn chưa đăng bài viết nào");
-                                    }
-                                    else {
-                                        textView.setVisibility(View.GONE);
-                                    }
-
-                                    // Cập nhật RecyclerView với dữ liệu bài viết
-                                    PostMyselfAdapter postAdapter = new PostMyselfAdapter(postsList, requireContext());
-                                    recyclerView.setAdapter(postAdapter);
-                                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                                }
-
-                                @Override
-                                public void onStudentsReceived(List<Student> students) {
-
-                                }
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        // Xử lý lỗi nếu cần
-                        Toast.makeText(requireContext(), "Failed to load posts: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-
-    }
-
-    private void loadUsersByGroupId(int id, TextView textView) {
-        ArrayList<Student> memberGroup = new ArrayList<>();
-        StudentAPI studentAPI = new StudentAPI();
-        studentAPI.getAllStudents(new StudentAPI.StudentCallback() {
+        GroupAPI groupAPI = new GroupAPI();
+        groupAPI.getGroupById(id, new GroupAPI.GroupCallback() {
             @Override
-            public void onStudentReceived(Student student) {
+            public void onGroupReceived(Group group) {
+                DatabaseReference postReference = FirebaseDatabase.getInstance()
+                        .getReference("Posts")
+                        .child(String.valueOf(group.getGroupId()));
 
+                Query postQuery = postReference.orderByChild("status").equalTo(1);
+
+                postQuery.addChildEventListener(new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                        if (!isAdded()) return; // Đảm bảo Fragment vẫn còn hoạt động
+
+                        Post post = snapshot.getValue(Post.class);
+                        if (post != null) {
+                            handlePostAddition(post);
+                            if (textView.getVisibility() == View.VISIBLE) {
+                                textView.setVisibility(View.GONE); // Ẩn thông báo
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                        if (!isAdded()) return; // Đảm bảo Fragment vẫn còn hoạt động
+
+                        Post updatedPost = snapshot.getValue(Post.class);
+                        if (updatedPost != null) {
+                            handlePostUpdate(updatedPost);
+                        }
+                    }
+
+                    @Override
+                    public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                        Post removedPost = snapshot.getValue(Post.class);
+                        if (removedPost != null) {
+                            handlePostRemoval(removedPost);
+                        }
+                    }
+
+                    @Override
+                    public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                        // Không cần xử lý trong trường hợp này
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("PostAPI", "Error listening to post changes: " + error.getMessage());
+                    }
+                });
             }
 
             @Override
-            public void onStudentsReceived(List<Student> students) {
-                GroupUserAPI groupUserAPI = new GroupUserAPI();
-                groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
+            public void onGroupsReceived(List<Group> groups) {
+                // Không cần xử lý ở đây
+            }
+        });
+    }
+
+    private void handlePostAddition(Post post) {
+        if (post.getStatus() == 1) {
+            postList.add(0, post); // Thêm bài viết vào đầu danh sách
+            postAdapter.notifyItemInserted(0); // Thông báo RecyclerView
+            recyclerView.scrollToPosition(0); // Cuộn lên đầu
+        }
+    }
+
+    private void handlePostUpdate(Post updatedPost) {
+        if (updatedPost.getStatus() == 1) {
+            postList.add(0, updatedPost); // Thêm bài viết vào đầu danh sách
+            postAdapter.notifyItemInserted(0); // Thông báo RecyclerView
+            recyclerView.scrollToPosition(0); // Cuộn lên đầu
+        }
+    }
+
+    private void handlePostRemoval(Post removedPost) {
+        for (int i = 0; i < postList.size(); i++) {
+            if (postList.get(i).getPostId() == removedPost.getPostId()) {
+                postList.remove(i);
+                postAdapter.notifyItemRemoved(i);
+                break;
+            }
+        }
+    }
+
+    public void loadPostMyselfFromFirebase(int id, TextView textView) {
+        ArrayList<Post> myPosts = new ArrayList<>();
+        GroupAPI groupAPI = new GroupAPI();
+        groupAPI.getGroupById(id ,new GroupAPI.GroupCallback() {
+            @Override
+            public void onGroupReceived(Group group) {
+                PostAPI postAPI = new PostAPI();
+                postAPI.getPostsByGroupId(group.getGroupId(), new PostAPI.PostCallback() {
                     @Override
-                    public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                        for (GroupUser gu : groupUsers) {
-                            groupUserAPI.getGroupUserByIdGroup(gu.getGroupId(), new GroupUserAPI.GroupUserCallback() {
-                                @Override
-                                public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                                    List<GroupUser> groupUserList = new ArrayList<>();
-                                    for (GroupUser gu : groupUsers) {
-                                        if (gu.getGroupId() == id) {
-                                            groupUserList.add(gu);
-                                        }
-                                    }
+                    public void onPostReceived(Post post) {
 
-                                    // Chỉ thêm vào memberGroup nếu chưa có
-                                    for (GroupUser gus : groupUserList) {
-                                        for (Student u : students) {
-                                            if (u.getUserId() == gus.getUserId() && !memberGroup.contains(u)) {
-                                                memberGroup.add(u);
-                                            }
-                                        }
-                                    }
+                    }
 
-                                    // Cập nhật RecyclerView sau khi thêm tất cả member
-                                    MemberAdapter memberAdapter = new MemberAdapter(memberGroup, requireContext());
-                                    recyclerView.removeAllViews();
-                                    recyclerView.setAdapter(memberAdapter);
-                                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                    @Override
+                    public void onPostsReceived(List<Post> posts) {
+                        StudentAPI studentAPI = new StudentAPI();
+                        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                            @Override
+                            public void onStudentReceived(Student student) {
+                                myPosts.clear();
+                                for (Post p : posts) {
+                                    if (p.getUserId() == student.getUserId()) {
+                                        myPosts.add(p);
+                                    }
                                 }
-                            });
-                        }
+
+                                if (myPosts.isEmpty()) {
+                                    textView.setVisibility(View.VISIBLE);
+                                    textView.setText("Bạn chưa đăng bài viết nào");
+                                }
+                                else {
+                                    textView.setVisibility(View.GONE);
+                                }
+
+                                PostMyselfAdapter postMyselfAdapter = new PostMyselfAdapter(myPosts, requireContext());
+                                recyclerView.setAdapter(postMyselfAdapter);
+                                recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                            }
+
+                            @Override
+                            public void onStudentsReceived(List<Student> students) {
+
+                            }
+                        });
                     }
                 });
+            }
+
+            @Override
+            public void onGroupsReceived(List<Group> groups) {
+
+            }
+        });
+    }
+
+    public void loadUsersByGroupId(int groupId){
+        ArrayList<Student> memberList = new ArrayList<>();
+
+        // Cập nhật RecyclerView với dữ liệu bài viết
+        MemberAdapter memberAdapter = new MemberAdapter(memberList, requireContext());
+        recyclerView.setAdapter(memberAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        GroupUserAPI groupUserAPI = new GroupUserAPI();
+        groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
+            @Override
+            public void onUsersReceived(List<Integer> userIds) {
+                for (Integer i : userIds) {
+                    StudentAPI studentAPI = new StudentAPI();
+                    studentAPI.getStudentById(i, new StudentAPI.StudentCallback() {
+                        @Override
+                        public void onStudentReceived(Student student) {
+                            memberList.add(student);
+                            memberAdapter.notifyDataSetChanged();
+                        }
+
+                        @Override
+                        public void onStudentsReceived(List<Student> students) {
+
+                        }
+                    });
+                }
             }
         });
     }

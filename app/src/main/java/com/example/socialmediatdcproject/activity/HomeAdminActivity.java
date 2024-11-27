@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
@@ -29,9 +30,11 @@ import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.BusinessAPI;
 import com.example.socialmediatdcproject.API.DepartmentAPI;
 import com.example.socialmediatdcproject.API.FilterNotifyAPI;
+import com.example.socialmediatdcproject.API.FilterPostsAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.NotifyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
+import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
@@ -53,14 +56,27 @@ import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class HomeAdminActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     protected DrawerLayout drawerLayout;
     private int currentNotifyIndex = 0;
+    ArrayList<Post> postList;
+    PostAdapter postAdapter;
+    private RecyclerView recyclerView; // Khai báo RecyclerView
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -69,6 +85,12 @@ public class HomeAdminActivity extends AppCompatActivity {
         NotifyAPI notifyAPI = new NotifyAPI();
 
         mAuth = FirebaseAuth.getInstance();
+
+        postList = new ArrayList<>();
+        recyclerView = findViewById(R.id.second_content_fragment);
+        postAdapter = new PostAdapter(postList, HomeAdminActivity.this);
+        recyclerView.setAdapter(postAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(HomeAdminActivity.this));
 
         // Thiết lập DrawerLayout và NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -140,6 +162,8 @@ public class HomeAdminActivity extends AppCompatActivity {
                     case 0:
                         // Home
                         fragment = new HomeAdminFragment();
+
+                        loadPostsFromFirebase();
                         break;
                     case 1:
                         // Quản lý
@@ -265,6 +289,8 @@ public class HomeAdminActivity extends AppCompatActivity {
                         Log.e("NotifyAPI", "Error fetching notifications: " + errorMessage);
                     }
                 });
+
+                loadPostsFromFirebase();
             }
 
             @Override
@@ -280,6 +306,8 @@ public class HomeAdminActivity extends AppCompatActivity {
         adminBusinessAPI.getAdminBusinessByKey(mAuth.getCurrentUser().getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
             @Override
             public void onUserReceived(AdminBusiness adminBusiness) {
+                loadPostsFromFirebase();
+
                 if (adminBusiness.getAvatar() == null) {
                     ImageView imageView = findViewById(R.id.nav_avatar_user);
                     Glide.with(HomeAdminActivity.this)
@@ -335,6 +363,8 @@ public class HomeAdminActivity extends AppCompatActivity {
             @Override
             public void onUserReceived(AdminDefault adminDefault) {
                 if (!adminDefault.getAdminType().equals("Super")) {
+                    loadPostsFromFirebase();
+
                     if (adminDefault.getAvatar() == null) {
                         ImageView imageView = findViewById(R.id.nav_avatar_user);
                         Glide.with(HomeAdminActivity.this)
@@ -457,4 +487,246 @@ public class HomeAdminActivity extends AppCompatActivity {
         }
     }
 
+    private void loadPostsFromFirebase() {
+        GroupAPI groupAPI = new GroupAPI();
+        groupAPI.getAllGroups(new GroupAPI.GroupCallback() {
+            @Override
+            public void onGroupReceived(Group group) {
+                // Xử lý nếu cần
+            }
+
+            @Override
+            public void onGroupsReceived(List<Group> groups) {
+                for (Group g : groups) {
+                    if (g.isGroupDefault()) {
+                        DatabaseReference postReference = FirebaseDatabase.getInstance()
+                                .getReference("Posts")
+                                .child(String.valueOf(g.getGroupId()));
+
+                        // Lắng nghe sự kiện cho bài viết của nhóm
+                        postReference.addChildEventListener(new ChildEventListener() {
+
+                            @Override
+                            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                                Post post = snapshot.getValue(Post.class);
+                                if (post != null) {
+                                    // Thêm bài viết vào danh sách chung
+                                    handlePostAddition(post);
+                                }
+                            }
+
+                            @Override
+                            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                                Post updatedPost = snapshot.getValue(Post.class);
+                                if (updatedPost != null) {
+                                    handlePostUpdate(updatedPost);
+                                }
+                            }
+
+                            @Override
+                            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                                Post removedPost = snapshot.getValue(Post.class);
+                                if (removedPost != null) {
+                                    handlePostRemoval(removedPost);
+                                }
+                            }
+
+                            @Override
+                            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                                // Không cần thiết trong trường hợp này
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                Log.e("PostAPI", "Error listening to post changes: " + error.getMessage());
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+    private void handlePostAddition(Post post) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+        try {
+            Date date1 = format.parse(post.getCreatedAt());
+
+            // Kiểm tra nếu date1 hợp lệ
+            if (date1 == null) {
+                return;
+            }
+
+            final boolean[] isAdded = {false};
+            int insertPosition = -1; // Vị trí để thêm bài viết
+
+            // Duyệt qua từng bài viết trong postList để so sánh với bài viết mới
+            for (int i = 0; i < postList.size(); i++) {
+                Post p = postList.get(i);
+                Date date2 = format.parse(p.getCreatedAt());
+
+                // Kiểm tra nếu date2 hợp lệ
+                if (date2 == null) {
+                    continue;
+                }
+
+                // So sánh ngày
+                if (date1.after(date2)) {
+                    // Nếu bài viết mới hơn bài viết hiện tại
+                    insertPosition = i; // Ghi nhận vị trí cần chèn bài viết mới
+                    break; // Dừng lại khi tìm được vị trí thích hợp
+                }
+            }
+
+            // Nếu không tìm thấy vị trí thích hợp, bài viết mới nhất sẽ được thêm vào cuối danh sách
+            if (insertPosition == -1) {
+                insertPosition = postList.size(); // Thêm vào cuối danh sách
+            }
+
+            // Nếu bài viết không cần lọc
+            if (!post.isFilter()) {
+                postList.add(insertPosition, post); // Thêm bài viết vào vị trí thích hợp
+                isAdded[0] = true;
+            } else {
+                // Nếu bài viết cần lọc
+                StudentAPI studentAPI = new StudentAPI();
+                studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                    @Override
+                    public void onStudentReceived(Student student) {
+                        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
+                        filterPostsAPI.findUserInReceive(post, student.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
+                            @Override
+                            public void onResult(boolean isFound) {
+                                if (isFound) {
+                                    postList.add(0, post); // Thêm bài viết vào đầu danh sách nếu được lọc
+                                    postAdapter.notifyItemInserted(0); // Thông báo RecyclerView có phần tử mới ở đầu
+                                    recyclerView.scrollToPosition(0); // Cuộn lên đầu để hiển thị bài viết mới
+
+                                    isAdded[0] = true;
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onStudentsReceived(List<Student> students) {
+                    }
+                });
+
+                AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+                adminDefaultAPI.getAdminDefaultByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDefaultAPI.AdminDefaultCallBack() {
+                    @Override
+                    public void onUserReceived(AdminDefault adminDefault) {
+                        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
+                        filterPostsAPI.findUserInReceive(post, adminDefault.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
+                            @Override
+                            public void onResult(boolean isFound) {
+                                if (isFound) {
+                                    postList.add(0, post); // Thêm bài viết vào đầu danh sách nếu được lọc
+                                    postAdapter.notifyItemInserted(0); // Thông báo RecyclerView có phần tử mới ở đầu
+                                    recyclerView.scrollToPosition(0); // Cuộn lên đầu để hiển thị bài viết mới
+
+                                    isAdded[0] = true;
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+                    }
+                });
+
+                AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+                adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                    @Override
+                    public void onUserReceived(AdminDepartment adminDepartment) {
+                        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
+                        filterPostsAPI.findUserInReceive(post, adminDepartment.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
+                            @Override
+                            public void onResult(boolean isFound) {
+                                if (isFound) {
+                                    postList.add(0, post); // Thêm bài viết vào đầu danh sách nếu được lọc
+                                    postAdapter.notifyItemInserted(0); // Thông báo RecyclerView có phần tử mới ở đầu
+                                    recyclerView.scrollToPosition(0); // Cuộn lên đầu để hiển thị bài viết mới
+
+                                    isAdded[0] = true;
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+                    }
+
+                    @Override
+                    public void onError(String s) {
+
+                    }
+                });
+
+                AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+                adminBusinessAPI.getAdminBusinessByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
+                    @Override
+                    public void onUserReceived(AdminBusiness adminBusiness) {
+                        FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
+                        filterPostsAPI.findUserInReceive(post, adminBusiness.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
+                            @Override
+                            public void onResult(boolean isFound) {
+                                if (isFound) {
+                                    postList.add(0, post); // Thêm bài viết vào đầu danh sách nếu được lọc
+                                    postAdapter.notifyItemInserted(0); // Thông báo RecyclerView có phần tử mới ở đầu
+                                    recyclerView.scrollToPosition(0); // Cuộn lên đầu để hiển thị bài viết mới
+
+                                    isAdded[0] = true;
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                    }
+
+                    @Override
+                    public void onError(String s) {
+
+                    }
+                });
+            }
+
+            // Cập nhật RecyclerView nếu bài viết được thêm vào danh sách
+            if (isAdded[0]) {
+                postAdapter.notifyItemInserted(insertPosition); // Thông báo RecyclerView về sự thay đổi
+                recyclerView.scrollToPosition(insertPosition); // Cuộn đến vị trí bài viết mới thêm
+            }
+
+        } catch (ParseException e) {
+            Log.e("DateParse", "Error parsing date: " + e.getMessage());
+        }
+    }
+
+    private void handlePostUpdate(Post updatedPost) {
+        for (int i = 0; i < postList.size(); i++) {
+            if (postList.get(i).getPostId() == updatedPost.getPostId()) {
+                postList.set(i, updatedPost);
+                postAdapter.notifyItemChanged(i);
+                break;
+            }
+        }
+    }
+
+    private void handlePostRemoval(Post removedPost) {
+        for (int i = 0; i < postList.size(); i++) {
+            if (postList.get(i).getPostId() == removedPost.getPostId()) {
+                postList.remove(i);
+                postAdapter.notifyItemRemoved(i);
+                break;
+            }
+        }
+    }
 }

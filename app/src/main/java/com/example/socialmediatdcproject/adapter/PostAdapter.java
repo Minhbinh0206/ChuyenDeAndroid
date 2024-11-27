@@ -17,6 +17,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -73,7 +75,6 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public PostAdapter(ArrayList<Post> postList, Context context) {
         this.postList = postList;
         this.context = context;
-        sortPostsByDate();
     }
 
     @Override
@@ -342,17 +343,23 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         });
 
         setupLikeButton(holder, post);
+
         holder.buttonComment.setOnClickListener(v -> {
-            Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
-            intent.putExtra("postId", post.getPostId());
-            intent.putExtra("groupId", post.getGroupId());
-            intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-            if (v.getContext() instanceof CommentPostActivity) {
-                //
+            if (post.isCommentAllow()) {
+                Toast.makeText(context, "Nhà sáng tạo đã giới hạn bình luận cho bài viết này!", Toast.LENGTH_SHORT).show();
+            }else {
+                Intent intent = new Intent(v.getContext(), CommentPostActivity.class);
+                intent.putExtra("postId", post.getPostId());
+                intent.putExtra("groupId", post.getGroupId());
+                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                if (v.getContext() instanceof CommentPostActivity) {
+                    //
+                }
+                else {
+                    v.getContext().startActivity(intent);
+                }
             }
-            else {
-                v.getContext().startActivity(intent);
-            }
+
         });
 
         // Cài đặt hiển thị cho số lượng bình luận realtime

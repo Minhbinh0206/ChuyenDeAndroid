@@ -114,10 +114,12 @@ public class PersonalScreenFragment extends Fragment {
 
             }
         });
+        frameLayout.setVisibility(View.VISIBLE);
         friendsFragment = new ListFriendFragment();
         fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.third_content_fragment, friendsFragment);
         fragmentTransaction.commit();
+        recyclerView.setVisibility(View.VISIBLE);
 
         // Set màu mặc định cho nút "Bài viết"
         updateButtonColorsActive(personalFriends);

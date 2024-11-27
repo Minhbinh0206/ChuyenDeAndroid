@@ -30,6 +30,7 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -82,6 +83,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class MainFeatureFragment extends Fragment {
     private List<String> optionsOfAdminDepartment = new ArrayList<>();
@@ -108,9 +110,9 @@ public class MainFeatureFragment extends Fragment {
         Button eventBtn = view.findViewById(R.id.admin_create_event);
         showImagePost = view.findViewById(R.id.post_image_filter);
 
-        changeColorButtonNormal(postBtn);
-        changeColorButtonNormal(noticeBtn);
-        changeColorButtonNormal(eventBtn);
+        changeColorButtonActive(postBtn);
+        changeColorButtonActive(noticeBtn);
+        changeColorButtonActive(eventBtn);
 
         postBtn.setOnClickListener(v -> {
             showCustomDialog();
@@ -268,6 +270,8 @@ public class MainFeatureFragment extends Fragment {
         EditText postContent = dialog.findViewById(R.id.post_content);
         Spinner filterMain = dialog.findViewById(R.id.filter_main);
         recyclerView = dialog.findViewById(R.id.filter_recycle);
+
+        ToggleButton commentAllow = dialog.findViewById(R.id.custom_toggle);
 
         ImageButton addImage = dialog.findViewById(R.id.post_add_image);
         ImageButton changeBanckground = dialog.findViewById(R.id.post_change_background);
@@ -501,6 +505,8 @@ public class MainFeatureFragment extends Fragment {
 
             String content = postContent.getText().toString();
 
+            boolean readonly = commentAllow.isChecked();
+
             // Kiểm tra xem title hoặc content có null hoặc rỗng không
             if (content.isEmpty()) {
                 // Hiển thị Toast nếu title hoặc content rỗng
@@ -520,27 +526,44 @@ public class MainFeatureFragment extends Fragment {
 
                 Log.d("AdminBusiness", "Lựa chọn đầu: " + selectedFilter.get(0));
                 if (selectedFilter.get(0).substring(0, 5).equals("Doanh")) {
-                    // Xử lý các phần tử là doanh nghiệp
+                    // Tạo một CountDownLatch với số lượng phần tử cần xử lý
+                    CountDownLatch latch = new CountDownLatch(selectedFilter.size());
+
                     for (String s : selectedFilter) {
                         BusinessAPI businessAPI = new BusinessAPI();
                         businessAPI.getAllBusinesses(new BusinessAPI.BusinessCallback() {
                             @Override
                             public void onBusinessReceived(Business business) {
-
+                                // Không sử dụng
                             }
 
                             @Override
                             public void onBusinessesReceived(List<Business> businesses) {
                                 for (Business b : businesses) {
-                                    if (s.equals(b.getBussinessName())) {
+                                    if (s.equals(b.getBusinessName())) {
                                         receivePostUser.add(b.getBusinessAdminId());
+                                        Log.d("Collab", "showCustomDialog: Added " + b.getBusinessAdminId());
                                     }
                                 }
+                                // Giảm giá trị latch sau khi hoàn thành xử lý
+                                latch.countDown();
                             }
                         });
                     }
-                    processCreatePost(content, isFilterPost[0], receivePostUser);
-                    dialog.dismiss();
+
+                    // Chờ tất cả các tác vụ bất đồng bộ hoàn thành
+                    new Thread(() -> {
+                        try {
+                            latch.await(); // Chờ latch về 0
+                            requireActivity().runOnUiThread(() -> {
+                                Log.d("Collab", "showCustomDialog: Final list " + receivePostUser);
+                                processCreatePost(content, isFilterPost[0], receivePostUser, readonly);
+                                dialog.dismiss();
+                            });
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }).start();
                 }
                 else if (selectedFilter.get(0).substring(0, 2).equals("CD")) {
                     for (String s : selectedFilter) {
@@ -578,7 +601,7 @@ public class MainFeatureFragment extends Fragment {
                             }
                         });
                     }
-                    processCreatePost(content, isFilterPost[0], receivePostUser);
+                    processCreatePost(content, isFilterPost[0], receivePostUser, readonly);
                     dialog.dismiss(); // Đóng dialog sau khi processCreatePost hoàn tất
                 }
                 else if (selectedFilter.get(0).substring(0, 4).equals("Khoa")) {
@@ -596,7 +619,7 @@ public class MainFeatureFragment extends Fragment {
                                     Group group = groups.get(0);
                                     receivePostUser.add(group.getAdminUserId());
                                     Log.d("LKDU", "onGroupReceived: " + receivePostUser.size());
-                                    processCreatePost(content, isFilterPost[0], receivePostUser);
+                                    processCreatePost(content, isFilterPost[0], receivePostUser, readonly);
                                 }
                             });
                         }
@@ -613,15 +636,15 @@ public class MainFeatureFragment extends Fragment {
                                 public void onGroupsReceived(List<Group> groups) {
                                     Group group = groups.get(0);
                                     GroupUserAPI groupUserAPI = new GroupUserAPI();
-                                    groupUserAPI.getGroupUserByIdGroup(group.getGroupId(), new GroupUserAPI.GroupUserCallback() {
+                                    groupUserAPI.getAllUsersInGroup(group.getGroupId(), new GroupUserAPI.GroupUsersCallback() {
                                         @Override
-                                        public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                                            for (GroupUser g : groupUsers) {
-                                                receivePostUser.add(g.getUserId());
+                                        public void onUsersReceived(List<Integer> userIds) {
+                                            for (Integer g : userIds) {
+                                                receivePostUser.add(g);
                                             }
                                         }
                                     });
-                                    processCreatePost(content, isFilterPost[0], receivePostUser);
+                                    processCreatePost(content, isFilterPost[0], receivePostUser, readonly);
                                 }
                             });
                         }
@@ -644,12 +667,12 @@ public class MainFeatureFragment extends Fragment {
                             }
                         });
                     }
-                    processCreatePost(content, isFilterPost[0], receivePostUser);
+                    processCreatePost(content, isFilterPost[0], receivePostUser, readonly);
                     dialog.dismiss(); // Đóng dialog sau khi processCreatePost hoàn tất
                 }
             } else {
                 // Nếu không dùng bộ lọc, chỉ gọi processCreatePost một lần
-                processCreatePost(content, isFilterPost[0], receivePostUser);
+                processCreatePost(content, isFilterPost[0], receivePostUser, readonly);
                 dialog.dismiss(); // Đóng dialog
             }
 
@@ -678,6 +701,11 @@ public class MainFeatureFragment extends Fragment {
     }
 
     public void changeColorButtonNormal(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+    }
+
+    public void changeColorButtonActive(Button btn){
         btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
@@ -707,8 +735,8 @@ public class MainFeatureFragment extends Fragment {
                             businessAPI.getBusinessById(c.getBusinessId(), new BusinessAPI.BusinessCallback() {
                                 @Override
                                 public void onBusinessReceived(Business business) {
-                                    filterList.add(business.getBussinessName());
-                                    Log.d("NAM", "onBusinessReceived: " + business.getBussinessName());
+                                    filterList.add(business.getBusinessName());
+                                    Log.d("NAM", "onBusinessReceived: " + business.getBusinessName());
 
                                     // Kiểm tra khi đã hoàn thành tất cả các yêu cầu business
                                     completedCount[0]++;
@@ -823,7 +851,7 @@ public class MainFeatureFragment extends Fragment {
             @Override
             public void onBusinessesReceived(List<Business> businesses) {
                 for (Business b : businesses) {
-                    filterList.add(b.getBussinessName());
+                    filterList.add(b.getBusinessName());
                 }
                 updateRecyclerView(filterList);
             }
@@ -960,7 +988,7 @@ public class MainFeatureFragment extends Fragment {
         });
     }
 
-    private void processCreatePost(String content, boolean filter, List<Integer> postsReceive) {
+    private void processCreatePost(String content, boolean filter, List<Integer> postsReceive, boolean isCheck) {
         PostAPI postAPI = new PostAPI();
         AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
         AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
@@ -1003,11 +1031,13 @@ public class MainFeatureFragment extends Fragment {
                                     public void onGroupReceived(Group group) {
                                         // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
                                         if (adminDepartment.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
+                                            isPostAdded[0] = true;
                                             Post newPost = new Post();
                                             newPost.setPostId(posts.size());
                                             newPost.setUserId(adminDepartment.getUserId());
                                             newPost.setPostLike(0);
                                             newPost.setContent(content);
+                                            newPost.setCommentAllow(isCheck);
                                             newPost.setStatus(Post.APPROVED);
                                             newPost.setFilter(filter);
                                             newPost.setGroupId(department.getGroupId());
@@ -1068,11 +1098,13 @@ public class MainFeatureFragment extends Fragment {
                                     public void onGroupReceived(Group group) {
                                         // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
                                         if (adminBusiness.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
+                                            isPostAdded[0] = true;
                                             Post newPost = new Post();
                                             newPost.setPostId(posts.size());
                                             newPost.setUserId(adminBusiness.getUserId());
                                             newPost.setPostLike(0);
                                             newPost.setContent(content);
+                                            newPost.setCommentAllow(isCheck);
                                             newPost.setStatus(Post.APPROVED);
                                             newPost.setFilter(filter);
                                             newPost.setGroupId(business.getGroupId());
@@ -1130,11 +1162,13 @@ public class MainFeatureFragment extends Fragment {
                                 public void onGroupReceived(Group group) {
                                     // Kiểm tra nếu là Admin của group và bài viết chưa được thêm
                                     if (adminDefault.getUserId() == group.getAdminUserId() && !isPostAdded[0]) {
+                                        isPostAdded[0] = true;
                                         Post newPost = new Post();
                                         newPost.setPostId(posts.size());
                                         newPost.setUserId(adminDefault.getUserId());
                                         newPost.setPostLike(0);
                                         newPost.setContent(content);
+                                        newPost.setCommentAllow(isCheck);
                                         newPost.setStatus(Post.APPROVED);
                                         newPost.setFilter(filter);
                                         newPost.setGroupId(adminDefault.getGroupId());

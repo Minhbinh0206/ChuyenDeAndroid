@@ -133,136 +133,10 @@ public class SharedActivity extends AppCompatActivity {
         // Thêm item vào NavigationView
         addNavigationItems(navigationView);
 
-        loadPostsFromFirebase();
-
         // Thiết lập sự kiện click cho icon_back
         ImageButton backButton = navigationView.getHeaderView(0).findViewById(R.id.icon_back);
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
 
-    }
-
-    private void sortPostsByDate() {
-        Collections.sort(postList, (post1, post2) -> {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
-            try {
-                Date date1 = format.parse(post1.getCreatedAt());
-                Date date2 = format.parse(post2.getCreatedAt());
-                return date2.compareTo(date1); // Sắp xếp giảm dần
-            } catch (ParseException e) {
-                Log.e("PostAdapter", "Date parsing error for postId: " + post1.getPostId() + " or " + post2.getPostId());
-                e.printStackTrace();
-                return 0; // Không đổi vị trí nếu xảy ra lỗi
-            }
-        });
-    }
-
-    private void loadPostsFromFirebase() {
-        GroupAPI groupAPI = new GroupAPI();
-        groupAPI.getAllGroups(new GroupAPI.GroupCallback() {
-            @Override
-            public void onGroupReceived(Group group) {
-            }
-
-            @Override
-            public void onGroupsReceived(List<Group> groups) {
-                for (Group g : groups) {
-                    if (g.isGroupDefault()) {
-                        DatabaseReference postReference = FirebaseDatabase.getInstance()
-                                .getReference("Posts")
-                                .child(String.valueOf(g.getGroupId()));
-
-                        postReference.addChildEventListener(new ChildEventListener() {
-                            @Override
-                            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                                Post post = snapshot.getValue(Post.class);
-                                if (post != null) {
-                                    handlePostAddition(post);
-                                }
-                            }
-
-                            @Override
-                            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                                // Nếu cần lắng nghe bài viết bị chỉnh sửa
-                                Post updatedPost = snapshot.getValue(Post.class);
-                                if (updatedPost != null) {
-                                    handlePostUpdate(updatedPost);
-                                }
-                            }
-
-                            @Override
-                            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                                // Nếu cần lắng nghe bài viết bị xóa
-                                Post removedPost = snapshot.getValue(Post.class);
-                                if (removedPost != null) {
-                                    handlePostRemoval(removedPost);
-                                }
-                            }
-
-                            @Override
-                            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                                // Không cần thiết trong trường hợp này
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-                                Log.e("PostAPI", "Error listening to post changes: " + error.getMessage());
-                            }
-                        });
-                    }
-                }
-            }
-        });
-    }
-
-    private void handlePostAddition(Post post) {
-        if (!post.isFilter()) {
-            // Nếu bài viết không cần lọc
-            postList.add(post);
-            sortPostsByDate();
-            postAdapter.notifyDataSetChanged();
-        } else {
-            // Nếu bài viết cần lọc
-            StudentAPI studentAPI = new StudentAPI();
-            studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-                @Override
-                public void onStudentReceived(Student student) {
-                    FilterPostsAPI filterPostsAPI = new FilterPostsAPI();
-                    filterPostsAPI.findUserInReceive(post, student.getUserId(), new FilterPostsAPI.UserInReceiveCallback() {
-                        @Override
-                        public void onResult(boolean isFound) {
-                            if (isFound) {
-                                postList.add(post);
-                                sortPostsByDate();
-                                postAdapter.notifyDataSetChanged();
-                            }
-                        }
-                    });
-                }
-
-                @Override
-                public void onStudentsReceived(List<Student> students) {
-                }
-            });
-        }
-    }
-
-    private void handlePostUpdate(Post updatedPost) {
-        for (int i = 0; i < postList.size(); i++) {
-            if (postList.get(i).getPostId() == updatedPost.getPostId()) {
-                postList.set(i, updatedPost);
-                postAdapter.notifyItemChanged(i);
-                break;
-            }
-        }
-    }
-    private void handlePostRemoval(Post removedPost) {
-        for (int i = 0; i < postList.size(); i++) {
-            if (postList.get(i).getPostId() == removedPost.getPostId()) {
-                postList.remove(i);
-                postAdapter.notifyItemRemoved(i);
-                break;
-            }
-        }
     }
 
     private void addNavigationItems(NavigationView navigationView) {
@@ -539,8 +413,6 @@ public class SharedActivity extends AppCompatActivity {
             // Nạp HomeFragment vào first_content_fragment
             fragmentTransaction.replace(R.id.first_content_fragment, new HomeFragment());
             fragmentTransaction.replace(R.id.third_content_fragment, new HomeAdminFragment());
-
-            loadPostsFromFirebase();
 
             fragmentTransaction.commit();
         }

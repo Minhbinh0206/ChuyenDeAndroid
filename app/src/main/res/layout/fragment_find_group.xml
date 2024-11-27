@@ -3,32 +3,85 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:paddingVertical="5dp"
+    android:layout_height="wrap_content">
 
     <LinearLayout
-        android:id="@+id/linearLayout4"
+        android:id="@+id/linearLayout5"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
         android:layout_marginVertical="10dp"
-        android:background="@drawable/comment_custom"
         android:orientation="horizontal"
-        android:paddingHorizontal="10dp"
+        android:paddingHorizontal="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <Spinner
+            android:id="@+id/spinner_filter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="9"
+            android:background="#fff"
+            android:paddingVertical="15dp"
+            android:visibility="invisible" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout4"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="10dp"
+        android:layout_marginBottom="10dp"
+        android:orientation="horizontal"
+        android:paddingVertical="5dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <EditText
             android:id="@+id/edit_text_search"
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_marginRight="10dp"
             android:layout_weight="9"
-            android:background="@android:color/transparent"
+            android:background="@drawable/stroke_custom"
             android:hint="Enter your name group"
-            />
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="5dp" />
 
-        <Spinner
-            android:id="@+id/filter_group"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"/>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_weight="3"
+            android:background="@drawable/stroke_custom"
+            android:paddingHorizontal="10dp">
 
+            <TextView
+                android:id="@+id/text_filter"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="7"
+                android:gravity="center"
+                android:text="Lọc"
+                android:textSize="20dp" />
+
+            <ImageButton
+                android:id="@+id/icon_filter"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:layout_marginVertical="10dp"
+                android:layout_weight="4"
+                android:background="@drawable/icon_filter"
+                android:visibility="visible" />
+        </LinearLayout>
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

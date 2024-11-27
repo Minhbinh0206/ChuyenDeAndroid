@@ -117,9 +117,7 @@ public class YouthFragment extends Fragment {
         });
 
         groupButton.setOnClickListener(v -> {
-            loadGroupsInYouth(User.ID_ADMIN_DOANTHANHNIEN);
-
-            // Cập nhật màu cho các nút
+            loadGroupByUserId(User.ID_ADMIN_DOANTHANHNIEN);
 
             changeColorButtonActive(groupButton);
             changeColorButtonNormal(memberButton);
@@ -158,97 +156,57 @@ public class YouthFragment extends Fragment {
         });
     }
 
+    public void loadUsersByGroupId(int groupId){
+        ArrayList<Student> memberList = new ArrayList<>();
 
-    private void loadUsersByGroupId(int id) {
-        ArrayList<Student> memberGroup = new ArrayList<>();
-        StudentAPI studentAPI = new StudentAPI();
-        studentAPI.getAllStudents(new StudentAPI.StudentCallback() {
+        // Cập nhật RecyclerView với dữ liệu bài viết
+        MemberAdapter memberAdapter = new MemberAdapter(memberList, requireContext());
+        recyclerView.setAdapter(memberAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        GroupUserAPI groupUserAPI = new GroupUserAPI();
+        groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
             @Override
-            public void onStudentReceived(Student student) {
-
-            }
-
-            @Override
-            public void onStudentsReceived(List<Student> students) {
-                GroupUserAPI groupUserAPI = new GroupUserAPI();
-                groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
-                    @Override
-                    public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                        for (GroupUser gu : groupUsers) {
-                            groupUserAPI.getGroupUserByIdGroup(gu.getGroupId(), new GroupUserAPI.GroupUserCallback() {
-                                @Override
-                                public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                                    List<GroupUser> groupUserList = new ArrayList<>();
-                                    for (GroupUser gu : groupUsers) {
-                                        if (gu.getGroupId() == id) {
-                                            groupUserList.add(gu);
-                                        }
-                                    }
-
-                                    // Chỉ thêm vào memberGroup nếu chưa có
-                                    for (GroupUser gus : groupUserList) {
-                                        for (Student u : students) {
-                                            if (u.getUserId() == gus.getUserId() && !memberGroup.contains(u)) {
-                                                memberGroup.add(u);
-                                            }
-                                        }
-                                    }
-
-                                    // Cập nhật RecyclerView sau khi thêm tất cả member
-                                    MemberAdapter memberAdapter = new MemberAdapter(memberGroup, requireContext());
-                                    memberAdapter.setOnMemberClickListener(student -> {
-                                        // Khi một thành viên được click, mở Trang cá nhân
-                                        openPersonalPageFragment(student.getUserId()); // Gọi hàm mở trang cá nhân
-                                        Log.d("Mở Trang cá nhân" , "Student ID: " + student.getUserId());
-                                    });
-                                    recyclerView.removeAllViews();
-                                    recyclerView.setAdapter(memberAdapter);
-                                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                                }
-                            });
+            public void onUsersReceived(List<Integer> userIds) {
+                for (Integer i : userIds) {
+                    StudentAPI studentAPI = new StudentAPI();
+                    studentAPI.getStudentById(i, new StudentAPI.StudentCallback() {
+                        @Override
+                        public void onStudentReceived(Student student) {
+                            memberList.add(student);
+                            memberAdapter.notifyDataSetChanged();
                         }
-                    }
-                });
+
+                        @Override
+                        public void onStudentsReceived(List<Student> students) {
+
+                        }
+                    });
+                }
             }
         });
     }
-    public void loadGroupsInYouth(int userId) {
-        ArrayList<Group> groupsList = new ArrayList<>();
+
+    public void loadGroupByUserId(int adminId){
+        ArrayList<Group> groupList = new ArrayList<>();
+
+        // Cập nhật RecyclerView với dữ liệu bài viết
+        GroupAdapter groupAdapter = new GroupAdapter(groupList, requireContext());
+        recyclerView.setAdapter(groupAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
         GroupAPI groupAPI = new GroupAPI();
-        GroupUserAPI groupUserAPI = new GroupUserAPI();
-
-        groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
+        groupAPI.getAllGroupsByAdminId(adminId, new GroupAPI.GroupCallback() {
             @Override
-            public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                List<Integer> userGroupIds = new ArrayList<>();
+            public void onGroupReceived(Group group) {
 
-                // Lọc danh sách các GroupUser có userId phù hợp
-                for (GroupUser gu : groupUsers) {
-                    if (gu.getUserId() == userId) {
-                        userGroupIds.add(gu.getGroupId());
-                    }
-                }
+            }
 
-                // Lấy thông tin nhóm từ các groupId
-                for (int groupId : userGroupIds) {
-                    groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
-                        @Override
-                        public void onGroupReceived(Group group) {
-                            if (group != null) {
-                                groupsList.add(group);
-
-                                // Cập nhật RecyclerView với dữ liệu nhóm
-                                GroupAdapter groupAdapter = new GroupAdapter(groupsList, requireContext());
-                                recyclerView.setAdapter(groupAdapter);
-                                recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                            }
-                        }
-
-                        @Override
-                        public void onGroupsReceived(List<Group> groups) {
-                            // Không cần sử dụng phương thức này trong trường hợp này
-                        }
-                    });
+            @Override
+            public void onGroupsReceived(List<Group> groups) {
+                for (Group g : groups) {
+                    groupList.add(g);
+                    groupAdapter.notifyDataSetChanged();
                 }
             }
         });
