@@ -58,13 +58,13 @@ import java.util.List;
 public class AdminDepartmentMemberFragment extends Fragment {
     private RecyclerView recyclerView; // RecyclerView để hiển thị danh sách người dùng
     FrameLayout frameLayout;
-    private LecturerAdapter lecturerAdapter;
+//    private LecturerAdapter lecturerAdapter;
     private SharedViewModel sharedViewModel;
     private EditText searchBar;
     private List<Lecturer> originalLecturers = new ArrayList<>();
-//    private List<Lecturer> filterLecturers = new ArrayList<>();
+    //    private List<Lecturer> filterLecturers = new ArrayList<>();
     private List<Student> originalStudents = new ArrayList<>();
-//    private List<Student> filterStudents = new ArrayList<>();
+    //    private List<Student> filterStudents = new ArrayList<>();
     private Spinner filterSpinner;
     private List<String> optionsMajor = new ArrayList<>();
 
@@ -89,7 +89,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
         // Khởi tạo LecturerAdapter rỗng để đảm bảo không bị null
-        lecturerAdapter = new LecturerAdapter(new ArrayList<>(), requireContext());
+//        lecturerAdapter = new LecturerAdapter(new ArrayList<>(), requireContext());
 
         // lọc danh sách theo keyword nhập vào
         searchBar = view.findViewById(R.id.search_bar);
@@ -106,6 +106,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
+                filterList(s.toString());
             }
         });
 
@@ -239,63 +240,52 @@ public class AdminDepartmentMemberFragment extends Fragment {
         originalStudents.clear();
 
         StudentAPI studentAPI = new StudentAPI();
+        // Lấy danh sách tất cả sinh viên
         studentAPI.getAllStudents(new StudentAPI.StudentCallback() {
-            @Override
-            public void onStudentReceived(Student student) {
-
-            }
             @Override
             public void onStudentsReceived(List<Student> students) {
                 GroupUserAPI groupUserAPI = new GroupUserAPI();
-                groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
+
+                // Lấy tất cả người dùng trong nhóm theo groupId
+                groupUserAPI.getAllUsersInGroup(id, new GroupUserAPI.GroupUsersCallback() {
                     @Override
-                    public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                        for (GroupUser gu : groupUsers) {
-                            groupUserAPI.getGroupUserByIdGroup(gu.getGroupId(), new GroupUserAPI.GroupUserCallback() {
-                                @Override
-                                public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                                    List<GroupUser> groupUserList = new ArrayList<>();
-                                    for (GroupUser gu : groupUsers) {
-                                        if (gu.getGroupId() == id) {
-                                            groupUserList.add(gu);
-                                        }
-                                    }
-
-                                    // Chỉ thêm vào memberGroup nếu chưa có
-                                    for (GroupUser gus : groupUserList) {
-                                        for (Student u : students) {
-                                            if (u.getUserId() == gus.getUserId() && !originalStudents.contains(u)) {
-                                                originalStudents.add(u);
-                                            }
-                                        }
-                                    }
-
-                                    // Cập nhật RecyclerView sau khi thêm tất cả member
-                                    MemberAdapter memberAdapter = new MemberAdapter(originalStudents, requireContext(), sharedViewModel, id);
-                                    memberAdapter.notifyDataSetChanged();
-
-                                    // truyền vào Fragment
-                                    RepairButtonFragment repairButtonFragment = new RepairButtonFragment();
-                                    repairButtonFragment.setMemberAdapter(memberAdapter);
-
-                                    // Lấy SharedViewModel từ Activity
-                                    sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-                                    sharedViewModel.getIsEditMode().observe(getViewLifecycleOwner(), isEditMode -> {
-                                        if (memberAdapter != null) {
-                                            memberAdapter.setEditMode(isEditMode); // Cập nhật chế độ chỉnh sửa cho adapter
-                                        }
-                                    });
-
-                                    recyclerView.setAdapter(memberAdapter);
-                                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                    public void onUsersReceived(List<Integer> userIds) {
+                        // Duyệt qua danh sách userIds để kiểm tra sinh viên
+                        for (Integer userId : userIds) {
+                            for (Student student : students) {
+                                if (student.getUserId() == userId && !originalStudents.contains(student)) {
+                                    originalStudents.add(student);
                                 }
-                            });
+                            }
                         }
+
+                        // Cập nhật RecyclerView sau khi thêm tất cả member
+                        MemberAdapter memberAdapter = new MemberAdapter(originalStudents, requireContext(), sharedViewModel, id);
+                        recyclerView.setAdapter(memberAdapter);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+                        // Truyền adapter vào RepairButtonFragment
+                        RepairButtonFragment repairButtonFragment = new RepairButtonFragment();
+                        repairButtonFragment.setMemberAdapter(memberAdapter);
+
+                        // Theo dõi chế độ chỉnh sửa thông qua SharedViewModel
+                        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+                        sharedViewModel.getIsEditMode().observe(getViewLifecycleOwner(), isEditMode -> {
+                            if (memberAdapter != null) {
+                                memberAdapter.setEditMode(isEditMode);
+                            }
+                        });
                     }
                 });
             }
+
+            @Override
+            public void onStudentReceived(Student student) {
+                // Không sử dụng trong trường hợp này
+            }
         });
     }
+
     // Hiển thị giảng viên có trong khoa
     private void loadLecturersByGroupId(int id) {
         originalLecturers.clear();
@@ -303,57 +293,50 @@ public class AdminDepartmentMemberFragment extends Fragment {
         LecturerAPI lecturerAPI = new LecturerAPI();
         lecturerAPI.getAllLecturers(new LecturerAPI.LecturerCallback() {
             @Override
-            public void onLecturerReceived(Lecturer lecturer) {
-
-            }
-
-            @Override
             public void onLecturersReceived(List<Lecturer> lecturers) {
                 GroupUserAPI groupUserAPI = new GroupUserAPI();
-                groupUserAPI.getAllGroupUsers(new GroupUserAPI.GroupUserCallback() {
-                    @Override
-                    public void onGroupUsersReceived(List<GroupUser> groupUsers) {
-                        List<GroupUser> groupUserList = new ArrayList<>();
-                        for (GroupUser gu : groupUsers) {
-                            if (gu.getGroupId() == id) {
-                                groupUserList.add(gu);
-                            }
-                        }
 
-                        for (GroupUser gus : groupUserList) {
-                            for (Lecturer u : lecturers) {
-                                if (u.getUserId() == gus.getUserId() && !originalLecturers.contains(u)) {
-                                    originalLecturers.add(u);
+                // Lấy tất cả người dùng trong nhóm theo groupId
+                groupUserAPI.getAllUsersInGroup(id, new GroupUserAPI.GroupUsersCallback() {
+                    @Override
+                    public void onUsersReceived(List<Integer> userIds) {
+                        // Duyệt qua danh sách userIds để kiểm tra giảng viên
+                        for (Integer userId : userIds) {
+                            for (Lecturer lecturer : lecturers) {
+                                if (lecturer.getUserId() == userId && !originalLecturers.contains(lecturer)) {
+                                    originalLecturers.add(lecturer);
                                 }
                             }
                         }
 
-                        Log.d("AdminDMemberFragment", "Lecturer List Size: " + originalLecturers.size());
-                        lecturerAdapter.notifyDataSetChanged();
-                        lecturerAdapter = new LecturerAdapter(originalLecturers, requireContext() , sharedViewModel , id);
-
-                        // truyền vào Fragment
-                        RepairButtonFragment repairButtonFragment = new RepairButtonFragment();
-                        repairButtonFragment.setLecturerAdapter(lecturerAdapter);
-
-                        // Lấy SharedViewModel từ Activity
-                        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-                        sharedViewModel.getIsEditMode().observe(getViewLifecycleOwner(), isEditMode -> {
-                            if (lecturerAdapter != null) {
-                                lecturerAdapter.setEditMode(isEditMode); // Cập nhật chế độ chỉnh sửa cho adapter
-                            }
-                        });
-
+                        // Cập nhật RecyclerView sau khi thêm tất cả member
+                        LecturerAdapter lecturerAdapter = new LecturerAdapter(originalLecturers, requireContext(), sharedViewModel, id);
                         recyclerView.setAdapter(lecturerAdapter);
                         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
+                        // Truyền adapter vào RepairButtonFragment
+                        RepairButtonFragment repairButtonFragment = new RepairButtonFragment();
+                        repairButtonFragment.setLecturerAdapter(lecturerAdapter);
+
+                        // Theo dõi chế độ chỉnh sửa thông qua SharedViewModel
+                        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+                        sharedViewModel.getIsEditMode().observe(getViewLifecycleOwner(), isEditMode -> {
+                            if (lecturerAdapter != null) {
+                                lecturerAdapter.setEditMode(isEditMode);
+                            }
+                        });
                     }
                 });
             }
 
             @Override
+            public void onLecturerReceived(Lecturer lecturer) {
+                // Không sử dụng trong trường hợp này
+            }
+
+            @Override
             public void onError(String errorMessage) {
-                Log.e("AdminDMemberFragment", "Error loading lecturers: " + errorMessage);
+                Log.e("loadLecturersByGroupId", "Error loading lecturers: " + errorMessage);
             }
 
             @Override
@@ -362,6 +345,7 @@ public class AdminDepartmentMemberFragment extends Fragment {
             }
         });
     }
+
 
 
     public void changeColorButtonActive(Button btn){
@@ -373,27 +357,6 @@ public class AdminDepartmentMemberFragment extends Fragment {
         btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
-
-    /*
-    // Chuyển về RepairButtonFragment
-    public void onCancelEditMode() {
-        // Quay lại RepairButtonFragment
-        repairButtonFragment();
-    }
-    public void repairButtonFragment() {
-        // Lấy FragmentManager và bắt đầu giao dịch fragment
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
-        // Thay thế fragment hiện tại bằng RepairButtonFragment
-        fragmentTransaction.replace(R.id.third_content_fragment, new RepairButtonFragment());
-        fragmentTransaction.addToBackStack(null); // Thêm vào back stack
-
-        // Thực hiện giao dịch
-        fragmentTransaction.commit();
-    }
-    */
-
     public void replaceFragmentWithAddOrCancel() {
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -407,8 +370,9 @@ public class AdminDepartmentMemberFragment extends Fragment {
     private void filterList(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             // Nếu keyword rỗng, hiển thị danh sách gốc
-            if (lecturerAdapter != null) {
-                lecturerAdapter.updateList(new ArrayList<>(originalLecturers));
+            if (recyclerView.getAdapter() instanceof LecturerAdapter) {
+                LecturerAdapter adapter = (LecturerAdapter) recyclerView.getAdapter();
+                adapter.updateList(new ArrayList<>(originalLecturers));
             }
             if (recyclerView.getAdapter() instanceof MemberAdapter) {
                 MemberAdapter adapter = (MemberAdapter) recyclerView.getAdapter();
@@ -418,14 +382,15 @@ public class AdminDepartmentMemberFragment extends Fragment {
         }
 
         // Lọc danh sách giảng viên
-        if (lecturerAdapter != null && originalLecturers != null) {
+        if (recyclerView.getAdapter() instanceof LecturerAdapter) {
+            LecturerAdapter adapter = (LecturerAdapter) recyclerView.getAdapter();
             List<Lecturer> filteredLecturers = new ArrayList<>();
             for (Lecturer lecturer : originalLecturers) {
                 if (lecturer.getFullName().toLowerCase().contains(keyword.toLowerCase())) {
                     filteredLecturers.add(lecturer);
                 }
             }
-            lecturerAdapter.updateList(filteredLecturers);
+            adapter.updateList(filteredLecturers);
         }
 
         // Lọc danh sách sinh viên
@@ -468,54 +433,54 @@ public class AdminDepartmentMemberFragment extends Fragment {
         });
     }
     private void loadListByFilter(String majorName) {
-    if (majorName == null) {
-        if (lecturerAdapter != null) {
-            lecturerAdapter.updateList(new ArrayList<>(originalLecturers));
+        if (majorName == null) {
+            if (recyclerView.getAdapter() instanceof LecturerAdapter) {
+                LecturerAdapter adapter = (LecturerAdapter) recyclerView.getAdapter();
+                adapter.updateList(new ArrayList<>(originalLecturers));
+            }
+            if (recyclerView.getAdapter() instanceof MemberAdapter) {
+                MemberAdapter adapter = (MemberAdapter) recyclerView.getAdapter();
+                adapter.updateList(new ArrayList<>(originalStudents));
+            }
+            return;
         }
-        if (recyclerView.getAdapter() instanceof MemberAdapter) {
-            MemberAdapter adapter = (MemberAdapter) recyclerView.getAdapter();
-            adapter.updateList(new ArrayList<>(originalStudents));
-        }
-        return;
-    }
 
-    // Lọc danh sách giảng viên và sinh viên
-    MajorAPI majorAPI = new MajorAPI();
-    majorAPI.getMajorByName(majorName, new MajorAPI.MajorCallback() {
-        @Override
-        public void onMajorReceived(Major major) {
-            if (major != null) {
-                // Lọc giảng viên
-                if (lecturerAdapter != null && originalLecturers != null) {
-                    List<Lecturer> filteredLecturers = new ArrayList<>();
-                    for (Lecturer lecturer : originalLecturers) {
-                        if (lecturer.getMajorId() == major.getMajorId()) {
-                            filteredLecturers.add(lecturer);
+        // Lọc danh sách giảng viên và sinh viên
+        MajorAPI majorAPI = new MajorAPI();
+        majorAPI.getMajorByName(majorName, new MajorAPI.MajorCallback() {
+            @Override
+            public void onMajorReceived(Major major) {
+                if (major != null) {
+                    // Lọc giảng viên
+                    if (recyclerView.getAdapter() instanceof LecturerAdapter && originalLecturers != null) {
+                        LecturerAdapter adapter = (LecturerAdapter) recyclerView.getAdapter();
+                        List<Lecturer> filteredLecturers = new ArrayList<>();
+                        for (Lecturer lecturer : originalLecturers) {
+                            if (lecturer.getMajorId() == major.getMajorId()) {
+                                filteredLecturers.add(lecturer);
+                            }
                         }
+                        adapter.updateList(filteredLecturers);
                     }
-                    lecturerAdapter.updateList(filteredLecturers);
-                }
 
-                // Lọc sinh viên
-                if (recyclerView.getAdapter() instanceof MemberAdapter && originalStudents != null) {
-                    MemberAdapter adapter = (MemberAdapter) recyclerView.getAdapter();
-                    List<Student> filteredStudents = new ArrayList<>();
-                    for (Student student : originalStudents) {
-                        if (student.getMajorId() == major.getMajorId()) {
-                            filteredStudents.add(student);
+                    // Lọc sinh viên
+                    if (recyclerView.getAdapter() instanceof MemberAdapter && originalStudents != null) {
+                        MemberAdapter adapter = (MemberAdapter) recyclerView.getAdapter();
+                        List<Student> filteredStudents = new ArrayList<>();
+                        for (Student student : originalStudents) {
+                            if (student.getMajorId() == major.getMajorId()) {
+                                filteredStudents.add(student);
+                            }
                         }
+                        adapter.updateList(filteredStudents);
                     }
-                    adapter.updateList(filteredStudents);
                 }
             }
-        }
 
-        @Override
-        public void onMajorsReceived(List<Major> majors) {
-            // Không dùng trong trường hợp này
-        }
-    });
-}
-
-
+            @Override
+            public void onMajorsReceived(List<Major> majors) {
+                // Không dùng trong trường hợp này
+            }
+        });
+    }
 }

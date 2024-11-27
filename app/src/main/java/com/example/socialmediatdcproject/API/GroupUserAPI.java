@@ -130,6 +130,28 @@ public class GroupUserAPI {
     public interface StudentCallback {
         void onStudentReceived(Integer newUserId);  // Trả về newUserId
     }
+    // Lấy tất cả GroupUser
+    public void getAllGroupUsers(final GroupUsersCallback callback) {
+        groupUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Integer> groupUserList = new ArrayList<>();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
+                    Integer groupUser = dataSnapshot.getValue(Integer.class);
+                    if (groupUser != null) {
+                        groupUserList.add(groupUser);
+                    }
+                }
+                callback.onUsersReceived(groupUserList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // Xử lý lỗi
+                Log.e("GroupUserAPI", "Failed to retrieve GroupUsers.", error.toException());
+            }
+        });
+    }
 
     public void getAllGroupsByUserId(int userId, final GroupsCallback callback) {
         groupUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
