@@ -81,6 +81,30 @@ public class AdminBusinessAPI {
                 });
     }
 
+    // Lấy thông tin người dùng theo ID
+    public void getAdminBusinessByBusinessId(int id, final AdminBusinessCallBack callback) {
+        userDatabase.orderByChild("businessId").equalTo(id)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            for (DataSnapshot studentSnapshot : snapshot.getChildren()) {
+                                AdminBusiness adminBusiness = studentSnapshot.getValue(AdminBusiness.class);
+                                if (adminBusiness != null) {
+                                    callback.onUserReceived(adminBusiness);
+                                    return; // Nếu tìm thấy một sinh viên, trả về ngay
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        // Xử lý lỗi
+                    }
+                });
+    }
+
     // Xóa người dùng theo ID
     public void deleteUser(int userId) {
         userDatabase.child(String.valueOf(userId)).removeValue()

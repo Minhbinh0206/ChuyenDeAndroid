@@ -2,6 +2,7 @@ package com.example.socialmediatdcproject.adapter;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Handler; // Thêm import này
 import android.util.Log;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.AdminBusinessAPI;
 import com.example.socialmediatdcproject.API.AdminDefaultAPI;
 import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
@@ -32,17 +34,23 @@ import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.model.User;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyViewHolder> {
 
     private List<Notify> notifyList;
     private Handler handler = new Handler(); // Thêm handler để lập lịch
     private Runnable bellRunnable; // Thêm runnable cho chuông
+    private Context context;
 
     // Constructor
-    public NotifyAdapter(List<Notify> memberList) {
+    public NotifyAdapter(List<Notify> memberList, Context context) {
         this.notifyList = memberList;
+        this.context = context;
     }
 
     // Tạo ViewHolder
@@ -80,6 +88,12 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
                     for (User u : users) {
                         if (u.getUserId() == notify.getUserSendId()) {
                             holder.userSendID.setText(u.getFullName());
+
+                            Glide.with(context)
+                                    .load(u.getAvatar())
+                                    .circleCrop()
+                                    .into(holder.avatarUser);
+
                             break;
                         }
                     }
@@ -88,10 +102,11 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
 
             holder.notifyTitle.setText(notify.getNotifyTitle());
 
-            // Cắt content xuống tối đa 100 ký tự
-            String shortContent = getShortenedContent(notify.getNotifyContent(), 100);
-            holder.notifyContent.setText(shortContent);
+            holder.createAt.setText(getTimeAgo(notify.getCreateAt()));
 
+            // Cắt content xuống tối đa 100 ký tự
+            String shortContent = getShortenedContent(notify.getNotifyContent(), 60);
+            holder.notifyContent.setText(shortContent);
             StudentAPI studentAPI = new StudentAPI();
             String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
             AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
@@ -102,7 +117,7 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
             studentAPI.getStudentByKey(userKey, new StudentAPI.StudentCallback() {
                 @Override
                 public void onStudentReceived(Student student) {
-                    notifyAPI.checkIfUserHasRead(notify.getNotifyId(), student.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
+                    notifyAPI.checkIfUserHasRead(notify, student.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
                         @Override
                         public void onResult(boolean hasRead) {
                             // Chỉ rung chuông khi isRead là false
@@ -125,7 +140,7 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
             adminBusinessAPI.getAdminBusinessByKey(userKey, new AdminBusinessAPI.AdminBusinessCallBack() {
                 @Override
                 public void onUserReceived(AdminBusiness adminBusiness) {
-                    notifyAPI.checkIfUserHasRead(notify.getNotifyId(), adminBusiness.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
+                    notifyAPI.checkIfUserHasRead(notify, adminBusiness.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
                         @Override
                         public void onResult(boolean hasRead) {
                             // Chỉ rung chuông khi isRead là false
@@ -153,7 +168,7 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
             adminDepartmentAPI.getAdminDepartmentByKey(userKey, new AdminDepartmentAPI.AdminDepartmentCallBack() {
                 @Override
                 public void onUserReceived(AdminDepartment adminDepartment) {
-                    notifyAPI.checkIfUserHasRead(notify.getNotifyId(), adminDepartment.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
+                    notifyAPI.checkIfUserHasRead(notify, adminDepartment.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
                         @Override
                         public void onResult(boolean hasRead) {
                             // Chỉ rung chuông khi isRead là false
@@ -181,7 +196,7 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
             adminDefaultAPI.getAdminDefaultByKey(userKey, new AdminDefaultAPI.AdminDefaultCallBack() {
                 @Override
                 public void onUserReceived(AdminDefault adminDefault) {
-                    notifyAPI.checkIfUserHasRead(notify.getNotifyId(), adminDefault.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
+                    notifyAPI.checkIfUserHasRead(notify, adminDefault.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
                         @Override
                         public void onResult(boolean hasRead) {
                             // Chỉ rung chuông khi isRead là false
@@ -205,7 +220,7 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
                 studentAPI.getStudentByKey(userKey, new StudentAPI.StudentCallback() {
                     @Override
                     public void onStudentReceived(Student student) {
-                        notifyAPI.addUserToRead(notify.getNotifyId(), student.getUserId());
+                        notifyAPI.addUserToRead(notify, student.getUserId());
                     }
 
                     @Override
@@ -217,7 +232,7 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
                 adminDepartmentAPI.getAdminDepartmentByKey(userKey, new AdminDepartmentAPI.AdminDepartmentCallBack() {
                     @Override
                     public void onUserReceived(AdminDepartment adminDepartment) {
-                        notifyAPI.addUserToRead(notify.getNotifyId(), adminDepartment.getUserId());
+                        notifyAPI.addUserToRead(notify, adminDepartment.getUserId());
                     }
 
                     @Override
@@ -234,7 +249,7 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
                 adminBusinessAPI.getAdminBusinessByKey(userKey, new AdminBusinessAPI.AdminBusinessCallBack() {
                     @Override
                     public void onUserReceived(AdminBusiness adminBusiness) {
-                        notifyAPI.addUserToRead(notify.getNotifyId(), adminBusiness.getUserId());
+                        notifyAPI.addUserToRead(notify, adminBusiness.getUserId());
                     }
 
                     @Override
@@ -251,7 +266,7 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
                 adminDefaultAPI.getAdminDefaultByKey(userKey, new AdminDefaultAPI.AdminDefaultCallBack() {
                     @Override
                     public void onUserReceived(AdminDefault adminDefault) {
-                        notifyAPI.addUserToRead(notify.getNotifyId(), adminDefault.getUserId());
+                        notifyAPI.addUserToRead(notify, adminDefault.getUserId());
                     }
 
                     @Override
@@ -263,6 +278,7 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
                 // Đánh dấu là đã đọc
                 Intent intent = new Intent(v.getContext(), NotifyDetailActivity.class);
                 intent.putExtra("notifyId", notify.getNotifyId());
+                intent.putExtra("userSend", notify.getUserSendId());
                 intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
                 v.getContext().startActivity(intent);
             });
@@ -293,6 +309,8 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
         TextView notifyContent;
         ImageView bellIcon;
         Button buttonRead;
+        ImageView avatarUser;
+        TextView createAt;
 
         public NotifyViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -301,6 +319,8 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
             notifyContent = itemView.findViewById(R.id.notify_content);
             bellIcon = itemView.findViewById(R.id.bell_icon);
             buttonRead = itemView.findViewById(R.id.button_read_notify);
+            avatarUser = itemView.findViewById(R.id.avatar_user_send);
+            createAt = itemView.findViewById(R.id.notify_createAt);
         }
     }
 
@@ -314,6 +334,32 @@ public class NotifyAdapter extends RecyclerView.Adapter<NotifyAdapter.NotifyView
             }
         };
         handler.post(bellRunnable); // Bắt đầu lập lịch
+    }
+
+    private String getTimeAgo(String createdAt) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // Điều chỉnh định dạng cho đúng với chuỗi thời gian của bạn
+        try {
+            Date createdDate = format.parse(createdAt);
+            Date currentDate = new Date();
+
+            long diffInMillis = currentDate.getTime() - createdDate.getTime();
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis);
+            long hours = TimeUnit.MILLISECONDS.toHours(diffInMillis);
+            long days = TimeUnit.MILLISECONDS.toDays(diffInMillis);
+
+            if (minutes == 0) {
+                return "Vừa xong";
+            } else if (minutes < 60) {
+                return minutes + " phút trước";
+            } else if (hours < 24) {
+                return hours + " giờ trước";
+            } else {
+                return days + " ngày trước";
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     private void startBellAnimation(View view) {

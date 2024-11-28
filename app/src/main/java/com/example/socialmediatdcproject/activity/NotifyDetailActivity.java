@@ -28,9 +28,11 @@ public class NotifyDetailActivity extends AppCompatActivity {
         setContentView(R.layout.notify_detail_layout);
 
         int notifyId;
+        int notifyUserSend;
 
         Intent intent = getIntent();
         notifyId = intent.getIntExtra("notifyId", -1);
+        notifyUserSend = intent.getIntExtra("userSend", -1);
 
         ImageButton iconBack = findViewById(R.id.icon_back_notify);
         Button button = findViewById(R.id.button_return_notify);
@@ -53,7 +55,7 @@ public class NotifyDetailActivity extends AppCompatActivity {
 
         NotifyAPI notifyAPI = new NotifyAPI();
         UserAPI userAPI = new UserAPI();
-        notifyAPI.getNotificationById(notifyId, new NotifyAPI.NotificationCallback() {
+        notifyAPI.getNotificationById(notifyId, notifyUserSend, new NotifyAPI.NotificationCallback() {
             @Override
             public void onNotificationReceived(Notify notify) {
                 title.setText(notify.getNotifyTitle());

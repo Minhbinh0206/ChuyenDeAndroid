@@ -128,7 +128,6 @@ public class SearchGroupFragment extends Fragment {
 
     // Hàm để lọc danh sách nhóm dựa trên văn bản nhập
     private void filterGroups(String query) {
-        filteredGroupList.clear(); // Xóa nội dung hiện tại của filteredGroupList
         if (query.isEmpty()) {
             filteredGroupList.addAll(groupList); // Nếu chuỗi tìm kiếm rỗng, hiển thị toàn bộ danh sách
             adapter.notifyDataSetChanged(); // Cập nhật adapter

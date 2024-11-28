@@ -100,116 +100,148 @@ public class GroupNotFollowFragment extends Fragment {
                 loadPostFromFirebase(group.getGroupId());
 
                 nameGroup.setText(group.getGroupName());
-            }
 
-            @Override
-            public void onGroupsReceived(List<Group> groups) {
+                if (group.isPrivate()) {
+                    StudentAPI studentAPI = new StudentAPI();
+                    studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                        @Override
+                        public void onStudentReceived(Student student) {
+                            QuestionAPI questionAPI = new QuestionAPI();
+                            questionAPI.getQuestionByGroupId(groupId, new QuestionAPI.QuestionCallback() {
+                                @Override
+                                public void onQuestionReceived(Question question) {
+                                    AnswerAPI answerAPI = new AnswerAPI();
+                                    answerAPI.getAnswersByQuestionId(question.getQuestionId(), new AnswerAPI.AnswersCallback() {
+                                        @Override
+                                        public void onAnswerReceived(Answer answer) {
 
-            }
-        });
-        StudentAPI studentAPI = new StudentAPI();
-        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-            @Override
-            public void onStudentReceived(Student student) {
-                QuestionAPI questionAPI = new QuestionAPI();
-                questionAPI.getQuestionByGroupId(groupId, new QuestionAPI.QuestionCallback() {
-                    @Override
-                    public void onQuestionReceived(Question question) {
-                        AnswerAPI answerAPI = new AnswerAPI();
-                        answerAPI.getAnswersByQuestionId(question.getQuestionId(), new AnswerAPI.AnswersCallback() {
-                            @Override
-                            public void onAnswerReceived(Answer answer) {
+                                        }
 
-                            }
-
-                            @Override
-                            public void onAnswersReceived(List<Answer> answers) {
-                                for (Answer a : answers) {
-                                    if (a.getUserId() == student.getUserId()) {
-                                        isWaiting = true;
-                                    }
-                                }
-
-                                if (isWaiting) {
-
-                                    button.setText("Đang chờ duyệt");
-
-                                    button.setEnabled(false);
-
-                                }else {
-                                    button.setText("Tham gia");
-
-                                    button.setOnClickListener(v -> {
-                                        groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
-                                            @Override
-                                            public void onGroupReceived(Group group) {
-                                                if (group.isPrivate()) {
-                                                    showCustomDialog(groupId, button);
-
-                                                    // Lắng nghe người dùng mới tham gia nhóm
-                                                    GroupUserAPI groupUserAPI = new GroupUserAPI();
-                                                    groupUserAPI.listenForNewUsersInGroup(groupId, new GroupUserAPI.StudentCallback() {
-                                                        @Override
-                                                        public void onStudentReceived(Integer newUserId) {
-                                                            Log.d("HII", "onStudentReceived: " + newUserId);
-
-                                                            // Kiểm tra nếu userId của người tham gia là của sinh viên hiện tại
-                                                            if (newUserId == student.getUserId()) {
-                                                                // Nếu đúng, thay thế Fragment sang GroupFollowedFragment
-                                                                Fragment searchGroupFragment = new GroupFollowedFragment();
-                                                                FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
-                                                                fragmentTransaction.replace(R.id.first_content_fragment, searchGroupFragment);
-                                                                fragmentTransaction.commit();
-                                                            }
-                                                        }
-                                                    });
+                                        @Override
+                                        public void onAnswersReceived(List<Answer> answers) {
+                                            for (Answer a : answers) {
+                                                if (a.getUserId() == student.getUserId()) {
+                                                    isWaiting = true;
                                                 }
-                                                else {
-                                                    StudentAPI studentAPI = new StudentAPI();
-                                                    studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-                                                        @Override
-                                                        public void onStudentReceived(Student student) {
-                                                            GroupUserAPI groupUserAPI = new GroupUserAPI();
-                                                            GroupUser groupUser = new GroupUser();
-                                                            groupUser.setGroupId(group.getGroupId());
-                                                            groupUser.setUserId(student.getUserId());
+                                            }
 
-                                                            groupUserAPI.addGroupUser(groupUser);
+                                            if (isWaiting) {
 
+                                                button.setText("Đang chờ duyệt");
+
+                                                button.setEnabled(false);
+
+                                                // Lắng nghe người dùng mới tham gia nhóm
+                                                GroupUserAPI groupUserAPI = new GroupUserAPI();
+                                                groupUserAPI.listenForNewUsersInGroup(groupId, new GroupUserAPI.StudentCallback() {
+                                                    @Override
+                                                    public void onStudentReceived(Integer newUserId) {
+                                                        Log.d("HII", "onStudentReceived: " + newUserId);
+
+                                                        // Kiểm tra nếu userId của người tham gia là của sinh viên hiện tại
+                                                        if (newUserId == student.getUserId()) {
+                                                            // Nếu đúng, thay thế Fragment sang GroupFollowedFragment
                                                             Fragment searchGroupFragment = new GroupFollowedFragment();
                                                             FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
                                                             fragmentTransaction.replace(R.id.first_content_fragment, searchGroupFragment);
                                                             fragmentTransaction.commit();
                                                         }
+                                                    }
+                                                });
+
+                                            }else {
+                                                button.setText("Tham gia");
+
+                                                button.setOnClickListener(v -> {
+                                                    groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                                                        @Override
+                                                        public void onGroupReceived(Group group) {
+                                                            showCustomDialog(groupId, button);
+
+                                                            // Lắng nghe người dùng mới tham gia nhóm
+                                                            GroupUserAPI groupUserAPI = new GroupUserAPI();
+                                                            groupUserAPI.listenForNewUsersInGroup(groupId, new GroupUserAPI.StudentCallback() {
+                                                                @Override
+                                                                public void onStudentReceived(Integer newUserId) {
+                                                                    Log.d("HII", "onStudentReceived: " + newUserId);
+
+                                                                    // Kiểm tra nếu userId của người tham gia là của sinh viên hiện tại
+                                                                    if (newUserId == student.getUserId()) {
+                                                                        // Nếu đúng, thay thế Fragment sang GroupFollowedFragment
+                                                                        Fragment searchGroupFragment = new GroupFollowedFragment();
+                                                                        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                                                        fragmentTransaction.replace(R.id.first_content_fragment, searchGroupFragment);
+                                                                        fragmentTransaction.commit();
+                                                                    }
+                                                                }
+                                                            });
+                                                        }
 
                                                         @Override
-                                                        public void onStudentsReceived(List<Student> students) {
+                                                        public void onGroupsReceived(List<Group> groups) {
 
                                                         }
                                                     });
-                                                }
+                                                });
                                             }
-
-                                            @Override
-                                            public void onGroupsReceived(List<Group> groups) {
-
-                                            }
-                                        });
+                                        }
                                     });
                                 }
+
+                                @Override
+                                public void onQuestionsReceived(List<Question> questions) {
+
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onStudentsReceived(List<Student> students) {
+
+                        }
+                    });
+                } else {
+                    button.setText("Tham gia");
+
+                    button.setOnClickListener(v -> {
+                        groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                            @Override
+                            public void onGroupReceived(Group group) {
+                                StudentAPI studentAPI = new StudentAPI();
+                                studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                                    @Override
+                                    public void onStudentReceived(Student student) {
+                                        GroupUserAPI groupUserAPI = new GroupUserAPI();
+                                        GroupUser groupUser = new GroupUser();
+                                        groupUser.setGroupId(group.getGroupId());
+                                        groupUser.setUserId(student.getUserId());
+
+                                        groupUserAPI.addGroupUser(groupUser);
+
+                                        Fragment searchGroupFragment = new GroupFollowedFragment();
+                                        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                        fragmentTransaction.replace(R.id.first_content_fragment, searchGroupFragment);
+                                        fragmentTransaction.commit();
+                                    }
+
+                                    @Override
+                                    public void onStudentsReceived(List<Student> students) {
+
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onGroupsReceived(List<Group> groups) {
+
                             }
                         });
-                    }
-
-                    @Override
-                    public void onQuestionsReceived(List<Question> questions) {
-
-                    }
-                });
+                    });
+                }
             }
 
             @Override
-            public void onStudentsReceived(List<Student> students) {
+            public void onGroupsReceived(List<Group> groups) {
 
             }
         });
@@ -311,7 +343,7 @@ public class GroupNotFollowFragment extends Fragment {
                                             @Override
                                             public void onStudentReceived(Student student) {
                                                 Answer answer = new Answer();
-                                                answer.setAnswerId(answers.size());
+                                                answer.setAnswerId(answers.get(answers.size() - 1).getAnswerId() + 1);
                                                 answer.setUserId(student.getUserId());
                                                 answer.setQuestionId(question.getQuestionId());
                                                 answer.setAnswerContent(questionContentAnswer.getText().toString());
