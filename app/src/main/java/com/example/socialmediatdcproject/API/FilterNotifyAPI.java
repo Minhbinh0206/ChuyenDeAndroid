@@ -3,6 +3,7 @@ package com.example.socialmediatdcproject.API;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.example.socialmediatdcproject.dataModels.FilterNotify;
+import com.example.socialmediatdcproject.model.Notify;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -21,11 +22,11 @@ public class FilterNotifyAPI {
     }
 
     // Thêm FilterNotify mới vào Firebase với notifyId làm khóa và danh sách người nhận trong "Receive"
-    public void addReceiveNotify(FilterNotify receiveNotify) {
+    public void addReceiveNotify(FilterNotify receiveNotify, int userSend) {
         String notifyKey = String.valueOf(receiveNotify.getNotifyId());
 
         // Lưu notifyId trước
-        notifyDatabase.child(notifyKey).child("notifyId").setValue(receiveNotify.getNotifyId())
+        notifyDatabase.child(String.valueOf(userSend)).child(notifyKey).child("notifyId").setValue(receiveNotify.getNotifyId())
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Log.d("FilterNotifyAPI", "notifyId added successfully.");
@@ -74,8 +75,8 @@ public class FilterNotifyAPI {
     }
 
     // Kiểm tra xem user có trong danh sách Receive cho một notifyId nhất định không
-    public void findUserInReceive(int notifyId, int userId, final UserInReceiveCallback callback) {
-        DatabaseReference notifyRef = notifyDatabase.child(String.valueOf(notifyId)).child("Receive");
+    public void findUserInReceive(Notify notify, int userId, final UserInReceiveCallback callback) {
+        DatabaseReference notifyRef = notifyDatabase.child(String.valueOf(notify.getUserSendId())).child(String.valueOf(notify.getNotifyId())).child("Receive");
 
         notifyRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

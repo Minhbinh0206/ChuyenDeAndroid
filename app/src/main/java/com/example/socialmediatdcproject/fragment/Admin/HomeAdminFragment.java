@@ -143,7 +143,6 @@ public class HomeAdminFragment extends Fragment {
 
                         // Lắng nghe sự kiện cho bài viết của nhóm
                         postReference.addChildEventListener(new ChildEventListener() {
-
                             @Override
                             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                                 Post post = snapshot.getValue(Post.class);
@@ -155,18 +154,10 @@ public class HomeAdminFragment extends Fragment {
 
                             @Override
                             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                                Post updatedPost = snapshot.getValue(Post.class);
-                                if (updatedPost != null) {
-                                    handlePostUpdate(updatedPost);
-                                }
                             }
 
                             @Override
                             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                                Post removedPost = snapshot.getValue(Post.class);
-                                if (removedPost != null) {
-                                    handlePostRemoval(removedPost);
-                                }
                             }
 
                             @Override
@@ -345,26 +336,6 @@ public class HomeAdminFragment extends Fragment {
 
         } catch (ParseException e) {
             Log.e("DateParse", "Error parsing date: " + e.getMessage());
-        }
-    }
-
-    private void handlePostUpdate(Post updatedPost) {
-        for (int i = 0; i < postList.size(); i++) {
-            if (postList.get(i).getPostId() == updatedPost.getPostId()) {
-                postList.set(i, updatedPost);
-                postAdapter.notifyItemChanged(i);
-                break;
-            }
-        }
-    }
-
-    private void handlePostRemoval(Post removedPost) {
-        for (int i = 0; i < postList.size(); i++) {
-            if (postList.get(i).getPostId() == removedPost.getPostId()) {
-                postList.remove(i);
-                postAdapter.notifyItemRemoved(i);
-                break;
-            }
         }
     }
 }

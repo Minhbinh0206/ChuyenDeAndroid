@@ -80,11 +80,15 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SharedActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     protected DrawerLayout drawerLayout;
     ArrayList<Post> postList;
+    ArrayList<Notify> notifyList;
     PostAdapter postAdapter;
     private RecyclerView recyclerView; // Khai báo RecyclerView
 
@@ -97,6 +101,7 @@ public class SharedActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         postList = new ArrayList<>();
+        notifyList = new ArrayList<>();
         recyclerView = findViewById(R.id.second_content_fragment);
         postAdapter = new PostAdapter(postList, SharedActivity.this);
         recyclerView.setAdapter(postAdapter);
@@ -420,7 +425,7 @@ public class SharedActivity extends AppCompatActivity {
         studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
             @Override
             public void onStudentReceived(Student student) {
-                notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                notifyAPI.getAllNotifies(new NotifyAPI.NotificationCallback() {
                     @Override
                     public void onNotificationReceived(Notify notify) {}
 
@@ -433,8 +438,7 @@ public class SharedActivity extends AppCompatActivity {
                         Log.d("NotifyAPI", "Number of notifications received: " + notifications.size());
 
                         for (Notify n : notifications) {
-                            int count = 0;
-                            processNotification(n, student, notifyList, processedPostsCount, totalNotificationsCount, count);
+                            processNotification(n, student, notifyList, processedPostsCount, totalNotificationsCount);
                         }
                     }
 
@@ -450,7 +454,7 @@ public class SharedActivity extends AppCompatActivity {
         });
     }
 
-    private void processNotification(Notify n, Student student, ArrayList<Notify> notifyList, int[] processedPostsCount, int totalNotificationsCount, int count) {
+    private void processNotification(Notify n, Student student, ArrayList<Notify> notifyList, int[] processedPostsCount, int totalNotificationsCount) {
         processedPostsCount[0]++;
 
         // Nếu thông báo không có bộ lọc, trực tiếp thêm vào notifyList
@@ -459,7 +463,7 @@ public class SharedActivity extends AppCompatActivity {
         } else {
             // Nếu có bộ lọc, kiểm tra qua FilterNotifyAPI
             FilterNotifyAPI filterNotifyAPI = new FilterNotifyAPI();
-            filterNotifyAPI.findUserInReceive(n.getNotifyId(), student.getUserId(), new FilterNotifyAPI.UserInReceiveCallback() {
+            filterNotifyAPI.findUserInReceive(n, student.getUserId(), new FilterNotifyAPI.UserInReceiveCallback() {
                 @Override
                 public void onResult(boolean isFound) {
                     if (isFound) {
@@ -492,7 +496,7 @@ public class SharedActivity extends AppCompatActivity {
             NotifyAPI notifyAPI = new NotifyAPI();
             for (Notify n : notifyList) {
                 // Gọi API để kiểm tra xem người dùng đã đọc thông báo này chưa
-                notifyAPI.checkIfUserHasRead(n.getNotifyId(), student.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
+                notifyAPI.checkIfUserHasRead(n, student.getUserId(), new NotifyAPI.CheckReadStatusCallback() {
                     @Override
                     public void onResult(boolean hasRead) {
                         if (!hasRead) {
@@ -533,7 +537,6 @@ public class SharedActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-
         FirebaseAuth.getInstance().removeAuthStateListener(authStateListener);
     }
 

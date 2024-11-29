@@ -243,7 +243,6 @@ public class CommentPostActivity extends AppCompatActivity {
                         comment.setCommentCreateAt(currentDateAndTime);
 
                         commentAPI.addComment(comment, groupId);
-                        commentAdapter.notifyDataSetChanged();
 
                         contentComment.setText(""); // Reset text field
 
@@ -264,8 +263,9 @@ public class CommentPostActivity extends AppCompatActivity {
                     public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String previousChildName) {
                         Comment newComment = dataSnapshot.getValue(Comment.class);
                         if (newComment != null) {
-                            commentList.add(newComment); // Thêm bình luận mới vào danh sách
-                            commentAdapter.notifyItemInserted(commentList.size() - 1); // Thông báo chỉ thay đổi phần tử mới
+                            commentList.add(0, newComment); // Thêm vào đầu danh sách
+                            commentAdapter.notifyItemInserted(0); // Sử dụng notifyDataSetChanged để đảm bảo đồng bộ
+                            recyclerViewSecond.scrollToPosition(0); // Cuộn lên đầu danh sách
                         }
                     }
 
@@ -289,24 +289,5 @@ public class CommentPostActivity extends AppCompatActivity {
                         // Xử lý lỗi
                     }
                 });
-    }
-
-    //Hàm sắp xếp
-    private void sortCommentByDate(){
-        Collections.sort(commentList, new Comparator<Comment>() {
-            @Override
-            public int compare(Comment comment1, Comment comment2) {
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                try {
-                    Date date1 = format.parse(comment1.getCommentCreateAt());
-                    Date date2 = format.parse(comment2.getCommentCreateAt());
-                    return  date2.compareTo(date1);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                    return 0;
-
-                }
-            }
-        });
     }
 }

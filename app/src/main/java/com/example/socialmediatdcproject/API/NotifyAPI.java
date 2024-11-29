@@ -24,8 +24,7 @@ public class NotifyAPI {
 
     // Thêm thông báo mới vào Firebase
     public void addNotification(Notify notify) {
-        notify.setNotifyId(notify.getNotifyId()); // Cập nhật ID cho Notify
-        notifyDatabase.child(notify.getNotifyId()+"").setValue(notify).addOnCompleteListener(task -> {
+        notifyDatabase.child(String.valueOf(notify.getUserSendId())).child(String.valueOf(notify.getNotifyId())).setValue(notify).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Log.d("NotifyAPI", "Notification added successfully.");
             } else {
@@ -34,22 +33,36 @@ public class NotifyAPI {
         });
     }
 
-    // Cập nhật thông báo
-    public void updateNotification(Notify notify) {
-        String notifyId = String.valueOf(notify.getNotifyId());
-        notifyDatabase.child(notifyId).setValue(notify).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                Log.d("NotifyAPI", "Notification updated successfully.");
-            } else {
-                Log.e("NotifyAPI", "Failed to update notification.", task.getException());
+    // Lấy tất cả thông báo
+    public void getAllNotifies(final NotificationCallback callback) {
+        notifyDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Notify> notifyList = new ArrayList<>();
+                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                    for (DataSnapshot notifySnapshot : userSnapshot.getChildren()) {
+                        Notify notify = notifySnapshot.getValue(Notify.class);
+                        if (notify != null) {
+                            notifyList.add(notify);
+                        }
+                    }
+                }
+                callback.onNotificationsReceived(notifyList);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("NotifyAPI", "Error fetching all notifications: " + error.getMessage());
+                callback.onError(error.getMessage());
             }
         });
     }
 
+
     // Kiểm tra xem userId đã tồn tại trong danh sách isReaded của thông báo hay chưa
-    public void checkIfUserHasRead(int notifyId, int userId, final CheckReadStatusCallback callback) {
+    public void checkIfUserHasRead(Notify notify, int userId, final CheckReadStatusCallback callback) {
         // Lấy thông báo theo notifyId
-        notifyDatabase.child(String.valueOf(notifyId)).addListenerForSingleValueEvent(new ValueEventListener() {
+        notifyDatabase.child(String.valueOf(notify.getUserSendId())).child(String.valueOf(notify.getNotifyId())).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
@@ -86,11 +99,10 @@ public class NotifyAPI {
         void onResult(boolean hasRead);
     }
 
-
     // Thêm userId vào danh sách isReaded trong thông báo
-    public void addUserToRead(int notifyId, int userId) {
+    public void addUserToRead(Notify notify, int userId) {
         // Lấy thông báo theo notifyId
-        notifyDatabase.child(String.valueOf(notifyId)).addListenerForSingleValueEvent(new ValueEventListener() {
+        notifyDatabase.child(String.valueOf(notify.getUserSendId())).child(String.valueOf(notify.getNotifyId())).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
@@ -113,7 +125,7 @@ public class NotifyAPI {
                         notify.setIsReaded(isReaded);
 
                         // Lưu lại thông báo đã được cập nhật lên Firebase
-                        notifyDatabase.child(String.valueOf(notifyId)).setValue(notify).addOnCompleteListener(task -> {
+                        notifyDatabase.child(String.valueOf(notify.getUserSendId())).child(String.valueOf(notify.getNotifyId())).setValue(notify).addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
                                 Log.d("NotifyAPI", "User added to isReaded successfully.");
                             } else {
@@ -133,10 +145,9 @@ public class NotifyAPI {
         });
     }
 
-
     // Lấy tất cả thông báo
-    public void getAllNotifications(final NotificationCallback callback) {
-        notifyDatabase.addValueEventListener(new ValueEventListener() {
+    public void getAllNotificationsByUserId(int userId,final NotificationCallback callback) {
+        notifyDatabase.child(String.valueOf(userId)).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Notify> notifyList = new ArrayList<>();
@@ -157,8 +168,8 @@ public class NotifyAPI {
     }
 
     // Lấy thông báo theo ID
-    public void getNotificationById(int notifyId, final NotificationCallback callback) {
-        notifyDatabase.orderByChild("notifyId").equalTo(notifyId).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void getNotificationById(int notifyId, int userSend, final NotificationCallback callback) {
+        notifyDatabase.child(String.valueOf(userSend)).orderByChild("notifyId").equalTo(notifyId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Notify notify = snapshot.getChildren().iterator().hasNext() ? snapshot.getChildren().iterator().next().getValue(Notify.class) : null;
