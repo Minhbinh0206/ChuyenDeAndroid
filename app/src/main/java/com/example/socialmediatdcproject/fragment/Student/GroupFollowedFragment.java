@@ -26,6 +26,7 @@ import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
+import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.MemberAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
@@ -35,6 +36,7 @@ import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
+import com.example.socialmediatdcproject.model.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -72,15 +74,15 @@ public class GroupFollowedFragment extends Fragment {
 
         ImageView avatarGroup = view.findViewById(R.id.image_group_user_follow);
         TextView nameGroup = view.findViewById(R.id.name_group_user_follow);
-        Button memberBtn = view.findViewById(R.id.button_group_user_member);
         Button postBtn = view.findViewById(R.id.button_group_user_post);
         Button myselfBtn = view.findViewById(R.id.button_group_user_me);
-        ImageView iconSetting = view.findViewById(R.id.settingGroup);
+        ImageView iconPublic = view.findViewById(R.id.icon_public_or_private);
+        TextView textPublic = view.findViewById(R.id.text_public);
+        TextView textAdmin = view.findViewById(R.id.text_admin);
 
         int groupId;
 
         changeColorButtonActive(postBtn);
-        changeColorButtonNormal(memberBtn);
         changeColorButtonNormal(myselfBtn);
 
         TextView textView = requireActivity().findViewById(R.id.null_content_notify);
@@ -90,28 +92,34 @@ public class GroupFollowedFragment extends Fragment {
 
         loadPostFromFirebase(groupId, textView);
 
-        iconSetting.setVisibility(View.GONE);
-
         GroupAPI groupAPI = new GroupAPI();
         groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
             @Override
             public void onGroupReceived(Group group) {
+                UserAPI userAPI = new UserAPI();
+                userAPI.getUserById(group.getAdminUserId(), new UserAPI.UserCallback() {
+                    @Override
+                    public void onUserReceived(User user) {
+                        textAdmin.setText("Nhóm của " + user.getFullName());
+                    }
+
+                    @Override
+                    public void onUsersReceived(List<User> users) {
+
+                    }
+                });
+
                 Glide.with(view)
                         .load(group.getAvatar())
                         .circleCrop()
                         .into(avatarGroup);
 
-                if (group.isGroupDefault()) {
-                    frameLayout.setVisibility(View.GONE);
-                    iconSetting.setVisibility(View.GONE);
-                }
-                else {
-                    frameLayout.setVisibility(View.VISIBLE);
-                    // Chuyển sang GroupFollowedFragment sau khi thêm thành công
-                    Fragment searchGroupFragment = new CreateNewPostFragment();
-                    FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
-                    fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
-                    fragmentTransaction.commit();
+                if (group.isPrivate()) {
+                    iconPublic.setBackground(requireContext().getResources().getDrawable(R.drawable.icon_private));
+                    textPublic.setText("Nhóm riêng tư");
+                } else {
+                    iconPublic.setBackground(requireContext().getResources().getDrawable(R.drawable.icon_public));
+                    textPublic.setText("Nhóm công khai");
                 }
 
                 nameGroup.setText(group.getGroupName());
@@ -121,7 +129,6 @@ public class GroupFollowedFragment extends Fragment {
                     @Override
                     public void onStudentReceived(Student student) {
                         if (group.getAdminUserId() == student.getUserId()) {
-                            iconSetting.setVisibility(View.VISIBLE);
 
                             myselfBtn.setText("Quản lý");
 
@@ -136,7 +143,6 @@ public class GroupFollowedFragment extends Fragment {
                                 loadPostFromFirebase(groupId, textView);
 
                                 changeColorButtonActive(postBtn);
-                                changeColorButtonNormal(memberBtn);
                                 changeColorButtonNormal(myselfBtn);
                             });
 
@@ -151,27 +157,10 @@ public class GroupFollowedFragment extends Fragment {
                                 }
 
                                 changeColorButtonActive(myselfBtn);
-                                changeColorButtonNormal(memberBtn);
-                                changeColorButtonNormal(postBtn);
-                            });
-
-                            memberBtn.setOnClickListener(v -> {
-                                frameLayout.setVisibility(View.GONE);
-
-                                Fragment searchGroupFragment = new SplitFragment();
-                                FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
-                                fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
-                                fragmentTransaction.commit();
-
-                                loadUsersByGroupId(groupId);
-
-                                changeColorButtonActive(memberBtn);
-                                changeColorButtonNormal(myselfBtn);
                                 changeColorButtonNormal(postBtn);
                             });
                         }
                         else {
-                            iconSetting.setVisibility(View.GONE);
 
                             myselfBtn.setText("Tôi");
 
@@ -179,7 +168,6 @@ public class GroupFollowedFragment extends Fragment {
                                 loadPostFromFirebase(groupId, textView);
 
                                 changeColorButtonActive(postBtn);
-                                changeColorButtonNormal(memberBtn);
                                 changeColorButtonNormal(myselfBtn);
                             });
 
@@ -187,15 +175,6 @@ public class GroupFollowedFragment extends Fragment {
                                 loadPostMyselfFromFirebase(groupId, textView);
 
                                 changeColorButtonActive(myselfBtn);
-                                changeColorButtonNormal(memberBtn);
-                                changeColorButtonNormal(postBtn);
-                            });
-
-                            memberBtn.setOnClickListener(v -> {
-                                loadUsersByGroupId(groupId);
-
-                                changeColorButtonActive(memberBtn);
-                                changeColorButtonNormal(myselfBtn);
                                 changeColorButtonNormal(postBtn);
                             });
                         }
@@ -221,8 +200,8 @@ public class GroupFollowedFragment extends Fragment {
     }
 
     public void changeColorButtonNormal(Button btn){
-        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
-        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.buttonDefault));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.black));
     }
 
     public void loadPostFromFirebase(int id, TextView textView) {

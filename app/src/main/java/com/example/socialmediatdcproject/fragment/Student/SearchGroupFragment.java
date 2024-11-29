@@ -116,7 +116,7 @@ public class SearchGroupFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // Tìm kiếm khi người dùng nhập text
-                filterGroups(s.toString());
+                // filterGroups(s.toString());
             }
 
             @Override
@@ -126,22 +126,29 @@ public class SearchGroupFragment extends Fragment {
         return view;
     }
 
-    // Hàm để lọc danh sách nhóm dựa trên văn bản nhập
-    private void filterGroups(String query) {
-        if (query.isEmpty()) {
-            filteredGroupList.addAll(groupList); // Nếu chuỗi tìm kiếm rỗng, hiển thị toàn bộ danh sách
-            adapter.notifyDataSetChanged(); // Cập nhật adapter
-
-        } else {
-            for (Group group : groupList) {
-                if (group.getGroupName().toLowerCase().contains(query.toLowerCase())) { // Tìm kiếm không phân biệt hoa thường
-                    filteredGroupList.add(group);
-                    adapter.notifyDataSetChanged(); // Cập nhật adapter
-
-                }
-            }
-        }
-    }
+//    // Hàm để lọc danh sách nhóm dựa trên văn bản nhập
+//    private void filterGroups(String query) {
+//        if (filteredGroupList == null) {
+//            filteredGroupList = new ArrayList<>(); // Khởi tạo danh sách nếu null
+//        }
+//
+//        filteredGroupList.clear(); // Xóa dữ liệu cũ
+//
+//        if (query.isEmpty()) {
+//            // Nếu chuỗi tìm kiếm rỗng, hiển thị toàn bộ danh sách
+//            filteredGroupList.addAll(groupList);
+//        } else {
+//            for (Group group : groupList) {
+//                // Tìm kiếm không phân biệt hoa thường
+//                if (group.getGroupName().toLowerCase().contains(query.toLowerCase())) {
+//                    filteredGroupList.add(group);
+//                }
+//            }
+//        }
+//
+//        // Chỉ gọi notifyDataSetChanged() một lần sau khi hoàn thành lọc
+//        adapter.notifyDataSetChanged();
+//    }
 
     private void loadGroupDefault(){
         // Khởi tạo danh sách nhóm và adapter

@@ -39,7 +39,7 @@ public class FilterNotifyAPI {
         List<Integer> listUserReceive = receiveNotify.getListUserGet();
         if (listUserReceive != null) {
             for (int i = 0; i < listUserReceive.size(); i++) {
-                notifyDatabase.child(notifyKey).child("Receive").child(String.valueOf(i)).child("userId")
+                notifyDatabase.child(String.valueOf(userSend)).child(notifyKey).child("Receive").child(String.valueOf(i)).child("userId")
                         .setValue(listUserReceive.get(i))
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {

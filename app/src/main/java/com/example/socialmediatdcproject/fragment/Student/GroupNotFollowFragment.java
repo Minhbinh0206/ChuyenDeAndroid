@@ -33,6 +33,7 @@ import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.QuestionAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
+import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
 import com.example.socialmediatdcproject.dataModels.Answer;
@@ -42,6 +43,7 @@ import com.example.socialmediatdcproject.dataModels.Question;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
+import com.example.socialmediatdcproject.model.User;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.SimpleDateFormat;
@@ -64,16 +66,15 @@ public class GroupNotFollowFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Fragment searchGroupFragment = new SplitFragment();
-        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
-        fragmentTransaction.commit();
-
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
 
         ImageView avatarGroup = view.findViewById(R.id.image_group_user_follow);
         TextView nameGroup = view.findViewById(R.id.name_group_user_follow);
         Button button = view.findViewById(R.id.button_group_user_follow);
+        ImageView iconPublic = view.findViewById(R.id.icon_public_or_private);
+        TextView textPublic = view.findViewById(R.id.text_public);
+        TextView textAdmin = view.findViewById(R.id.text_admin);
+
         isWaiting = false;
 
         int groupId;
@@ -87,6 +88,19 @@ public class GroupNotFollowFragment extends Fragment {
         groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
             @Override
             public void onGroupReceived(Group group) {
+                UserAPI userAPI = new UserAPI();
+                userAPI.getUserById(group.getAdminUserId(), new UserAPI.UserCallback() {
+                    @Override
+                    public void onUserReceived(User user) {
+                        textAdmin.setText("Nhóm của " + user.getFullName());
+                    }
+
+                    @Override
+                    public void onUsersReceived(List<User> users) {
+
+                    }
+                });
+
                 if (group.getAvatar() != null) {
                     Glide.with(view)
                             .load(group.getAvatar())
@@ -98,6 +112,14 @@ public class GroupNotFollowFragment extends Fragment {
                 }
 
                 loadPostFromFirebase(group.getGroupId());
+
+                if (group.isPrivate()) {
+                    iconPublic.setBackground(requireContext().getResources().getDrawable(R.drawable.icon_private));
+                    textPublic.setText("Nhóm riêng tư");
+                } else {
+                    iconPublic.setBackground(requireContext().getResources().getDrawable(R.drawable.icon_public));
+                    textPublic.setText("Nhóm công khai");
+                }
 
                 nameGroup.setText(group.getGroupName());
 
@@ -125,29 +147,29 @@ public class GroupNotFollowFragment extends Fragment {
                                                 }
                                             }
 
+                                            // Lắng nghe người dùng mới tham gia nhóm
+                                            GroupUserAPI groupUserAPI = new GroupUserAPI();
+                                            groupUserAPI.listenForNewUsersInGroup(groupId, new GroupUserAPI.StudentCallback() {
+                                                @Override
+                                                public void onStudentReceived(Integer newUserId) {
+                                                    Log.d("HII", "onStudentReceived: " + newUserId);
+
+                                                    // Kiểm tra nếu userId của người tham gia là của sinh viên hiện tại
+                                                    if (newUserId == student.getUserId()) {
+                                                        // Nếu đúng, thay thế Fragment sang GroupFollowedFragment
+                                                        Fragment searchGroupFragment = new GroupFollowedFragment();
+                                                        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                                        fragmentTransaction.replace(R.id.first_content_fragment, searchGroupFragment);
+                                                        fragmentTransaction.commit();
+                                                    }
+                                                }
+                                            });
+
                                             if (isWaiting) {
 
                                                 button.setText("Đang chờ duyệt");
 
                                                 button.setEnabled(false);
-
-                                                // Lắng nghe người dùng mới tham gia nhóm
-                                                GroupUserAPI groupUserAPI = new GroupUserAPI();
-                                                groupUserAPI.listenForNewUsersInGroup(groupId, new GroupUserAPI.StudentCallback() {
-                                                    @Override
-                                                    public void onStudentReceived(Integer newUserId) {
-                                                        Log.d("HII", "onStudentReceived: " + newUserId);
-
-                                                        // Kiểm tra nếu userId của người tham gia là của sinh viên hiện tại
-                                                        if (newUserId == student.getUserId()) {
-                                                            // Nếu đúng, thay thế Fragment sang GroupFollowedFragment
-                                                            Fragment searchGroupFragment = new GroupFollowedFragment();
-                                                            FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
-                                                            fragmentTransaction.replace(R.id.first_content_fragment, searchGroupFragment);
-                                                            fragmentTransaction.commit();
-                                                        }
-                                                    }
-                                                });
 
                                             }else {
                                                 button.setText("Tham gia");
@@ -157,24 +179,6 @@ public class GroupNotFollowFragment extends Fragment {
                                                         @Override
                                                         public void onGroupReceived(Group group) {
                                                             showCustomDialog(groupId, button);
-
-                                                            // Lắng nghe người dùng mới tham gia nhóm
-                                                            GroupUserAPI groupUserAPI = new GroupUserAPI();
-                                                            groupUserAPI.listenForNewUsersInGroup(groupId, new GroupUserAPI.StudentCallback() {
-                                                                @Override
-                                                                public void onStudentReceived(Integer newUserId) {
-                                                                    Log.d("HII", "onStudentReceived: " + newUserId);
-
-                                                                    // Kiểm tra nếu userId của người tham gia là của sinh viên hiện tại
-                                                                    if (newUserId == student.getUserId()) {
-                                                                        // Nếu đúng, thay thế Fragment sang GroupFollowedFragment
-                                                                        Fragment searchGroupFragment = new GroupFollowedFragment();
-                                                                        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
-                                                                        fragmentTransaction.replace(R.id.first_content_fragment, searchGroupFragment);
-                                                                        fragmentTransaction.commit();
-                                                                    }
-                                                                }
-                                                            });
                                                         }
 
                                                         @Override
@@ -330,71 +334,61 @@ public class GroupNotFollowFragment extends Fragment {
                             button.setEnabled(false);
                             // Tiến hành các bước xử lý sau khi submit
                             AnswerAPI answerAPI = new AnswerAPI();
-                            answerAPI.getAllAnswers(new AnswerAPI.AnswersCallback() {
-                                @Override
-                                public void onAnswerReceived(Answer answer) {
-                                }
+                            if (!isAnswersAdded[0]) {
+                                StudentAPI studentAPI = new StudentAPI();
+                                studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                                    @Override
+                                    public void onStudentReceived(Student student) {
+                                        Answer answer = new Answer();
+                                        answer.setUserId(student.getUserId());
+                                        answer.setQuestionId(question.getQuestionId());
+                                        answer.setAnswerContent(questionContentAnswer.getText().toString());
 
-                                @Override
-                                public void onAnswersReceived(List<Answer> answers) {
-                                    if (!isAnswersAdded[0]) {
-                                        StudentAPI studentAPI = new StudentAPI();
-                                        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                                        // Thêm câu trả lời vào Firebase
+                                        answerAPI.addAnswer(answer);
+
+                                        // Cập nhật trạng thái isWaiting và thay đổi nội dung nút
+                                        isWaiting = true; // Đặt trạng thái là "đang chờ duyệt"
+                                        button.setText("Đang chờ duyệt");
+
+                                        // Tạo thông báo
+                                        NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+                                        notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
                                             @Override
-                                            public void onStudentReceived(Student student) {
-                                                Answer answer = new Answer();
-                                                answer.setAnswerId(answers.get(answers.size() - 1).getAnswerId() + 1);
-                                                answer.setUserId(student.getUserId());
-                                                answer.setQuestionId(question.getQuestionId());
-                                                answer.setAnswerContent(questionContentAnswer.getText().toString());
-
-                                                // Thêm câu trả lời vào Firebase
-                                                answerAPI.addAnswer(answer);
-
-                                                // Cập nhật trạng thái isWaiting và thay đổi nội dung nút
-                                                isWaiting = true; // Đặt trạng thái là "đang chờ duyệt"
-                                                button.setText("Đang chờ duyệt");
-
-                                                // Tạo thông báo
-                                                NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
-                                                notifyQuicklyAPI.getAllNotifications(new NotifyQuicklyAPI.NotificationCallback() {
+                                            public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                                                GroupAPI groupAPI = new GroupAPI();
+                                                groupAPI.getGroupById(question.getGroupId(), new GroupAPI.GroupCallback() {
                                                     @Override
-                                                    public void onNotificationsReceived(List<NotifyQuickly> notifications) {
-                                                        GroupAPI groupAPI = new GroupAPI();
-                                                        groupAPI.getGroupById(question.getGroupId(), new GroupAPI.GroupCallback() {
-                                                            @Override
-                                                            public void onGroupReceived(Group group) {
-                                                                NotifyQuickly notifyQuickly = new NotifyQuickly();
-                                                                notifyQuickly.setNotifyId(notifications.size());
-                                                                notifyQuickly.setUserSendId(student.getUserId());
-                                                                notifyQuickly.setUserGetId(group.getAdminUserId());
-                                                                notifyQuickly.setContent(student.getFullName() + " vừa gửi đơn xin gia nhập nhóm " + group.getGroupName() + " của bạn, xem ngay!");
+                                                    public void onGroupReceived(Group group) {
+                                                        NotifyQuickly notifyQuickly = new NotifyQuickly();
+                                                        notifyQuickly.setNotifyId(notifications.size());
+                                                        notifyQuickly.setUserSendId(student.getUserId());
+                                                        notifyQuickly.setUserGetId(group.getAdminUserId());
+                                                        notifyQuickly.setContent(student.getFullName() + " vừa gửi đơn xin gia nhập nhóm " + group.getGroupName() + " của bạn, xem ngay!");
 
-                                                                // Thêm thông báo vào Firebase
-                                                                notifyQuicklyAPI.addNotification(notifyQuickly);
-                                                            }
+                                                        // Thêm thông báo vào Firebase
+                                                        notifyQuicklyAPI.addNotification(notifyQuickly);
+                                                    }
 
-                                                            @Override
-                                                            public void onGroupsReceived(List<Group> groups) {
-                                                            }
-                                                        });
+                                                    @Override
+                                                    public void onGroupsReceived(List<Group> groups) {
                                                     }
                                                 });
-
-                                                // Thông báo cho người dùng rằng câu trả lời của họ đã được ghi nhận
-                                                Toast.makeText(requireContext(), "Câu trả lời của bạn đã được ghi nhận!", Toast.LENGTH_SHORT).show();
-
-                                                // Đánh dấu đã thêm câu trả lời
-                                                isAnswersAdded[0] = true;
-                                            }
-
-                                            @Override
-                                            public void onStudentsReceived(List<Student> students) {
                                             }
                                         });
+
+                                        // Thông báo cho người dùng rằng câu trả lời của họ đã được ghi nhận
+                                        Toast.makeText(requireContext(), "Câu trả lời của bạn đã được ghi nhận!", Toast.LENGTH_SHORT).show();
+
+                                        // Đánh dấu đã thêm câu trả lời
+                                        isAnswersAdded[0] = true;
                                     }
-                                }
-                            });
+
+                                    @Override
+                                    public void onStudentsReceived(List<Student> students) {
+                                    }
+                                });
+                            }
 
                             // Đóng dialog sau khi gửi câu trả lời
                             dialog.dismiss();

@@ -30,28 +30,6 @@ public class ClassAPI {
         databaseReference.child(classId).setValue(classItem).addOnCompleteListener(onCompleteListener);
     }
 
-    // Get classes by className
-    public void getClassByClassName(String className, final ClassCallback callback) {
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<Class> classList = new ArrayList<>();
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    Class classItem = ds.getValue(Class.class);
-                    if (classItem != null && className.equals(classItem.getClassName())) {
-                        classList.add(classItem);
-                    }
-                }
-                callback.onClassesReceived(classList);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("ClassAPI", "Error fetching classes by className", error.toException());
-            }
-        });
-    }
-
     // Get all classes
     public void getAllClasses(final ClassCallback callback) {
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -77,6 +55,28 @@ public class ClassAPI {
     // Get classes by departmentId
     public void getClassesByDepartmentId(int departmentId, final ClassCallback callback) {
         databaseReference.orderByChild("departmentId").equalTo(departmentId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Class> classList = new ArrayList<>();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    Class classItem = ds.getValue(Class.class);
+                    if (classItem != null) {
+                        classList.add(classItem);
+                    }
+                }
+                callback.onClassesReceived(classList); // Return list of classes with the same departmentId
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("ClassAPI", "Error fetching classes by departmentId", error.toException());
+            }
+        });
+    }
+
+    // Get classes by departmentId
+    public void getClassByName(String name, final ClassCallback callback) {
+        databaseReference.orderByChild("className").equalTo(name).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Class> classList = new ArrayList<>();

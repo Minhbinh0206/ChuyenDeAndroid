@@ -44,7 +44,7 @@ public class DepartmentFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate layout cho fragment này
-        return inflater.inflate(R.layout.fragment_department_first, container, false);
+        return inflater.inflate(R.layout.fragment_group_default, container, false);
     }
 
     @Override
@@ -82,8 +82,8 @@ public class DepartmentFragment extends Fragment {
 
                                 Log.d("DepartmentFragment", "onGroupReceived: " + groupId);
 
-                                TextView nameTraining = view.findViewById(R.id.name_department_student);
-                                ImageView avatarTraining = view.findViewById(R.id.logo_department_student);
+                                TextView nameTraining = view.findViewById(R.id.name_group_default);
+                                ImageView avatarTraining = view.findViewById(R.id.avatar_group_default);
                                 nameTraining.setText(group.getGroupName());
 
                                 Glide.with(requireContext())
@@ -94,25 +94,14 @@ public class DepartmentFragment extends Fragment {
                                 loadPostFromFirebase(groupId);
 
                                 // Tìm các nút
-                                Button infoButton = view.findViewById(R.id.button_department_myself_student);
-                                Button postButton = view.findViewById(R.id.button_department_post_student);
-                                Button memberButton = view.findViewById(R.id.button_department_member_student);
+                                Button postButton = view.findViewById(R.id.button_group_default_post);
+                                Button eventButton = view.findViewById(R.id.button_group_default_event);
 
                                 // Set màu mặc định cho nút "Bài viết"
                                 changeColorButtonActive(postButton);
-                                changeColorButtonNormal(infoButton);
-                                changeColorButtonNormal(memberButton);
 
                                 // Sự kiện khi nhấn vào nút memberButton
                                 int finalGroupId = groupId;
-                                memberButton.setOnClickListener(v -> {
-                                    loadUsersByGroupId(finalGroupId);
-
-                                    // Cập nhật màu cho các nút
-                                    changeColorButtonActive(memberButton);
-                                    changeColorButtonNormal(infoButton);
-                                    changeColorButtonNormal(postButton);
-                                });
 
                                 // Sự kiện khi nhấn vào nút postButton
                                 postButton.setOnClickListener(v -> {
@@ -120,8 +109,6 @@ public class DepartmentFragment extends Fragment {
 
                                     // Cập nhật màu cho các nút
                                     changeColorButtonActive(postButton);
-                                    changeColorButtonNormal(infoButton);
-                                    changeColorButtonNormal(memberButton);
                                 });
                             }
 
@@ -185,44 +172,13 @@ public class DepartmentFragment extends Fragment {
         });
     }
 
-    public void loadUsersByGroupId(int groupId){
-        ArrayList<Student> memberList = new ArrayList<>();
-
-        // Cập nhật RecyclerView với dữ liệu bài viết
-        MemberAdapter memberAdapter = new MemberAdapter(memberList, requireContext());
-        recyclerView.setAdapter(memberAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-        GroupUserAPI groupUserAPI = new GroupUserAPI();
-        groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
-            @Override
-            public void onUsersReceived(List<Integer> userIds) {
-                for (Integer i : userIds) {
-                    StudentAPI studentAPI = new StudentAPI();
-                    studentAPI.getStudentById(i, new StudentAPI.StudentCallback() {
-                        @Override
-                        public void onStudentReceived(Student student) {
-                            memberList.add(student);
-                            memberAdapter.notifyDataSetChanged();
-                        }
-
-                        @Override
-                        public void onStudentsReceived(List<Student> students) {
-
-                        }
-                    });
-                }
-            }
-        });
-    }
-
     public void changeColorButtonActive(Button btn){
         btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
     }
 
     public void changeColorButtonNormal(Button btn){
-        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
-        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.buttonDefault));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.black));
     }
 }

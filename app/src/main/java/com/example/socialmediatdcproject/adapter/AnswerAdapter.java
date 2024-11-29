@@ -86,7 +86,7 @@ public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.GroupViewH
             Log.d("Click", "Denied");
 
             AnswerAPI answerAPI = new AnswerAPI();
-            answerAPI.deleteAnswer(answer);
+            answerAPI.deleteAnswer(answer.getQuestionId(), answer.getUserId());
 
             answerList.remove(position);
             notifyItemRemoved(position);
@@ -175,7 +175,7 @@ public class AnswerAdapter extends RecyclerView.Adapter<AnswerAdapter.GroupViewH
                                     });
 
                                     AnswerAPI answerAPI = new AnswerAPI();
-                                    answerAPI.deleteAnswer(answer);
+                                    answerAPI.deleteAnswer(answer.getQuestionId(), answer.getUserId());
 
                                     answerList.remove(position);  // position là vị trí của item trong answerList
                                     notifyItemRemoved(position);
