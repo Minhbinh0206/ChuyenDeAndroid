@@ -219,6 +219,7 @@ public class RegisterActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Xác thực email");
         builder.setMessage("Vui lòng kiểm tra email của bạn để xác thực tài khoản.");
+        builder.setCancelable(false);
 
         Toast.makeText(RegisterActivity.this,"Email này chưa được xác thực , vui lòng xác thực!" , Toast.LENGTH_SHORT).show();
 
