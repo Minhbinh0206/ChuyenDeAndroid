@@ -9,6 +9,7 @@ import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -59,6 +60,7 @@ public class RepairButtonFragment extends Fragment {
         sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
         Button btnEdit = view.findViewById(R.id.button_edit);
+        changeColorButtonNormal(btnEdit);
 
 
         sharedViewModel.getIsEditMode().observe(getViewLifecycleOwner(), isEditMode -> {
@@ -79,5 +81,15 @@ public class RepairButtonFragment extends Fragment {
 //                Log.d("Repair" , "Đã chỉnh sửa nút lại thành true");
 //            }
         }); 
+    }
+
+    public void changeColorButtonActive(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+    }
+
+    public void changeColorButtonNormal(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 }

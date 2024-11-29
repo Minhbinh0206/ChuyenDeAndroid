@@ -39,7 +39,7 @@ public class RegisterActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private Handler handler;
     private Runnable verificationRunnable;
-    private static final int VERIFICATION_CHECK_INTERVAL = 30000;
+    private static final int VERIFICATION_CHECK_INTERVAL = 15000;
     private String tdcEmail = "@mail.tdc.edu.vn";
 
 
@@ -188,7 +188,11 @@ public class RegisterActivity extends AppCompatActivity {
 
                 // Chuyển đến UploadProfileActivity
                 // Lưu chuyển hướng
-                editor.putBoolean("isRegistering", true); // Đánh dấu đang đăng ký
+                // Đánh dấu đang đăng ký
+                editor.putBoolean("isRegistering", true);
+                editor.putString("studentNumber" , sNumber);
+                editor.putInt("userId" , userId);
+                editor.putString("email",email);
                 editor.apply();
 
                 Intent intent = new Intent(RegisterActivity.this, UploadProfileActivity.class);
