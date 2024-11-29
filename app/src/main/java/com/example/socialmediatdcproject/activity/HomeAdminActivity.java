@@ -35,6 +35,7 @@ import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.NotifyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
+import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
@@ -54,6 +55,7 @@ import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Notify;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
+import com.example.socialmediatdcproject.model.User;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -75,6 +77,7 @@ public class HomeAdminActivity extends AppCompatActivity {
     protected DrawerLayout drawerLayout;
     private int currentNotifyIndex = 0;
     ArrayList<Post> postList;
+    ArrayList<Notify> notifyList;
     PostAdapter postAdapter;
     private RecyclerView recyclerView; // Khai báo RecyclerView
 
@@ -87,6 +90,7 @@ public class HomeAdminActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         postList = new ArrayList<>();
+        notifyList = new ArrayList<>();
         recyclerView = findViewById(R.id.second_content_fragment);
         postAdapter = new PostAdapter(postList, HomeAdminActivity.this);
         recyclerView.setAdapter(postAdapter);
@@ -248,6 +252,7 @@ public class HomeAdminActivity extends AppCompatActivity {
         AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
         AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
         AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+
         adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
             @Override
             public void onUserReceived(AdminDepartment adminDepartment) {
@@ -266,7 +271,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                             .into(imageView);
                 }
 
-                notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                notifyAPI.getAllNotifies(new NotifyAPI.NotificationCallback() {
                     @Override
                     public void onNotificationReceived(Notify notify) {}
 
@@ -279,7 +284,6 @@ public class HomeAdminActivity extends AppCompatActivity {
                         Log.d("NotifyAPI", "Number of notifications received: " + notifications.size());
 
                         for (Notify n : notifications) {
-                            int count = 0;
                             processNotification(n, adminDepartment.getUserId(), notifyList, processedPostsCount, totalNotificationsCount);
                         }
                     }
@@ -323,22 +327,20 @@ public class HomeAdminActivity extends AppCompatActivity {
                             .into(imageView);
                 }
 
-                notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                notifyAPI.getAllNotifies(new NotifyAPI.NotificationCallback() {
                     @Override
                     public void onNotificationReceived(Notify notify) {}
 
                     @Override
                     public void onNotificationsReceived(List<Notify> notifications) {
-                        if (notifications.size() != 0) {
-                            ArrayList<Notify> notifyList = new ArrayList<>();
-                            int[] processedPostsCount = {0};  // Biến đếm số bài viết đã xử lý
-                            int totalNotificationsCount = notifications.size(); // Tổng số thông báo cần xử lý
+                        ArrayList<Notify> notifyList = new ArrayList<>();
+                        int[] processedPostsCount = {0};  // Biến đếm số bài viết đã xử lý
+                        int totalNotificationsCount = notifications.size(); // Tổng số thông báo cần xử lý
 
-                            Log.d("NotifyAPI", "Number of notifications received: " + notifications.size());
+                        Log.d("NotifyAPI", "Number of notifications received: " + notifications.size());
 
-                            for (Notify n : notifications) {
-                                processNotification(n, adminBusiness.getUserId(), notifyList, processedPostsCount, totalNotificationsCount);
-                            }
+                        for (Notify n : notifications) {
+                            processNotification(n, adminBusiness.getUserId(), notifyList, processedPostsCount, totalNotificationsCount);
                         }
                     }
 
@@ -380,7 +382,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                                 .into(imageView);
                     }
 
-                    notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                    notifyAPI.getAllNotifies(new NotifyAPI.NotificationCallback() {
                         @Override
                         public void onNotificationReceived(Notify notify) {}
 
@@ -393,7 +395,6 @@ public class HomeAdminActivity extends AppCompatActivity {
                             Log.d("NotifyAPI", "Number of notifications received: " + notifications.size());
 
                             for (Notify n : notifications) {
-                                int count = 0;
                                 processNotification(n, adminDefault.getUserId(), notifyList, processedPostsCount, totalNotificationsCount);
                             }
                         }
@@ -411,7 +412,6 @@ public class HomeAdminActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
     private void processNotification(Notify n, int id, ArrayList<Notify> notifyList, int[] processedPostsCount, int totalNotificationsCount) {
@@ -419,11 +419,11 @@ public class HomeAdminActivity extends AppCompatActivity {
 
         // Nếu thông báo không có bộ lọc, trực tiếp thêm vào notifyList
         if (!n.isFilter()) {
-            // Không thêm thông báo không lọc
+            notifyList.add(n);
         } else {
             // Nếu có bộ lọc, kiểm tra qua FilterNotifyAPI
             FilterNotifyAPI filterNotifyAPI = new FilterNotifyAPI();
-            filterNotifyAPI.findUserInReceive(n.getNotifyId(), id, new FilterNotifyAPI.UserInReceiveCallback() {
+            filterNotifyAPI.findUserInReceive(n, id, new FilterNotifyAPI.UserInReceiveCallback() {
                 @Override
                 public void onResult(boolean isFound) {
                     if (isFound) {
@@ -456,7 +456,7 @@ public class HomeAdminActivity extends AppCompatActivity {
             NotifyAPI notifyAPI = new NotifyAPI();
             for (Notify n : notifyList) {
                 // Gọi API để kiểm tra xem người dùng đã đọc thông báo này chưa
-                notifyAPI.checkIfUserHasRead(n.getNotifyId(), id, new NotifyAPI.CheckReadStatusCallback() {
+                notifyAPI.checkIfUserHasRead(n, id, new NotifyAPI.CheckReadStatusCallback() {
                     @Override
                     public void onResult(boolean hasRead) {
                         if (!hasRead) {
@@ -517,18 +517,10 @@ public class HomeAdminActivity extends AppCompatActivity {
 
                             @Override
                             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                                Post updatedPost = snapshot.getValue(Post.class);
-                                if (updatedPost != null) {
-                                    handlePostUpdate(updatedPost);
-                                }
                             }
 
                             @Override
                             public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                                Post removedPost = snapshot.getValue(Post.class);
-                                if (removedPost != null) {
-                                    handlePostRemoval(removedPost);
-                                }
                             }
 
                             @Override
@@ -707,26 +699,6 @@ public class HomeAdminActivity extends AppCompatActivity {
 
         } catch (ParseException e) {
             Log.e("DateParse", "Error parsing date: " + e.getMessage());
-        }
-    }
-
-    private void handlePostUpdate(Post updatedPost) {
-        for (int i = 0; i < postList.size(); i++) {
-            if (postList.get(i).getPostId() == updatedPost.getPostId()) {
-                postList.set(i, updatedPost);
-                postAdapter.notifyItemChanged(i);
-                break;
-            }
-        }
-    }
-
-    private void handlePostRemoval(Post removedPost) {
-        for (int i = 0; i < postList.size(); i++) {
-            if (postList.get(i).getPostId() == removedPost.getPostId()) {
-                postList.remove(i);
-                postAdapter.notifyItemRemoved(i);
-                break;
-            }
         }
     }
 }

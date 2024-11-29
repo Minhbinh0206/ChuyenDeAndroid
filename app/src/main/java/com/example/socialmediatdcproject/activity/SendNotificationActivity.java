@@ -288,6 +288,7 @@ public class SendNotificationActivity extends AppCompatActivity {
                 receivePostUser.clear(); // Đảm bảo danh sách rỗng trước khi thêm
 
                 List<String> selectedFilter = itemFilterAdapter.getSelectedFilters();
+                Log.d("TAG", "onCreate: " + selectedFilter.get(0));
                 if (selectedFilter.get(0).substring(0, 5).equals("Doanh")) {
                     // Xử lý các phần tử là doanh nghiệp
                     for (String s : selectedFilter) {
@@ -313,40 +314,37 @@ public class SendNotificationActivity extends AppCompatActivity {
                 else if (selectedFilter.get(0).substring(0, 2).equals("CD")) {
                     for (String s : selectedFilter) {
                         ClassAPI classAPI = new ClassAPI();
-                        classAPI.getAllClasses(new ClassAPI.ClassCallback() {
+                        classAPI.getClassByName(s ,new ClassAPI.ClassCallback() {
                             @Override
                             public void onClassReceived(Class classItem) {
-                                // Không cần xử lý ở đây
+
                             }
 
                             @Override
                             public void onClassesReceived(List<Class> classList) {
-                                for (Class c : classList) {
-                                    Log.d("Class", "Class Name: " + c.getClassName());
-                                    if (s.equals(c.getClassName())) {
-                                        StudentAPI studentAPI = new StudentAPI();
-                                        studentAPI.getAllStudents(new StudentAPI.StudentCallback() {
-                                            @Override
-                                            public void onStudentReceived(Student student) {
-                                                // Không cần xử lý ở đây
-                                            }
+                                Class classItem = classList.get(0);
+                                if (s.equals(classItem.getClassName())) {
+                                    StudentAPI studentAPI = new StudentAPI();
+                                    studentAPI.getAllStudents(new StudentAPI.StudentCallback() {
+                                        @Override
+                                        public void onStudentReceived(Student student) {
+                                            // Không cần xử lý ở đây
+                                        }
 
-                                            @Override
-                                            public void onStudentsReceived(List<Student> students) {
-                                                for (Student student : students) {
-                                                    if (student.getClassId() == c.getId()) {
-                                                        receivePostUser.add(student.getUserId());
-                                                    }
+                                        @Override
+                                        public void onStudentsReceived(List<Student> students) {
+                                            for (Student student : students) {
+                                                if (student.getClassId() == classItem.getId()) {
+                                                    receivePostUser.add(student.getUserId());
                                                 }
-
                                             }
-                                        });
-                                    }
+                                            processCreatePostAdminDepartment(title, content, isFilterNotify[0], receivePostUser);
+                                        }
+                                    });
                                 }
                             }
                         });
                     }
-                    processCreatePostAdminDepartment(title, content, isFilterNotify[0], receivePostUser);
                 }
                 else if (selectedFilter.get(0).substring(0, 4).equals("Khoa")) {
                     Log.d("KIM", "onCreate: " + isSendAdminDepartment[0]);
@@ -529,12 +527,12 @@ public class SendNotificationActivity extends AppCompatActivity {
         });
     }
 
-    private void processAdditional(int id, List<Integer> users){
+    private void processAdditional(int id ,int userSend, List<Integer> users){
         FilterNotifyAPI filterNotifyAPI = new FilterNotifyAPI();
         FilterNotify filterNotify = new FilterNotify();
         filterNotify.setNotifyId(id);
         filterNotify.setListUserGet(users);
-        filterNotifyAPI.addReceiveNotify(filterNotify);
+        filterNotifyAPI.addReceiveNotify(filterNotify, userSend);
     }
 
     private void loadClassFilterByDepartment() {
@@ -780,7 +778,7 @@ public class SendNotificationActivity extends AppCompatActivity {
         adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
             @Override
             public void onUserReceived(AdminDepartment adminDepartment) {
-                notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                notifyAPI.getAllNotificationsByUserId(adminDepartment.getUserId() ,new NotifyAPI.NotificationCallback() {
                     @Override
                     public void onNotificationReceived(Notify notify) {
 
@@ -800,7 +798,7 @@ public class SendNotificationActivity extends AppCompatActivity {
                             notify.setCreateAt(sdf.format(new Date()));
 
                             if (notifyReceive.size() != 0) {
-                                processAdditional(notify.getNotifyId(), notifyReceive);
+                                processAdditional(notify.getNotifyId(), adminDepartment.getUserId(), notifyReceive);
                             }
 
                             notifyAPI.addNotification(notify);
@@ -829,7 +827,7 @@ public class SendNotificationActivity extends AppCompatActivity {
         adminBusinessAPI.getAdminBusinessByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
             @Override
             public void onUserReceived(AdminBusiness adminBusiness) {
-                notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                notifyAPI.getAllNotificationsByUserId(adminBusiness.getUserId() ,new NotifyAPI.NotificationCallback() {
                     @Override
                     public void onNotificationReceived(Notify notify) {
 
@@ -849,7 +847,7 @@ public class SendNotificationActivity extends AppCompatActivity {
                             notify.setCreateAt(sdf.format(new Date()));
 
                             if (notifyReceive.size() != 0) {
-                                processAdditional(notify.getNotifyId(), notifyReceive);
+                                processAdditional(notify.getNotifyId(), adminBusiness.getUserId(), notifyReceive);
                             }
 
                             notifyAPI.addNotification(notify);
@@ -878,7 +876,7 @@ public class SendNotificationActivity extends AppCompatActivity {
         adminDefaultAPI.getAdminDefaultByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDefaultAPI.AdminDefaultCallBack() {
             @Override
             public void onUserReceived(AdminDefault adminDefault) {
-                notifyAPI.getAllNotifications(new NotifyAPI.NotificationCallback() {
+                notifyAPI.getAllNotificationsByUserId(adminDefault.getUserId() ,new NotifyAPI.NotificationCallback() {
                     @Override
                     public void onNotificationReceived(Notify notify) {
 
@@ -898,7 +896,7 @@ public class SendNotificationActivity extends AppCompatActivity {
                             notify.setCreateAt(sdf.format(new Date()));
 
                             if (notifyReceive.size() != 0) {
-                                processAdditional(notify.getNotifyId(), notifyReceive);
+                                processAdditional(notify.getNotifyId(), adminDefault.getUserId(), notifyReceive);
                             }
 
                             notifyAPI.addNotification(notify);

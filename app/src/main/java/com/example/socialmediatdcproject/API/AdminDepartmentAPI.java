@@ -80,6 +80,30 @@ public class AdminDepartmentAPI {
         });
     }
 
+    // Lấy thông tin người dùng theo ID
+    public void getAdminDepartmentByDepartmentId(int id, final AdminDepartmentCallBack callback) {
+        userDatabase.orderByChild("departmentId").equalTo(id)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            for (DataSnapshot studentSnapshot : snapshot.getChildren()) {
+                                AdminDepartment adminDepartment = studentSnapshot.getValue(AdminDepartment.class);
+                                if (adminDepartment != null) {
+                                    callback.onUserReceived(adminDepartment);
+                                    return; // Nếu tìm thấy một sinh viên, trả về ngay
+                                }
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        // Xử lý lỗi
+                    }
+                });
+    }
+
     // Xóa người dùng theo ID
     public void deleteUser(int userId) {
         userDatabase.child(String.valueOf(userId)).removeValue()

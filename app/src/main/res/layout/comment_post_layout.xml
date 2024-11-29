@@ -123,10 +123,10 @@
                             <Button
                                 android:id="@+id/button_submit_comment"
                                 android:layout_width="0dp"
-                                android:gravity="center_vertical"
-                                android:layout_gravity="bottom"
+                                android:gravity="center"
+                                android:layout_gravity="center"
                                 android:layout_height="40dp"
-                                android:layout_weight="3"
+                                android:layout_weight="3.5"
                                 android:text="Gửi"
                                 android:textSize="11dp"
                                 android:backgroundTint="@color/defaultBlue"

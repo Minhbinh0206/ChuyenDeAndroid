@@ -8,4 +8,6 @@
     <color name="success">#00CD00</color>
     <color name="danger">#FF3333</color>
     <color name="coming">#FFCC00</color>
+    <color name="buttonDefault">#e2e5e9</color>
+
 </resources>

@@ -77,6 +77,29 @@ public class BusinessAPI {
         });
     }
 
+    // Lấy một business với tên cụ thể
+    public void getBusinessByName(String name, final BusinessCallback callback) {
+        databaseReference.orderByChild("businessName").equalTo(name).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    // Lấy một business đầu tiên (nếu có nhiều hơn một kết quả)
+                    Business business = snapshot.getChildren().iterator().next().getValue(Business.class);
+                    if (business != null) {
+                        callback.onBusinessReceived(business);  // Trả về một business
+                    }
+                } else {
+                    callback.onBusinessReceived(null);  // Không tìm thấy business với tên này
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("BusinessAPI", "Error getting business by name.", error.toException());
+            }
+        });
+    }
+
     // Update a business
     public void updateBusiness(String businessId, Business business) {
         databaseReference.child(businessId).setValue(business)

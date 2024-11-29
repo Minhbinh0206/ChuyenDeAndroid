@@ -32,7 +32,7 @@ import com.example.socialmediatdcproject.model.User;
 import java.util.ArrayList;
 import java.util.List;
 
-public class YouthTwoFragment extends Fragment {
+public class GroupDefaultFragment extends Fragment {
     FrameLayout frameLayout;
     @Nullable
     @Override
@@ -58,19 +58,12 @@ public class YouthTwoFragment extends Fragment {
         changeColorButtonActive(post);
         changeColorButtonNormal(event);
 
-        loadPostFromFirebase();
-    }
-
-    public void loadPostFromFirebase() {
-        // Khởi tạo danh sách bài đăng
-        ArrayList<Post> postsTraining = new ArrayList<>();
-
-        // Lấy RecyclerView từ layout của Activity (shared_layout)
-        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+        Intent intent = requireActivity().getIntent();
+        int groupId = intent.getIntExtra("groupId", -1);
 
         // Lấy Group của phòng đào tạo
         GroupAPI groupAPI = new GroupAPI();
-        groupAPI.getGroupById(User.ID_ADMIN_HOISINHVIEN, new GroupAPI.GroupCallback() {
+        groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
             @Override
             public void onGroupReceived(Group group) {
                 // Set dữ liệu cho fragment
@@ -85,36 +78,48 @@ public class YouthTwoFragment extends Fragment {
                         .load(group.getAvatar())
                         .into(avatarTraining);
 
-                // Mặc định vào bài viết trước
-                PostAPI postAPI = new PostAPI();
-                postAPI.getPostsByGroupId(group.getGroupId(), new PostAPI.PostCallback() {
-                    @Override
-                    public void onPostReceived(Post post) {
 
-                    }
-
-                    @Override
-                    public void onPostsReceived(List<Post> posts) {
-                        // Duyệt qua tất cả các bài viết
-                        for (Post p : posts) {
-                            postsTraining.add(p); // Thêm vào danh sách
-                        }
-
-                        // Lấy dữ liệu bài viết
-                        PostAdapter postAdapter = new PostAdapter(postsTraining, requireContext());
-
-                        recyclerView.setAdapter(postAdapter);
-
-                        // Thiết lập LayoutManager cho RecyclerView
-                        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-                    }
-                });
+                loadPostFromFirebase(group.getGroupId());
             }
 
             @Override
             public void onGroupsReceived(List<Group> groups) {
 
+
+            }
+        });
+
+    }
+
+    public void loadPostFromFirebase(int id) {
+        // Khởi tạo danh sách bài đăng
+        ArrayList<Post> postsTraining = new ArrayList<>();
+
+        // Lấy RecyclerView từ layout của Activity (shared_layout)
+        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+
+        // Mặc định vào bài viết trước
+        PostAPI postAPI = new PostAPI();
+        postAPI.getPostsByGroupId(id, new PostAPI.PostCallback() {
+            @Override
+            public void onPostReceived(Post post) {
+
+            }
+
+            @Override
+            public void onPostsReceived(List<Post> posts) {
+                // Duyệt qua tất cả các bài viết
+                for (Post p : posts) {
+                    postsTraining.add(p); // Thêm vào danh sách
+                }
+
+                // Lấy dữ liệu bài viết
+                PostAdapter postAdapter = new PostAdapter(postsTraining, requireContext());
+
+                recyclerView.setAdapter(postAdapter);
+
+                // Thiết lập LayoutManager cho RecyclerView
+                recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
             }
         });

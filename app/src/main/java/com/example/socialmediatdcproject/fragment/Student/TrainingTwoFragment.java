@@ -39,7 +39,7 @@ public class TrainingTwoFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate layout for this fragment
         setRetainInstance(true);
-        return inflater.inflate(R.layout.fragment_training_layout, container, false);
+        return inflater.inflate(R.layout.fragment_group_default, container, false);
     }
 
     @Override
@@ -53,9 +53,14 @@ public class TrainingTwoFragment extends Fragment {
         FrameLayout frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
         frameLayout.setVisibility(View.GONE);
 
-        loadPostFromFirebase();
+        Button post = view.findViewById(R.id.button_group_default_post);
+        Button event = view.findViewById(R.id.button_group_default_event);
+        changeColorButtonActive(post);
+        changeColorButtonNormal(event);
 
+        loadPostFromFirebase();
     }
+
     public void loadPostFromFirebase() {
         // Khởi tạo danh sách bài đăng
         ArrayList<Post> postsTraining = new ArrayList<>();
@@ -65,12 +70,12 @@ public class TrainingTwoFragment extends Fragment {
 
         // Lấy Group của phòng đào tạo
         GroupAPI groupAPI = new GroupAPI();
-        groupAPI.getGroupById(2 , new GroupAPI.GroupCallback() {
+        groupAPI.getGroupById(User.ID_ADMIN_PHONGCTCTHSSV, new GroupAPI.GroupCallback() {
             @Override
             public void onGroupReceived(Group group) {
                 // Set dữ liệu cho fragment
-                TextView nameTraining = getView().findViewById(R.id.name_phongdaotao);
-                ImageView avatarTraining = getView().findViewById(R.id.avatar_phongdaotao);
+                TextView nameTraining = getView().findViewById(R.id.name_group_default);
+                ImageView avatarTraining = getView().findViewById(R.id.avatar_group_default);
                 nameTraining.setText(group.getGroupName());
 
                 String imageUrl = group.getAvatar();
@@ -113,6 +118,16 @@ public class TrainingTwoFragment extends Fragment {
 
             }
         });
+    }
+
+    public void changeColorButtonActive(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+    }
+
+    public void changeColorButtonNormal(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.buttonDefault));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.black));
     }
 
 }

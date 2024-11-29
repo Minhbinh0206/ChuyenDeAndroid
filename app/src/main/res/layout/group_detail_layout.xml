@@ -3,42 +3,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="@color/buttonDefault"
     android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Thanh navigation bar được đặt phía trên và cố định -->
-        <LinearLayout
-            android:id="@+id/navComment"
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:background="@color/defaultBlue"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-            <ImageButton
-                android:id="@+id/icon_back"
-                android:layout_width="40dp"
-                android:layout_height="35dp"
-                android:layout_gravity="center"
-                android:layout_marginHorizontal="20dp"
-                android:background="@android:color/transparent"
-                android:scaleType="fitXY"
-                android:src="@drawable/icon_arrow_back" />
-        </LinearLayout>
-
         <!-- Nội dung cuộn nằm dưới thanh navigation bar -->
         <androidx.core.widget.NestedScrollView
+            android:id="@+id/nestedScrollView2"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/navComment">
+            app:layout_constraintTop_toTopOf="parent">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -57,7 +37,7 @@
                     android:id="@+id/third_content_fragment"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginVertical="10dp"
+                    android:layout_marginVertical="5dp"
                     android:background="#fff"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -68,6 +48,8 @@
                     android:id="@+id/second_content_fragment"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:background="#fff"
                     app:layout_constraintBottom_toTopOf="@+id/null_content_notify"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -77,19 +59,71 @@
                     android:id="@+id/null_content_notify"
                     android:layout_width="match_parent"
                     android:layout_height="300dp"
+                    android:gravity="center"
+                    android:paddingVertical="100dp"
+                    android:text="Hiện chưa có bài viết nào"
+                    android:textSize="20dp"
+                    android:textStyle="italic"
+                    android:visibility="gone"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:textStyle="italic"
-                    android:gravity="center"
-                    android:visibility="gone"
-                    android:textSize="20dp"
-                    android:text="Hiện chưa có bài viết nào"
-                    android:paddingVertical="100dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/second_content_fragment" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>
+
+        <!-- Thanh navigation bar được đặt phía trên và cố định -->
+        <LinearLayout
+            android:id="@+id/navComment"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+            <ImageButton
+                android:id="@+id/icon_back"
+                android:layout_width="40dp"
+                android:layout_height="35dp"
+                android:layout_gravity="center"
+                android:layout_marginHorizontal="20dp"
+                android:background="@android:color/transparent"
+                android:scaleType="fitXY"
+                android:src="@drawable/icon_arrow_back" />
+
+            <ImageView
+                android:id="@+id/avatar_group"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                />
+
+            <TextView
+                android:id="@+id/name_group"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textSize="16dp"
+                android:layout_marginLeft="10dp"
+                />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/icon_setting"
+            android:layout_width="40dp"
+            android:layout_height="35dp"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="20dp"
+            android:background="@android:color/transparent"
+            android:scaleType="fitXY"
+            android:src="@drawable/icon_three_dot"
+            app:layout_constraintBottom_toBottomOf="@+id/navComment"
+            app:layout_constraintEnd_toEndOf="@+id/navComment"
+            app:layout_constraintTop_toTopOf="@+id/nestedScrollView2" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- NavigationView nằm bên cạnh -->
