@@ -14,6 +14,8 @@ public class User {
     // Các id đặc biệt
     public static final int ID_ADMIN_PHONGDAOTAO = 0;
     public static final int ID_ADMIN_DOANTHANHNIEN = 1;
+    public static final int ID_ADMIN_PHONGCTCTHSSV = 2;
+    public static final int ID_ADMIN_HOISINHVIEN = 3;
     // ----- KHOA ----- //
     public static final int ID_ADMIN_DEPARTMENT_CNTT = 2;           // Khoa Công nghệ thông tin
     public static final int ID_ADMIN_DEPARTMENT_CKOT = 3;           // Khoa Công nghệ cơ khí - ô tô

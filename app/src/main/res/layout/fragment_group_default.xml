@@ -9,7 +9,7 @@
     <LinearLayout
         android:id="@+id/linearLayout20"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="150dp"
         android:background="@drawable/nen_background"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/parent_phongdaotao"
@@ -29,7 +29,7 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout20">
 
         <ImageView
-            android:id="@+id/image_group_user_follow"
+            android:id="@+id/avatar_group_default"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_margin="10dp"
@@ -48,7 +48,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/name_group_user_follow"
+                android:id="@+id/name_group_default"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -71,7 +71,7 @@
                     android:id="@+id/icon_public_or_private"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
-                    android:background="@drawable/icon_swap" />
+                    android:background="@drawable/icon_public" />
 
                 <TextView
                     android:id="@+id/text_public"
@@ -106,33 +106,33 @@
         app:layout_constraintTop_toBottomOf="@+id/parent_phongdaotao">
 
         <Button
-            android:id="@+id/button_group_user_follow"
-            android:layout_width="wrap_content"
+            android:id="@+id/button_group_default_post"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:background="@drawable/button_19_background"
             android:gravity="center"
-            android:text="..."
             android:letterSpacing="0.08"
-            android:paddingHorizontal="50dp"
+            android:text="Bài viết"
             android:layout_marginRight="5dp"
             android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:textStyle="bold" />
 
-    </LinearLayout>
+        <Button
+            android:id="@+id/button_group_default_event"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="5dp"
+            android:background="@drawable/button_19_background"
+            android:gravity="center"
+            android:letterSpacing="0.08"
+            android:text="Sự kiện"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/text_admin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#fff"
-        android:text="Nhóm của ...."
-        android:background="#444444"
-        android:paddingVertical="5dp"
-        android:paddingHorizontal="10dp"
-        android:textStyle="bold|italic"
-        android:textSize="17dp"
-        app:layout_constraintBottom_toBottomOf="@+id/linearLayout20"
-        app:layout_constraintStart_toStartOf="parent" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

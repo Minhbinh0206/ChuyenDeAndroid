@@ -1,23 +1,29 @@
 package com.example.socialmediatdcproject.activity;
 
+import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
@@ -26,6 +32,7 @@ import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyQuicklyAdapter;
 import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
+import com.example.socialmediatdcproject.fragment.Student.GroupDefaultFragment;
 import com.example.socialmediatdcproject.fragment.Student.GroupFollowedFragment;
 import com.example.socialmediatdcproject.fragment.Student.GroupNotFollowFragment;
 import com.example.socialmediatdcproject.model.Group;
@@ -41,6 +48,12 @@ public class GroupDetaiActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.group_detail_layout);
 
+        LinearLayout layout = findViewById(R.id.navComment);
+        NestedScrollView nestedScrollView = findViewById(R.id.nestedScrollView2);
+
+        ImageView imageAvatarGroup = findViewById(R.id.avatar_group);
+        TextView nameGroup = findViewById(R.id.name_group);
+
         ImageButton iconBack = findViewById(R.id.icon_back);
         iconBack.setOnClickListener(v -> {
             finish();
@@ -48,6 +61,48 @@ public class GroupDetaiActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         int groupId = intent.getIntExtra("groupId", -1);
+
+        GroupAPI groupAPI = new GroupAPI();
+        groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+            @Override
+            public void onGroupReceived(Group group) {
+                nameGroup.setText(group.getGroupName());
+
+                Glide.with(GroupDetaiActivity.this)
+                        .load(group.getAvatar())
+                        .circleCrop()
+                        .into(imageAvatarGroup);
+            }
+
+            @Override
+            public void onGroupsReceived(List<Group> groups) {
+
+            }
+        });
+
+        imageAvatarGroup.setVisibility(View.INVISIBLE);
+        nameGroup.setVisibility(View.INVISIBLE);
+
+        // Lắng nghe sự kiện cuộn
+        nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                // Nếu cuộn xuống (scrollY > oldScrollY), đổi màu nền thành màu xanh
+                if (scrollY > oldScrollY) {
+                    animateBackgroundColor(layout, Color.TRANSPARENT, getResources().getColor(R.color.defaultBlue));
+
+                    imageAvatarGroup.setVisibility(View.VISIBLE);
+                    nameGroup.setVisibility(View.VISIBLE);
+                }
+                // Nếu cuộn lên (scrollY < oldScrollY), đặt lại màu nền
+                else if (scrollY < oldScrollY) {
+                    animateBackgroundColor(layout, getResources().getColor(R.color.defaultBlue), Color.TRANSPARENT);
+
+                    imageAvatarGroup.setVisibility(View.INVISIBLE);
+                    nameGroup.setVisibility(View.INVISIBLE);
+                }
+            }
+        });
 
         StudentAPI studentAPI = new StudentAPI();
 
@@ -77,9 +132,29 @@ public class GroupDetaiActivity extends AppCompatActivity {
 
                             // Nếu người dùng đã tham gia, hiển thị GroupFollowedFragment
                             if (isJoin) {
-                                fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
-                                // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
-                                fragmentTransaction.commit();
+                                // Nếu người dùng chưa tham gia, gọi API để lấy thông tin nhóm
+                                GroupAPI groupAPI = new GroupAPI();
+                                groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                                    @Override
+                                    public void onGroupReceived(Group group) {
+                                        // Nếu nhóm là nhóm mặc định, chuyển trực tiếp sang GroupFollowedFragment
+                                        if (group.isGroupDefault()) {
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupDefaultFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        } else {
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onGroupsReceived(List<Group> groups) {
+                                        // Xử lý nếu cần khi nhận được danh sách nhóm
+                                    }
+                                });
+
                             } else {
                                 // Nếu người dùng chưa tham gia, gọi API để lấy thông tin nhóm
                                 GroupAPI groupAPI = new GroupAPI();
@@ -88,7 +163,7 @@ public class GroupDetaiActivity extends AppCompatActivity {
                                     public void onGroupReceived(Group group) {
                                         // Nếu nhóm là nhóm mặc định, chuyển trực tiếp sang GroupFollowedFragment
                                         if (group.isGroupDefault()) {
-                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupDefaultFragment());
                                             // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
                                             fragmentTransaction.commit();
                                         } else {
@@ -209,4 +284,14 @@ public class GroupDetaiActivity extends AppCompatActivity {
             public void onStudentsReceived(List<Student> students) {}
         });
     }
+
+    private void animateBackgroundColor(View view, int fromColor, int toColor) {
+        ValueAnimator colorAnimation = ValueAnimator.ofArgb(fromColor, toColor);
+        colorAnimation.setDuration(0); // Thời gian chuyển đổi màu (300ms)
+        colorAnimation.addUpdateListener(animator -> {
+            view.setBackgroundColor((int) animator.getAnimatedValue());
+        });
+        colorAnimation.start();
+    }
+
 }
