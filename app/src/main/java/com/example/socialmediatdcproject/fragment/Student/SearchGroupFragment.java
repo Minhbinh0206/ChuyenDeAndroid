@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SearchGroupFragment extends Fragment {
+
     private GroupAdapter adapter;
     private List<Group> groupList;
     private List<Group> filteredGroupList;
@@ -96,6 +97,9 @@ public class SearchGroupFragment extends Fragment {
                     case "Khác":
                         loadGroupStudent();
                         break;
+                    default:
+                        loadAllGroups();
+                        break;
                 }
             }
 
@@ -124,29 +128,32 @@ public class SearchGroupFragment extends Fragment {
 
     // Hàm để lọc danh sách nhóm dựa trên văn bản nhập
     private void filterGroups(String query) {
-        if(filteredGroupList != null){
-            filteredGroupList.clear();
+        if (filteredGroupList == null) {
+            filteredGroupList = new ArrayList<>(); // Khởi tạo danh sách nếu null
         }
-        if (query.isEmpty()) {
-            filteredGroupList.addAll(groupList); // Nếu chuỗi tìm kiếm rỗng, hiển thị toàn bộ danh sách
-            adapter.notifyDataSetChanged(); // Cập nhật adapter
-        } else {
-            for (Group group : groupList) {
-                if (group.getGroupName().toLowerCase().contains(query.toLowerCase())) { // Tìm kiếm không phân biệt hoa thường
-                    filteredGroupList.add(group);
-                    adapter.notifyDataSetChanged(); // Cập nhật adapter
+        else {
+            filteredGroupList.clear(); // Xóa dữ liệu cũ
 
+            if (query.isEmpty()) {
+                // Nếu chuỗi tìm kiếm rỗng, hiển thị toàn bộ danh sách
+                filteredGroupList.addAll(groupList);
+            } else {
+                for (Group group : groupList) {
+                    // Tìm kiếm không phân biệt hoa thường
+                    if (group.getGroupName().toLowerCase().contains(query.toLowerCase())) {
+                        filteredGroupList.add(group);
+                    }
                 }
             }
+
+            // Chỉ gọi notifyDataSetChanged() một lần sau khi hoàn thành lọc
+            adapter.notifyDataSetChanged();
         }
     }
 
     private void loadGroupDefault(){
         // Khởi tạo danh sách nhóm và adapter
         groupList = new ArrayList<>();
-        if(filteredGroupList != null){
-            filteredGroupList.clear();
-        }
         GroupAPI groupAPI = new GroupAPI();
         for (int i = 0; i < 4; i++) {
             groupAPI.getGroupById(i, new GroupAPI.GroupCallback() {
@@ -176,9 +183,6 @@ public class SearchGroupFragment extends Fragment {
     private void loadGroupDepartment(){
         // Khởi tạo danh sách nhóm và adapter
         groupList = new ArrayList<>();
-        if(filteredGroupList != null){
-            filteredGroupList.clear();
-        }
 
         DepartmentAPI departmentAPI = new DepartmentAPI();
         GroupAPI groupAPI = new GroupAPI();
@@ -221,9 +225,6 @@ public class SearchGroupFragment extends Fragment {
     private void loadGroupBusiness(){
         // Khởi tạo danh sách nhóm và adapter
         groupList = new ArrayList<>();
-        if(filteredGroupList != null){
-            filteredGroupList.clear();
-        }
 
         BusinessAPI businessAPI = new BusinessAPI();
         businessAPI.getAllBusinesses(new BusinessAPI.BusinessCallback() {
@@ -264,9 +265,7 @@ public class SearchGroupFragment extends Fragment {
     private void loadGroupStudent(){
         // Khởi tạo danh sách nhóm và adapter
         groupList = new ArrayList<>();
-        if(filteredGroupList != null){
-            filteredGroupList.clear();
-        }
+
         GroupAPI groupAPI = new GroupAPI();
         groupAPI.getAllGroups(new GroupAPI.GroupCallback() {
             @Override
@@ -297,9 +296,6 @@ public class SearchGroupFragment extends Fragment {
     private void loadAllGroups(){
         // Khởi tạo danh sách nhóm và adapter
         groupList = new ArrayList<>();
-        if(filteredGroupList != null){
-            filteredGroupList.clear();
-        }
 
         GroupAPI groupAPI = new GroupAPI();
         groupAPI.getAllGroups(new GroupAPI.GroupCallback() {

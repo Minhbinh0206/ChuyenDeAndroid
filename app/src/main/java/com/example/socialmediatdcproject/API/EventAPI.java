@@ -3,15 +3,19 @@ package com.example.socialmediatdcproject.API;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.example.socialmediatdcproject.model.Assist;
 import com.example.socialmediatdcproject.model.Event;
 import com.example.socialmediatdcproject.model.RollCall;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +31,7 @@ public class EventAPI {
     // Thêm sự kiện mới vào Firebase
     public void addEvent(Event event) {
         int eventId = event.getEventId();
-        eventDatabase.child(String.valueOf(eventId)).setValue(event).addOnCompleteListener(task -> {
+        eventDatabase.child(String.valueOf(event.getAdminEventId())).child(String.valueOf(eventId)).setValue(event).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Log.d("EventAPI", "Event added successfully.");
             } else {
@@ -36,8 +40,49 @@ public class EventAPI {
         });
     }
 
-    public void listenForEventStatusChange(int eventId, final EventStatusCallback callback) {
-        eventDatabase.child(String.valueOf(eventId)).addValueEventListener(new ValueEventListener() {
+    public void listenForNewUserAssist(Event event, OnNewUserAddedListener listener) {
+        // Tham chiếu đến userAssist trong sự kiện cụ thể
+        DatabaseReference userAssistRef = eventDatabase.child(String.valueOf(event.getAdminEventId())).child(String.valueOf(event.getEventId())).child("userAssist");
+
+        userAssistRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                // Lấy phần tử mới
+                Assist newUserId = snapshot.getValue(Assist.class);
+                if (newUserId != null && listener != null) {
+                    // Trả về phần tử mới qua callback
+                    listener.onNewUserAdded(newUserId);
+                }
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                // Xử lý nếu phần tử bị thay đổi
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                // Xử lý nếu phần tử bị xóa
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                // Xử lý nếu phần tử bị di chuyển
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("UserAssistError", "Lỗi khi lắng nghe userAssist: " + error.getMessage());
+            }
+        });
+    }
+
+    public interface OnNewUserAddedListener {
+        void onNewUserAdded(Assist assist);
+    }
+
+    public void listenForEventStatusChange(Event event, final EventStatusCallback callback) {
+        eventDatabase.child(String.valueOf(event.getAdminEventId())).child(String.valueOf(event.getEventId())).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Event event = snapshot.getValue(Event.class);
@@ -59,8 +104,8 @@ public class EventAPI {
     }
 
     // Lắng nghe sự thay đổi của thuộc tính isAssist trong userAssist của một Event
-    public void listenForUserAssistStatusChange(int eventId, int userId, final UserAssistStatusCallback callback) {
-        eventDatabase.child(String.valueOf(eventId)).addValueEventListener(new ValueEventListener() {
+    public void listenForUserAssistStatusChange(Event event, int userId, final UserAssistStatusCallback callback) {
+        eventDatabase.child(String.valueOf(event.getAdminEventId())).child(String.valueOf(event.getEventId())).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Event event = snapshot.getValue(Event.class);
@@ -91,7 +136,7 @@ public class EventAPI {
     // Cập nhật sự kiện
     public void updateEvent(Event event) {
         int eventId = event.getEventId();
-        eventDatabase.child(String.valueOf(eventId)).setValue(event).addOnCompleteListener(task -> {
+        eventDatabase.child(String.valueOf(event.getAdminEventId())).child(String.valueOf(eventId)).setValue(event).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Log.d("EventAPI", "Event updated successfully.");
             } else {
@@ -111,19 +156,23 @@ public class EventAPI {
         });
     }
 
-    // Lấy tất cả sự kiện
     public void getAllEvents(final EventCallback callback) {
-        eventDatabase.addValueEventListener(new ValueEventListener() {
+        eventDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Event> eventList = new ArrayList<>();
-                for (DataSnapshot eventSnapshot : snapshot.getChildren()) {
-                    Event event = eventSnapshot.getValue(Event.class);
-                    if (event != null) {
-                        eventList.add(event);
+
+                // Duyệt qua các AdminId trong node Events
+                for (DataSnapshot adminSnapshot : snapshot.getChildren()) {
+                    // Duyệt qua các EventID dưới mỗi AdminId
+                    for (DataSnapshot eventSnapshot : adminSnapshot.getChildren()) {
+                        Event event = eventSnapshot.getValue(Event.class);
+                        if (event != null) {
+                            eventList.add(event); // Thêm sự kiện vào danh sách
+                        }
                     }
                 }
-                callback.onEventsReceived(eventList);
+                callback.onEventsReceived(eventList); // Trả về danh sách sự kiện
             }
 
             @Override
@@ -133,9 +182,33 @@ public class EventAPI {
         });
     }
 
+    public void getAllEventByOneAdmin(int adminId, final EventCallback callback) {
+        eventDatabase.child(String.valueOf(adminId)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<Event> eventList = new ArrayList<>();
+
+                // Duyệt qua các EventID dưới AdminId
+                for (DataSnapshot eventSnapshot : snapshot.getChildren()) {
+                    Event event = eventSnapshot.getValue(Event.class);
+                    if (event != null) {
+                        eventList.add(event); // Thêm sự kiện vào danh sách
+                    }
+                }
+                callback.onEventsReceived(eventList); // Trả về danh sách sự kiện
+            }
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("EventAPI", "Error fetching events: " + error.getMessage());
+            }
+        });
+    }
+
     // Lấy sự kiện theo ID
-    public void getEventById(int eventId, final EventCallback callback) {
-        eventDatabase.child(String.valueOf(eventId)).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void getEventById(int eventId, int admin, final EventCallback callback) {
+        eventDatabase.child(String.valueOf(admin)).child(String.valueOf(eventId)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Event event = snapshot.getValue(Event.class);
@@ -150,8 +223,8 @@ public class EventAPI {
     }
 
     // Cập nhật trạng thái của UserAssist trong Event
-    public void updateUserAssistStatus(int eventId, int userId, boolean isAssisted, UpdateCallback callback) {
-        eventDatabase.child(String.valueOf(eventId)).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void updateUserAssistStatus(int eventId, int eventAdmin, int userId, boolean isAssisted, UpdateCallback callback) {
+        eventDatabase.child(String.valueOf(eventAdmin)).child(String.valueOf(eventId)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Event event = snapshot.getValue(Event.class);
@@ -165,7 +238,7 @@ public class EventAPI {
                             }
                         }
                         // Cập nhật lại sự kiện với danh sách đã thay đổi
-                        eventDatabase.child(String.valueOf(eventId)).setValue(event).addOnCompleteListener(task -> {
+                        eventDatabase.child(String.valueOf(event.getAdminEventId())).child(String.valueOf(event.getEventId())).setValue(event).addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
                                 Log.d("EventAPI", "User assist status updated successfully.");
                                 callback.onUpdateSuccess(); // Thông báo thành công
@@ -196,8 +269,8 @@ public class EventAPI {
     }
 
     // Cập nhật trạng thái isVerified của UserJoin trong Event
-    public void updateUserJoinVerification(int eventId, String sNum, boolean isVerified) {
-        eventDatabase.child(String.valueOf(eventId)).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void updateUserJoinVerification(int eventId, int adminId, String sNum, boolean isVerified) {
+        eventDatabase.child(String.valueOf(adminId)).child(String.valueOf(eventId)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Event event = snapshot.getValue(Event.class);
@@ -206,47 +279,11 @@ public class EventAPI {
                     if (userJoin != null) {
                         for (RollCall rollCall : userJoin) {
                             if (rollCall.getStudentNumber().equals(sNum)) {
-                                rollCall.setIsVerify(isVerified ? RollCall.SENT : RollCall.JOIN); // Cập nhật trạng thái
                                 break; // Thoát khỏi vòng lặp sau khi tìm thấy
                             }
                         }
                         // Cập nhật lại sự kiện với danh sách đã thay đổi
-                        eventDatabase.child(String.valueOf(eventId)).setValue(event).addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                Log.d("EventAPI", "User verification status updated successfully.");
-                            } else {
-                                Log.e("EventAPI", "Failed to update user verification status.", task.getException());
-                            }
-                        });
-                    }
-                } else {
-                    Log.e("EventAPI", "Event not found.");
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("EventAPI", "Error fetching event: " + error.getMessage());
-            }
-        });
-    }
-
-    public void updateUserJoinVerificationDone(int eventId, String sNum) {
-        eventDatabase.child(String.valueOf(eventId)).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Event event = snapshot.getValue(Event.class);
-                if (event != null) {
-                    List<RollCall> userJoin = event.getUserJoin();
-                    if (userJoin != null) {
-                        for (RollCall rollCall : userJoin) {
-                            if (rollCall.getStudentNumber().equals(sNum)) {
-                                rollCall.setIsVerify(2);
-                                break; // Thoát khỏi vòng lặp sau khi tìm thấy
-                            }
-                        }
-                        // Cập nhật lại sự kiện với danh sách đã thay đổi
-                        eventDatabase.child(String.valueOf(eventId)).setValue(event).addOnCompleteListener(task -> {
+                        eventDatabase.child(String.valueOf(event.getAdminEventId())).child(String.valueOf(event.getEventId())).setValue(event).addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
                                 Log.d("EventAPI", "User verification status updated successfully.");
                             } else {
@@ -282,31 +319,9 @@ public class EventAPI {
         });
     }
 
-    // Lấy sự kiện theo admin ID
-    public void getEventsByAdminId(int adminId, final EventCallback callback) {
-        eventDatabase.orderByChild("adminEventId").equalTo(adminId).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<Event> eventList = new ArrayList<>();
-                for (DataSnapshot eventSnapshot : snapshot.getChildren()) {
-                    Event event = eventSnapshot.getValue(Event.class);
-                    if (event != null) {
-                        eventList.add(event);
-                    }
-                }
-                callback.onEventsReceived(eventList);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("EventAPI", "Error fetching events by admin ID: " + error.getMessage());
-            }
-        });
-    }
-
     // Lắng nghe sự thay đổi của danh sách userJoin trong Event
-    public void listenForNewRollCall(int eventId, final NewRollCallCallback callback) {
-        eventDatabase.child(String.valueOf(eventId)).addValueEventListener(new ValueEventListener() {
+    public void listenForNewRollCall(int eventId, int adminId ,final NewRollCallCallback callback) {
+        eventDatabase.child(String.valueOf(adminId)).child(String.valueOf(eventId)).addValueEventListener(new ValueEventListener() {
             private int previousCount = 0;
 
             @Override
@@ -339,22 +354,14 @@ public class EventAPI {
         void onNewRollCallAdded(RollCall rollCall);
     }
 
-
     // Lắng nghe sự thay đổi của isVerified cho một RollCall cụ thể trong danh sách userJoin của Event
-    public void listenForUserJoinVerificationChange(int eventId, String sNum, final RollCallCallback callback) {
-        eventDatabase.child(String.valueOf(eventId)).addValueEventListener(new ValueEventListener() {
+    public void listenForCodeChange(int eventId, int adminId, final EventCallback callback) {
+        eventDatabase.child(String.valueOf(adminId)).child(String.valueOf(eventId)).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Event event = snapshot.getValue(Event.class);
                 if (event != null && event.getUserJoin() != null) {
-                    List<RollCall> userJoin = event.getUserJoin();
-                    for (RollCall rollCall : userJoin) {
-                        if (rollCall.getStudentNumber().equals(sNum)) {
-                            // Trả về đối tượng RollCall khi có sự thay đổi
-                            callback.onRollCallChanged(rollCall);
-                            break; // Thoát vòng lặp sau khi tìm thấy
-                        }
-                    }
+                    callback.onEventReceived(event);
                 }
             }
 
@@ -397,4 +404,47 @@ public class EventAPI {
         void onEventReceived(Event event);
         void onEventsReceived(List<Event> events);
     }
+
+    // Lắng nghe sự kiện mới được thêm
+    public void listenForNewEvent(OnNewEventListener listener) {
+        eventDatabase.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                // Lặp qua các AdminEventId
+                for (DataSnapshot adminSnapshot : snapshot.getChildren()) {
+                    // Lấy event mới thêm
+                    Event newEvent = adminSnapshot.getValue(Event.class);
+                    if (newEvent != null && listener != null) {
+                        listener.onNewEventAdded(newEvent);
+                    }
+                }
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                // Không xử lý
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                // Không xử lý
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                // Không xử lý
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("EventAPI", "Error listening for new events: " + error.getMessage());
+            }
+        });
+    }
+
+    // Interface callback để trả về event mới
+    public interface OnNewEventListener {
+        void onNewEventAdded(Event event);
+    }
+
 }

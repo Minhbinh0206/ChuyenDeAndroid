@@ -77,6 +77,7 @@ public class AssistAdapter extends RecyclerView.Adapter<AssistAdapter.GroupViewH
 
         Intent intent = ((Activity) context).getIntent();
         int eventId = intent.getIntExtra("eventId", -1);
+        int adminId = intent.getIntExtra("adminId", -1);
 
         StudentAPI studentAPI = new StudentAPI();
         studentAPI.getStudentById(assist.getUserId(), new StudentAPI.StudentCallback() {
@@ -93,18 +94,22 @@ public class AssistAdapter extends RecyclerView.Adapter<AssistAdapter.GroupViewH
                     holder.nameUserRollCall.setText(student.getFullName());
                     holder.studentNumberRollCall.setText(student.getStudentNumber());
 
+                    holder.sendCode.setVisibility(View.VISIBLE);
+
                     if (assist.isAssist()) {
-                        holder.sendCode.setVisibility(View.GONE);
+                        holder.sendCode.setVisibility(View.INVISIBLE);
                     } else {
+                        holder.sendCode.setVisibility(View.VISIBLE);
+
                         holder.sendCode.setText("Duyệt");
 
                         holder.sendCode.setOnClickListener(v -> {
                             EventAPI eventAPI = new EventAPI();
-                            eventAPI.updateUserAssistStatus(eventId, student.getUserId(), true, new EventAPI.UpdateCallback() {
+                            eventAPI.updateUserAssistStatus(eventId, adminId, student.getUserId(), true, new EventAPI.UpdateCallback() {
                                 @Override
                                 public void onUpdateSuccess() {
                                     assist.setAssist(true); // Cập nhật trạng thái assist
-                                    holder.sendCode.setVisibility(View.GONE); // Ẩn nút "Duyệt"
+                                    holder.sendCode.setVisibility(View.INVISIBLE); // Ẩn nút "Duyệt"
                                     assistList.remove(position);
                                     notifyItemRemoved(position);
                                     Toast.makeText(context, "Đã chỉ định " + student.getFullName() + " là người hỗ trợ", Toast.LENGTH_SHORT).show();

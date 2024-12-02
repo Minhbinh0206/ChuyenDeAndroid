@@ -16,39 +16,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mã điểm danh của bạn là: "
-                android:textSize="17dp" />
-
-            <TextView
-                android:id="@+id/text_roll_call"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:hint="###"
-                android:layout_marginVertical="10dp"
-                android:textSize="17dp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <EditText
-            android:id="@+id/code_roll_call"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="50dp"
-            android:background="@drawable/custom_admin"
-            android:hint="###"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="10dp" />
-
         <Button
             android:id="@+id/submit_roll_call"
             android:layout_width="wrap_content"

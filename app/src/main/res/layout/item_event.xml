@@ -1,76 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:paddingHorizontal="20dp"
+    android:layout_margin="10dp"
+    android:padding="5dp"
+    android:background="@drawable/comment_custom"
     android:layout_height="wrap_content">
-
-    <LinearLayout
-        android:id="@+id/linearLayout2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/border_radius_top"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/image_event"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/status_event"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginRight="20dp"
-            android:layout_weight="3"
-            android:textColor="@color/like"
-            android:gravity="end"
-            android:padding="10dp"
-            android:text="Trạng thái"
-            android:textSize="17dp"
-            android:textStyle="italic|bold" />
-    </LinearLayout>
 
     <ImageView
         android:id="@+id/image_event"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="280dp"
         android:background="#fff"
-        app:layout_constraintBottom_toTopOf="@+id/parent_title_event"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
-
-    <LinearLayout
-        android:id="@+id/parent_title_event"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="#fff"
-        android:paddingVertical="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/image_event">
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/title_event"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:background="#fff"
-            android:padding="10dp"
-            android:text="Tiêu đề sự kiện Tiêu đề sự kiện Tiêu đề sự kiện Tiêu đề sự kiện Tiêu đề sự kiện"
-            android:textSize="18dp"
-            android:textStyle="bold" />
+    <TextView
+        android:id="@+id/title_event"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:background="#fff"
+        android:padding="10dp"
+        android:text="HIIHI"
+        android:textSize="17dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <Button
-            android:id="@+id/event_detail"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:paddingVertical="15dp"
-            android:layout_gravity="center"
-            android:layout_weight="1"
-            android:text="Xem thêm" />
-    </LinearLayout>
+    <TextView
+        android:id="@+id/status_event"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="3"
+        android:background="@drawable/comment_custom_stroke"
+        android:gravity="end"
+        android:paddingHorizontal="40dp"
+        android:paddingVertical="10dp"
+        android:text="Trạng thái"
+        android:textColor="@color/warning"
+        android:textSize="18dp"
+        android:textStyle="italic|bold"
+        app:layout_constraintBottom_toTopOf="@+id/title_event"
+        app:layout_constraintEnd_toEndOf="@+id/image_event"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/event_detail"
+        android:layout_width="wrap_content"
+        android:paddingHorizontal="20dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:text="&#62;"
+        android:textSize="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/title_event"
+        app:layout_constraintTop_toTopOf="@+id/title_event" />
 </androidx.constraintlayout.widget.ConstraintLayout>

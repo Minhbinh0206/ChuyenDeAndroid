@@ -12,6 +12,7 @@ public class Event {
     private List<Assist> userAssist;
     private List<RollCall> userJoin;
     private int status;
+    private String currentQrCode;
     private String createAt;
     private String beginAt;
     private String finishAt;
@@ -30,6 +31,14 @@ public class Event {
 
     public void setAdminEventId(int adminEventId) {
         this.adminEventId = adminEventId;
+    }
+
+    public String getCurrentQrCode() {
+        return currentQrCode;
+    }
+
+    public void setCurrentQrCode(String currentQrCode) {
+        this.currentQrCode = currentQrCode;
     }
 
     public String getTitleEvent() {
