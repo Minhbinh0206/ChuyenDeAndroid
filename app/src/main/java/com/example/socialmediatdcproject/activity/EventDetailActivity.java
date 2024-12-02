@@ -1,37 +1,51 @@
 package com.example.socialmediatdcproject.activity;
 
+import android.animation.ValueAnimator;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.EventAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
-import com.example.socialmediatdcproject.fragment.Admin.RollCallAdminFragment;
-import com.example.socialmediatdcproject.fragment.Student.RollCallAssistFragment;
-import com.example.socialmediatdcproject.fragment.Student.RollCallStudentFragment;
+import com.example.socialmediatdcproject.adapter.AssistAdapter;
+import com.example.socialmediatdcproject.fragment.Admin.HomeAdminFragment;
+import com.example.socialmediatdcproject.fragment.Student.HomeFragment;
+import com.example.socialmediatdcproject.fragment.Student.SurveyFragment;
 import com.example.socialmediatdcproject.model.Assist;
 import com.example.socialmediatdcproject.model.Event;
 import com.example.socialmediatdcproject.model.RollCall;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.journeyapps.barcodescanner.CaptureActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -42,83 +56,384 @@ import java.util.Locale;
 import java.util.UUID;
 
 public class EventDetailActivity extends AppCompatActivity {
-    private TextView content, title, textStatus, textHidden;
+    private TextView content, title, textStatus, position;
     private ImageView imageEvent;
-    private Button buttonJoin, buttonVolunteer;
-    private FrameLayout rollcall;
-    private Handler handler;
-    private Runnable runnable;
+    private static final int QR_REQUEST_CODE = 1;
+    private ImageButton iconBackEvent, iconAssistEvent, iconActionEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.detail_event_layout);
 
-        // Initialize UI components
-        initializeUIComponents();
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.survey_content, new SurveyFragment());
+        fragmentTransaction.commit();
+
+        iconBackEvent = findViewById(R.id.icon_back_event);
+        iconAssistEvent = findViewById(R.id.icon_assist_event);
+        iconActionEvent = findViewById(R.id.icon_action_event);
+        title = findViewById(R.id.detail_title_event);
+        content = findViewById(R.id.detail_content_event);
+        imageEvent = findViewById(R.id.detail_image_event);
+        NestedScrollView nestedScrollView = findViewById(R.id.nestedScrollView);
+        LinearLayout layout = findViewById(R.id.navComment);
+        position = findViewById(R.id.position);
+        position.setVisibility(View.INVISIBLE);
+
+        // Lắng nghe sự kiện cuộn
+        nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                // Nếu cuộn xuống (scrollY > oldScrollY), đổi màu nền thành màu xanh
+                if (scrollY > oldScrollY) {
+                    position.setVisibility(View.VISIBLE);
+                    animateBackgroundColor(layout, Color.TRANSPARENT, getResources().getColor(R.color.defaultBlue));
+                }
+                // Nếu cuộn lên (scrollY < oldScrollY), đặt lại màu nền
+                else if (scrollY < oldScrollY) {
+                    position.setVisibility(View.INVISIBLE);
+                    animateBackgroundColor(layout, getResources().getColor(R.color.defaultBlue), Color.TRANSPARENT);
+                }
+            }
+        });
+
+        // Set back button listener
+        iconBackEvent.setOnClickListener(v -> finish());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
         // Get event ID and type of joining from the intent
         Intent intent = getIntent();
         int eventId = intent.getIntExtra("eventId", -1);
         int typeJoin = intent.getIntExtra("typeJoin", -1);
-
-        // Set back button listener
-        findViewById(R.id.icon_back_event).setOnClickListener(v -> finish());
-
-        // Set button colors
-        changeColorButtonActive(buttonVolunteer);
-        changeColorButtonActive(buttonJoin);
-
-        // Fetch event details
-        fetchEventDetails(eventId, typeJoin);
-
-        // Set up handler to periodically check event status
-        handler = new Handler();
-        runnable = new Runnable() {
-            @Override
-            public void run() {
-                fetchEventDetails(eventId, typeJoin);
-                handler.postDelayed(this, 5000); // 5 seconds
-            }
-        };
-        handler.post(runnable); // Start the periodic check
+        int adminId = intent.getIntExtra("adminId", -1);
 
         EventAPI eventAPI = new EventAPI();
-        StudentAPI studentAPI = new StudentAPI();
-        eventAPI.getEventById(eventId, new EventAPI.EventCallback() {
+        eventAPI.getEventById(eventId, adminId, new EventAPI.EventCallback() {
             @Override
             public void onEventReceived(Event event) {
-                handleJoinType(typeJoin, event);
+                Glide.with(EventDetailActivity.this)
+                        .load(event.getImageEvent())
+                        .centerCrop()
+                        .into(imageEvent);
 
+                title.setText(event.getTitleEvent());
+
+                content.setText(event.getContentEvent());
+
+                if (typeJoin == 3) {
+                    // Admin
+                    iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_assist));
+
+                    iconAssistEvent.setOnClickListener(v -> {
+                        adminShowPopupAssist(EventDetailActivity.this, event);
+                    });
+
+                    position.setText("Admin sự kiện");
+                }
+                else if (typeJoin == 2) {
+                    eventAPI.listenForEventStatusChange(event, new EventAPI.EventStatusCallback() {
+                        @Override
+                        public void onEventStatusChanged(Event event) {
+                            if (event.getStatus() == 2) {
+                                // Hiển thị popup yêu cầu người dùng rời đi
+                                showExitPopup();
+                            }
+                        }
+                    });
+
+                    // Người hỗ trợ
+                    iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_qrcode));
+
+                    iconAssistEvent.setOnClickListener(v -> {
+                        assistShowPopupQR(EventDetailActivity.this, event);
+                    });
+
+                    position.setText("Người hỗ trợ");
+
+                }
+                else {
+                    eventAPI.listenForEventStatusChange(event, new EventAPI.EventStatusCallback() {
+                        @Override
+                        public void onEventStatusChanged(Event event) {
+                            if (event.getStatus() == 2) {
+                                // Hiển thị popup yêu cầu người dùng rời đi
+                                showExitPopup();
+                            }
+                        }
+                    });
+
+                    // Sinh viên
+                    iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_qrcode));
+
+                    iconAssistEvent.setOnClickListener(v -> {
+                        // Bắt đầu quét QR nếu chưa điểm danh
+                        Intent scanIntent = new Intent(EventDetailActivity.this, CaptureActivity.class); // Dùng CaptureActivity mặc định
+                        startActivityForResult(scanIntent, QR_REQUEST_CODE);
+                    });
+
+                    position.setText("Sinh viên");
+                }
+            }
+
+            @Override
+            public void onEventsReceived(List<Event> events) {
+
+            }
+        });
+    }
+
+    private void adminShowPopupAssist(Context context, Event event) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        View view = LayoutInflater.from(context).inflate(R.layout.roll_call_admin, null);
+        builder.setView(view);
+
+        Button listAssist = view.findViewById(R.id.list_assistant);
+        Button listApply = view.findViewById(R.id.list_apply_for_assist);
+        RecyclerView recyclerView = view.findViewById(R.id.reycleview_admin);
+        Button cancel = view.findViewById(R.id.cancel_manager);
+
+        changeColorButtonActive(listAssist);
+        changeColorButtonNormal(listApply);
+        changeColorButtonActive(cancel);
+
+        builder.setCancelable(true);
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.comment_custom));
+
+        cancel.setOnClickListener(v -> dialog.dismiss());
+
+        loadListAssist(event, recyclerView);
+
+        listAssist.setOnClickListener(v -> {
+            loadListAssist(event, recyclerView);
+
+            changeColorButtonActive(listAssist);
+            changeColorButtonNormal(listApply);
+        });
+
+        listApply.setOnClickListener(v -> {
+            loadListApply(event, recyclerView);
+
+            changeColorButtonActive(listApply);
+            changeColorButtonNormal(listAssist);
+        });
+
+        dialog.show();
+    }
+
+    private void assistShowPopupQR(Context context, Event event) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        View view = LayoutInflater.from(context).inflate(R.layout.roll_call_assist, null);
+        builder.setView(view);
+
+        ImageView rollCollCode = view.findViewById(R.id.qr_code);
+        ImageButton cancel = view.findViewById(R.id.icon_cancel);
+
+        EventAPI eventAPI = new EventAPI();
+        eventAPI.getEventById(event.getEventId(), event.getAdminEventId(), new EventAPI.EventCallback() {
+            @Override
+            public void onEventReceived(Event event) {
+                // Lấy chuỗi QR code từ event
+                String qrCodeString = event.getCurrentQrCode();
+
+                // Kiểm tra nếu chuỗi không rỗng hoặc null
+                if (!TextUtils.isEmpty(qrCodeString)) {
+                    // Tạo mã QR và hiển thị trên ImageView
+                    Bitmap qrCodeBitmap = generateQRCode(qrCodeString);
+                    rollCollCode.setImageBitmap(qrCodeBitmap);
+                }
+            }
+
+            @Override
+            public void onEventsReceived(List<Event> events) {
+
+            }
+        });
+
+        eventAPI.listenForCodeChange(event.getEventId(), event.getAdminEventId(), new EventAPI.EventCallback() {
+            @Override
+            public void onEventReceived(Event event) {
+                // Lấy chuỗi QR code từ event
+                String qrCodeString = event.getCurrentQrCode();
+
+                // Kiểm tra nếu chuỗi không rỗng hoặc null
+                if (!TextUtils.isEmpty(qrCodeString)) {
+                    // Tạo mã QR và hiển thị trên ImageView
+                    Bitmap qrCodeBitmap = generateQRCode(qrCodeString);
+                    rollCollCode.setImageBitmap(qrCodeBitmap);
+                }
+            }
+
+            @Override
+            public void onEventsReceived(List<Event> events) {}
+        });
+
+        builder.setCancelable(true);
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.comment_custom));
+
+        cancel.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    // Hàm tạo mã QR từ chuỗi
+    private Bitmap generateQRCode(String data) {
+        MultiFormatWriter writer = new MultiFormatWriter();
+        // Tạo mã QR dưới dạng ma trận bit
+        com.google.zxing.common.BitMatrix bitMatrix = null;
+        try {
+            bitMatrix = writer.encode(data, BarcodeFormat.QR_CODE, 512, 512);
+        } catch (WriterException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Chuyển ma trận bit thành Bitmap
+        int width = bitMatrix.getWidth();
+        int height = bitMatrix.getHeight();
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                bitmap.setPixel(x, y, bitMatrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
+            }
+        }
+
+        return bitmap;
+    }
+
+    private void animateBackgroundColor(View view, int fromColor, int toColor) {
+        ValueAnimator colorAnimation = ValueAnimator.ofArgb(fromColor, toColor);
+        colorAnimation.setDuration(0); // Thời gian chuyển đổi màu (300ms)
+        colorAnimation.addUpdateListener(animator -> {
+            view.setBackgroundColor((int) animator.getAnimatedValue());
+        });
+        colorAnimation.start();
+    }
+
+    public void changeColorButtonActive(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(EventDetailActivity.this, R.color.defaultBlue));
+        btn.setTextColor(ContextCompat.getColorStateList(EventDetailActivity.this, R.color.white));
+    }
+
+    public void changeColorButtonNormal(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(EventDetailActivity.this, R.color.buttonDefault));
+        btn.setTextColor(ContextCompat.getColorStateList(EventDetailActivity.this, R.color.black));
+    }
+
+    private void loadListAssist(Event event, RecyclerView recyclerViewA){
+        EventAPI eventAPI = new EventAPI();
+        eventAPI.getEventById(event.getEventId(), event.getAdminEventId(), new EventAPI.EventCallback() {
+            @Override
+            public void onEventReceived(Event event) {
+                List<Assist> assists = new ArrayList<>();
+                if (event.getUserAssist() != null) {
+                    for (Assist a : event.getUserAssist()) {
+                        if (a.isAssist()) {
+                            assists.add(a);
+                        }
+                    }
+
+                    AssistAdapter assistAdapter = new AssistAdapter(assists, EventDetailActivity.this);
+                    recyclerViewA.setAdapter(assistAdapter);
+                    recyclerViewA.setLayoutManager(new LinearLayoutManager(EventDetailActivity.this, LinearLayoutManager.VERTICAL, false));
+                }
+            }
+
+            @Override
+            public void onEventsReceived(List<Event> events) {
+
+            }
+        });
+    }
+
+    private void loadListApply(Event event, RecyclerView recyclerViewA){
+        List<Assist> assists = new ArrayList<>();
+
+        EventAPI eventAPI = new EventAPI();
+        eventAPI.listenForNewUserAssist(event, new EventAPI.OnNewUserAddedListener() {
+            @Override
+            public void onNewUserAdded(Assist assist) {
+                if (!assist.isAssist()) {
+                    assists.add(assist);
+                }
+
+                AssistAdapter assistAdapter = new AssistAdapter(assists, EventDetailActivity.this);
+                recyclerViewA.setAdapter(assistAdapter);
+                recyclerViewA.setLayoutManager(new LinearLayoutManager(EventDetailActivity.this, LinearLayoutManager.VERTICAL, false));
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Kiểm tra mã yêu cầu để xác định kết quả quét QR
+        if (requestCode == QR_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                // Lấy dữ liệu quét được từ Intent trả về
+                String scannedData = data.getStringExtra("SCAN_RESULT");
+
+                // Xử lý dữ liệu quét được (ví dụ: lưu vào cơ sở dữ liệu hoặc thực hiện kiểm tra)
+                if (scannedData != null && !scannedData.isEmpty()) {
+                    // Ví dụ, gọi API để xác nhận QR hoặc xử lý thêm
+                    handleScannedData(scannedData);
+                }
+            } else {
+                Toast.makeText(this, "Quét QR thất bại", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void handleScannedData(String scannedData) {
+        Intent intent = getIntent();
+        int eventId = intent.getIntExtra("eventId", -1);
+        int adminId = intent.getIntExtra("adminId", -1);
+
+        EventAPI eventAPI = new EventAPI();
+        eventAPI.getEventById(eventId, adminId, new EventAPI.EventCallback() {
+            @Override
+            public void onEventReceived(Event event) {
+                StudentAPI studentAPI = new StudentAPI();
                 studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
                     @Override
                     public void onStudentReceived(Student student) {
-                        eventAPI.listenForEventStatusChange(eventId, new EventAPI.EventStatusCallback() {
-                            @Override
-                            public void onEventStatusChanged(Event event) {
-                                if (event.getStatus() == 1) {
-                                    eventAPI.listenForUserAssistStatusChange(eventId, student.getUserId(), new EventAPI.UserAssistStatusCallback() {
-                                        @Override
-                                        public void onUserAssistStatusChanged(Assist assist) {
-                                            if (assist.isAssist()) {
-                                                setupVolunteerView(event);
-                                            }
-                                        }
-                                    });
+                        List<RollCall> rollCalls = event.getUserJoin();
+                        if (rollCalls == null) {
+                            rollCalls = new ArrayList<>();
+                        }
 
-                                    eventAPI.listenForNewRollCall(eventId, new EventAPI.NewRollCallCallback() {
-                                        @Override
-                                        public void onNewRollCallAdded(RollCall rollCall) {
-                                            if (rollCall.getStudentNumber().equals(student.getStudentNumber())) {
-                                                setupJoinedView(event);
-                                            }
-                                        }
-                                    });
+                        if (event.getCurrentQrCode().equals(scannedData)) {
+                            for (RollCall r : rollCalls) {
+                                if (r.getStudentNumber().equals(student.getStudentNumber())) {
+                                    Toast.makeText(EventDetailActivity.this, "Bạn đã điểm danh rồi.", Toast.LENGTH_SHORT).show();
+                                    return;
                                 }
                             }
-                        });
 
+                            RollCall rollCall = new RollCall();
+                            rollCall.setCodeRollCall(scannedData);
+                            rollCall.setStudentNumber(student.getStudentNumber());
+
+                            rollCalls.add(rollCall);
+
+                            event.setCurrentQrCode(UUID.randomUUID().toString().substring(0, 8));
+                            event.setUserJoin(rollCalls);
+
+                            eventAPI.updateEvent(event);
+
+                            Toast.makeText(EventDetailActivity.this, "Điểm danh thành công", Toast.LENGTH_SHORT).show();
+                        }
+                        else {
+                            Toast.makeText(EventDetailActivity.this, "Mã QR không hợp lệ hoặc đã được sử dụng", Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                     @Override
@@ -133,236 +448,31 @@ public class EventDetailActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        handler.removeCallbacks(runnable); // Stop the periodic check when the activity is destroyed
-    }
+    private void showExitPopup() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Thông báo");
+        builder.setMessage("Sự kiện đã kết thúc. Bạn có muốn rời đi không?");
 
-    private void fetchEventDetails(int eventId, int typeJoin) {
-        EventAPI eventAPI = new EventAPI();
-        eventAPI.getEventById(eventId, new EventAPI.EventCallback() {
+        builder.setPositiveButton("Có", new DialogInterface.OnClickListener() {
             @Override
-            public void onEventReceived(Event event) {
-                if (event != null) {
-                    updateUIWithEventData(event);
-                }
-            }
-
-            @Override
-            public void onEventsReceived(List<Event> events) {
-                // Handle if necessary
+            public void onClick(DialogInterface dialog, int which) {
+                // Thực hiện hành động khi người dùng chọn "Có" (rời đi)
+                finish(); // Đóng Activity hiện tại (hoặc thực hiện hành động rời đi khác)
             }
         });
-    }
 
-    private void initializeUIComponents() {
-        textStatus = findViewById(R.id.text_status);
-        imageEvent = findViewById(R.id.detail_image_event);
-        buttonVolunteer = findViewById(R.id.button_volunteer);
-        buttonJoin = findViewById(R.id.button_join);
-        title = findViewById(R.id.detail_title_event);
-        textHidden = findViewById(R.id.text_hidden);
-        content = findViewById(R.id.detail_content_event);
-        rollcall = findViewById(R.id.roll_call_content);
-    }
-
-    private void updateUIWithEventData(Event event) {
-        Glide.with(this)
-                .load(event.getImageEvent())
-                .centerCrop()
-                .into(imageEvent);
-        title.setText(event.getTitleEvent());
-        content.setText(event.getContentEvent());
-
-        EventAPI eventAPI = new EventAPI();
-
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault());
-        String currentTimeString = sdf.format(new Date());
-
-        try {
-            Date currentTime = sdf.parse(currentTimeString);
-            Date beginAt = sdf.parse(event.getBeginAt());
-            Date finishAt = sdf.parse(event.getFinishAt());
-
-            if (currentTime.before(beginAt)) {
-                setEventStatus("Sắp diễn ra", 0, R.color.defaultBlue, event);
-            } else if (currentTime.before(finishAt)) {
-                setEventStatus("Đang diễn ra", 1, R.color.warning, event);
-            } else {
-                setEventStatus("Đã kết thúc", 2, R.color.danger, event);
-                showEventEndedPopup(); // Hiện popup khi sự kiện đã kết thúc
-            }
-            eventAPI.updateEvent(event);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            textStatus.setText("Lỗi định dạng ngày");
-        }
-    }
-
-    private void setEventStatus(String statusText, int status, int colorResId, Event event) {
-        textStatus.setText(statusText);
-        textStatus.setBackgroundColor(ContextCompat.getColor(this, colorResId));
-
-        EventAPI eventAPI = new EventAPI();
-        eventAPI.getEventById(event.getEventId(), new EventAPI.EventCallback() {
+        builder.setNegativeButton("Không", new DialogInterface.OnClickListener() {
             @Override
-            public void onEventReceived(Event event) {
-                event.setStatus(status);
-                eventAPI.updateEvent(event);
-            }
-
-            @Override
-            public void onEventsReceived(List<Event> events) {
-
+            public void onClick(DialogInterface dialog, int which) {
+                // Đóng hộp thoại khi người dùng chọn "Không"
+                dialog.dismiss();
             }
         });
-    }
 
-    private void handleJoinType(int typeJoin, Event event) {
-        switch (typeJoin) {
-            case 0:
-                setupJoinedView(event);
-                break;
-            case 1:
-                setupVolunteerView(event);
-                break;
-            case 2:
-                setupPendingApprovalView();
-                break;
-            case 3:
-                setupAdminView(event);
-                break;
-            default:
-                setupJoinButtons(event);
-                break;
-        }
-    }
-
-    private void setupJoinedView(Event event) {
-        textHidden.setText("Đã tham gia");
-        hideJoinButtons();
-        rollcall.setVisibility(View.VISIBLE);
-        if (event.getStatus() == 1) {
-            loadFragment(new RollCallStudentFragment());
-        }
-    }
-
-    private void setupVolunteerView(Event event) {
-        textHidden.setText("Người hỗ trợ");
-        hideJoinButtons();
-        rollcall.setVisibility(View.VISIBLE);
-        if (event.getStatus() == 1) {
-            loadFragment(new RollCallAssistFragment());
-        }
-    }
-
-    private void setupPendingApprovalView() {
-        textHidden.setText("Đang chờ duyệt");
-        hideJoinButtons();
-        rollcall.setVisibility(View.GONE);
-    }
-
-    private void setupAdminView(Event event) {
-        textHidden.setText("Admin sự kiện");
-        hideJoinButtons();
-        rollcall.setVisibility(View.VISIBLE);
-        if (event.getStatus() == 1) {
-            loadFragment(new RollCallAdminFragment());
-        }
-    }
-
-    private void setupJoinButtons(Event event) {
-        buttonJoin.setOnClickListener(v -> handleJoin(event));
-        buttonVolunteer.setOnClickListener(v -> handleVolunteer(event));
-    }
-
-    private void hideJoinButtons() {
-        buttonVolunteer.setVisibility(View.GONE);
-        buttonJoin.setVisibility(View.GONE);
-    }
-
-    private void loadFragment(Fragment fragment) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.roll_call_content, fragment);
-        fragmentTransaction.commit();
-    }
-
-    private void handleJoin(Event event) {
-        StudentAPI studentAPI = new StudentAPI();
-        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-            @Override
-            public void onStudentReceived(Student student) {
-                RollCall rollCall = new RollCall();
-                rollCall.setStudentNumber(student.getStudentNumber());
-                rollCall.setCodeRollCall(generateRandomCode());
-                rollCall.setIsVerify(RollCall.JOIN);
-
-                List<RollCall> existingRollCalls = event.getUserJoin() != null ? event.getUserJoin() : new ArrayList<>();
-                existingRollCalls.add(rollCall);
-                event.setUserJoin(existingRollCalls);
-                new EventAPI().updateEvent(event);
-
-                textHidden.setText("Đã tham gia");
-                hideJoinButtons();
-                Toast.makeText(EventDetailActivity.this, "Đăng kí tham gia thành công!", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onStudentsReceived(List<Student> students) {
-                // Handle if needed
-            }
-        });
-    }
-
-    private void handleVolunteer(Event event) {
-        StudentAPI studentAPI = new StudentAPI();
-        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
-            @Override
-            public void onStudentReceived(Student student) {
-                Assist assist = new Assist();
-                assist.setUserId(student.getUserId());
-                assist.setAssist(false);
-
-                List<Assist> existingAssists = event.getUserAssist() != null ? event.getUserAssist() : new ArrayList<>();
-                existingAssists.add(assist);
-                event.setUserAssist(existingAssists);
-                new EventAPI().updateEvent(event);
-
-                textHidden.setText("Đang chờ duyệt");
-                hideJoinButtons();
-                Toast.makeText(EventDetailActivity.this, "Đăng kí làm tình nguyện viên thành công!", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onStudentsReceived(List<Student> students) {
-                // Handle if needed
-            }
-        });
-    }
-
-    private void changeColorButtonActive(Button btn) {
-        btn.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.defaultBlue));
-        btn.setTextColor(ContextCompat.getColorStateList(this, R.color.white));
-    }
-
-    private String generateRandomCode() {
-        return UUID.randomUUID().toString().substring(0, 8); // Get first 8 characters
-    }
-
-    private void showEventEndedPopup() {
-        new android.app.AlertDialog.Builder(this)
-                .setTitle("Thông báo")
-                .setMessage("Sự kiện này đã kết thúc, Nhấn OK để rời đi.")
-                .setPositiveButton("Ok", (dialog, which) -> {
-                    dialog.dismiss();
-                    finish(); // Đóng Activity khi nhấn Ok
-                })
-                .setCancelable(false) // Không cho phép người dùng hủy popup bằng cách nhấn ra ngoài
-                .show();
+        // Hiển thị popup
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }

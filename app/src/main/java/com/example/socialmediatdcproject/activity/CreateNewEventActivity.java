@@ -39,9 +39,11 @@ import androidx.core.content.ContextCompat;
 
 import com.example.socialmediatdcproject.API.EventAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
+import com.example.socialmediatdcproject.API.SurveyAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.model.Event;
 import com.example.socialmediatdcproject.model.Group;
+import com.example.socialmediatdcproject.model.Survey;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -98,7 +100,7 @@ public class CreateNewEventActivity extends AppCompatActivity {
         submit.setOnClickListener(v -> {
             String title = titleEvent.getText().toString();
             String content = contentEvent.getText().toString();
-            String des = "+ " + point.getText().toString() + " điểm rèn luyện";
+            String des = point.getText().toString() + " điểm rèn luyện";
 
             // Lấy thời gian hiện tại
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault());
@@ -137,9 +139,7 @@ public class CreateNewEventActivity extends AppCompatActivity {
 
             final boolean[] isEventAdded = {false};
 
-            uploadImageToFirebase(selectedImageUri ,e);
-
-            eventAPI.getAllEvents(new EventAPI.EventCallback() {
+            eventAPI.getAllEventByOneAdmin(adminId ,new EventAPI.EventCallback() {
                 @Override
                 public void onEventReceived(Event event) {
 
@@ -157,12 +157,20 @@ public class CreateNewEventActivity extends AppCompatActivity {
                         e.setBeginAt(startTime);
                         e.setFinishAt(finishTime);
                         e.setStatus(0);
+                        e.setCurrentQrCode(UUID.randomUUID().toString().substring(0, 8));
 
-                        eventAPI.addEvent(e);
+                        Survey survey = new Survey();
+                        survey.setSurveyId(0);
+                        survey.setEventId(e.getEventId());
+                        survey.setAdminId(e.getAdminEventId());
+
+                        SurveyAPI surveyAPI = new SurveyAPI();
+                        surveyAPI.addSurvey(survey, e.getAdminEventId(), e.getEventId());
 
                         isEventAdded[0] = true;
 
-                        Toast.makeText(getApplicationContext(), "Tạo sự kiện thành công", Toast.LENGTH_SHORT).show();
+                        uploadImageToFirebase(selectedImageUri ,e);
+
                     }
                 }
             });
@@ -321,7 +329,9 @@ public class CreateNewEventActivity extends AppCompatActivity {
                 event.setImageEvent(avatarUrl);
 
                 EventAPI eventAPI = new EventAPI();
-                eventAPI.updateEvent(event);
+                eventAPI.addEvent(event);
+
+                Toast.makeText(getApplicationContext(), "Tạo sự kiện thành công", Toast.LENGTH_SHORT).show();
 
                 // Chuyển sang GroupDetailActivity với groupId
                 Intent intent = new Intent(CreateNewEventActivity.this, HomeAdminActivity.class);
@@ -400,7 +410,9 @@ public class CreateNewEventActivity extends AppCompatActivity {
                 calendar.get(Calendar.DAY_OF_MONTH));
 
         // Chặn ngày trong quá khứ
-        datePickerDialog.getDatePicker().setMinDate(now.getTimeInMillis());
+        Calendar minDate = Calendar.getInstance();
+        minDate.add(Calendar.DAY_OF_MONTH, 3); // Thêm 3 ngày vào ngày hiện tại
+        datePickerDialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
         datePickerDialog.show();
     }
 }

@@ -1,0 +1,20 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sao chưa chọn (màu xám) -->
+    <item android:id="@android:id/background">
+        <shape>
+            <solid android:color="#d3d3d3" /> <!-- Màu xám cho sao chưa chọn -->
+        </shape>
+    </item>
+    <!-- Sao đã chọn (màu vàng) -->
+    <item android:id="@android:id/progress">
+        <shape>
+            <solid android:color="#ffcc00" /> <!-- Màu vàng cho sao đã chọn -->
+        </shape>
+    </item>
+    <!-- Sao thứ cấp (màu vàng cho sao hiện tại) -->
+    <item android:id="@android:id/secondaryProgress">
+        <shape>
+            <solid android:color="#ffcc00" /> <!-- Màu vàng cho sao hiện tại -->
+        </shape>
+    </item>
+</layer-list>

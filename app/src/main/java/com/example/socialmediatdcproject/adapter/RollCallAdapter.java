@@ -54,6 +54,7 @@ public class RollCallAdapter extends RecyclerView.Adapter<RollCallAdapter.GroupV
 
         Intent intent = ((Activity) context).getIntent();
         int eventId = intent.getIntExtra("eventId", -1);
+        int adminId = intent.getIntExtra("adminId", -1);
 
         StudentAPI studentAPI = new StudentAPI();
         studentAPI.getStudentByStudentNumber(rollCall.getStudentNumber(), new StudentAPI.StudentCallback() {
@@ -72,7 +73,7 @@ public class RollCallAdapter extends RecyclerView.Adapter<RollCallAdapter.GroupV
 
                     holder.sendCode.setOnClickListener(v -> {
                         EventAPI eventAPI = new EventAPI();
-                        eventAPI.updateUserJoinVerification(eventId, student.getStudentNumber(), true);
+                        eventAPI.updateUserJoinVerification(eventId, adminId ,student.getStudentNumber(), true);
                         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         Toast.makeText(context, "Đã gửi mã điểm danh cho " + student.getFullName(), Toast.LENGTH_SHORT).show();
                     });

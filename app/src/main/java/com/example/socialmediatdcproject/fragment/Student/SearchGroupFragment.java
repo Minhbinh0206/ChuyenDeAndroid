@@ -131,23 +131,24 @@ public class SearchGroupFragment extends Fragment {
         if (filteredGroupList == null) {
             filteredGroupList = new ArrayList<>(); // Khởi tạo danh sách nếu null
         }
+        else {
+            filteredGroupList.clear(); // Xóa dữ liệu cũ
 
-        filteredGroupList.clear(); // Xóa dữ liệu cũ
-
-        if (query.isEmpty()) {
-            // Nếu chuỗi tìm kiếm rỗng, hiển thị toàn bộ danh sách
-            filteredGroupList.addAll(groupList);
-        } else {
-            for (Group group : groupList) {
-                // Tìm kiếm không phân biệt hoa thường
-                if (group.getGroupName().toLowerCase().contains(query.toLowerCase())) {
-                    filteredGroupList.add(group);
+            if (query.isEmpty()) {
+                // Nếu chuỗi tìm kiếm rỗng, hiển thị toàn bộ danh sách
+                filteredGroupList.addAll(groupList);
+            } else {
+                for (Group group : groupList) {
+                    // Tìm kiếm không phân biệt hoa thường
+                    if (group.getGroupName().toLowerCase().contains(query.toLowerCase())) {
+                        filteredGroupList.add(group);
+                    }
                 }
             }
-        }
 
-        // Chỉ gọi notifyDataSetChanged() một lần sau khi hoàn thành lọc
-        adapter.notifyDataSetChanged();
+            // Chỉ gọi notifyDataSetChanged() một lần sau khi hoàn thành lọc
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void loadGroupDefault(){

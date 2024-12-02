@@ -133,7 +133,7 @@ public class ListEventAndGroupFragment extends Fragment {
                         for (Event e : events) {
                             if (e.getUserJoin() != null) {
                                 for (RollCall r : e.getUserJoin()) {
-                                    if (r.getStudentNumber().equals(student.getStudentNumber()) && r.getIsVerify() == 2) {
+                                    if (r.getStudentNumber().equals(student.getStudentNumber())) {
                                         eventList.add(e);
                                     }
                                 }
@@ -242,6 +242,7 @@ public class ListEventAndGroupFragment extends Fragment {
         ImageButton filterIcon = popupView.findViewById(R.id.filter_icon);
         Button closeButton = popupView.findViewById(R.id.popup_button_close);
         TextView textView = popupView.findViewById(R.id.null_event);
+        TextView countPoint = popupView.findViewById(R.id.count_point);
 
         // Tạo adapter cho spinner
         String[] filterOptions = {"Hỗ trợ", "Tham gia"};
@@ -252,6 +253,54 @@ public class ListEventAndGroupFragment extends Fragment {
         );
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spinnerAdapter);
+
+        final int[] count = {0};
+        EventAPI eventAPI = new EventAPI();
+        eventAPI.getAllEvents(new EventAPI.EventCallback() {
+            @Override
+            public void onEventReceived(Event event) {
+
+            }
+
+            @Override
+            public void onEventsReceived(List<Event> events) {
+                StudentAPI studentAPI = new StudentAPI();
+                studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                    @Override
+                    public void onStudentReceived(Student student) {
+                        for (Event e : events) {
+                            if (e.getUserAssist() != null) {
+                                for (Assist a : e.getUserAssist()) {
+                                    if (a.getUserId() == student.getUserId()) {
+                                        count[0] += Integer.parseInt(e.getDescription().substring(0,1));
+                                    }
+                                }
+                            }
+
+                            if (e.getUserJoin() != null) {
+                                for (RollCall r : e.getUserJoin()) {
+                                    if (r.getStudentNumber().equals(student.getStudentNumber())) {
+                                        count[0] += Integer.parseInt(e.getDescription().substring(0,1));
+                                    }
+                                }
+                            }
+                        }
+
+                        if (count[0] != 0) {
+                            countPoint.setText("Tổng điểm được cộng: " + count[0]);
+                        }
+                        else {
+                            countPoint.setText("Tổng điểm được cộng: " + 0);
+                        }
+                    }
+
+                    @Override
+                    public void onStudentsReceived(List<Student> students) {
+
+                    }
+                });
+            }
+        });
 
         filterIcon.setOnClickListener(v -> {
             spinner.performClick();
@@ -267,11 +316,11 @@ public class ListEventAndGroupFragment extends Fragment {
                 switch (selectedItem) {
                     case "Hỗ trợ":
                         // Gọi hàm xử lý cho mục "Người hỗ trợ"
-                        loadEventAssistantPopup(popupRecycle);
+                        loadEventAssistantPopup(popupRecycle, textView);
                         break;
                     case "Tham gia":
                         // Gọi hàm xử lý cho mục "Tham gia"
-                        loadEventJoinPopup(popupRecycle);
+                        loadEventJoinPopup(popupRecycle, textView);
                         break;
                     default:
                         loadEventUsedToJoin(textView, popupRecycle);
@@ -293,7 +342,7 @@ public class ListEventAndGroupFragment extends Fragment {
         closeButton.setOnClickListener(v -> alertDialog.dismiss());
     }
 
-    private void loadEventJoinPopup(RecyclerView recyclerViewPopup){
+    private void loadEventJoinPopup(RecyclerView recyclerViewPopup, TextView textView){
         EventAPI eventAPI = new EventAPI();
         StudentAPI studentAPI = new StudentAPI();
         ArrayList<Event> eventList = new ArrayList<>();
@@ -311,11 +360,19 @@ public class ListEventAndGroupFragment extends Fragment {
                         for (Event e : events) {
                             if (e.getUserJoin() != null) {
                                 for (RollCall r : e.getUserJoin()) {
-                                    if (r.getStudentNumber().equals(student.getStudentNumber()) && r.getIsVerify() == 2) {
+                                    if (r.getStudentNumber().equals(student.getStudentNumber())) {
                                         eventList.add(e);
                                     }
                                 }
                             }
+                        }
+
+                        if (eventList.isEmpty()) {
+                            textView.setVisibility(View.VISIBLE);
+                            textView.setText("Bạn chưa tham gia sự kiện nào.");
+                        }
+                        else {
+                            textView.setVisibility(View.GONE);
                         }
 
                         EventPersonalAdapter eventPersonalAdapter = new EventPersonalAdapter(eventList, requireContext());
@@ -336,7 +393,7 @@ public class ListEventAndGroupFragment extends Fragment {
         });
     }
 
-    private void loadEventAssistantPopup(RecyclerView recyclerViewPopup){
+    private void loadEventAssistantPopup(RecyclerView recyclerViewPopup, TextView textView){
         EventAPI eventAPI = new EventAPI();
         StudentAPI studentAPI = new StudentAPI();
         ArrayList<Event> eventList = new ArrayList<>();
@@ -359,6 +416,14 @@ public class ListEventAndGroupFragment extends Fragment {
                                     }
                                 }
                             }
+                        }
+
+                        if (eventList.isEmpty()) {
+                            textView.setVisibility(View.VISIBLE);
+                            textView.setText("Bạn chưa hỗ trợ sự kiện nào.");
+                        }
+                        else {
+                            textView.setVisibility(View.GONE);
                         }
 
                         EventPersonalAdapter eventPersonalAdapter = new EventPersonalAdapter(eventList, requireContext());

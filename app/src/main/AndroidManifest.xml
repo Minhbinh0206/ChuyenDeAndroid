@@ -48,9 +48,18 @@
             </intent-filter>
         </activity>
         <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="portrait"
+            tools:replace="android:screenOrientation">
+        </activity>
+        <activity
             android:name=".activity.SharedActivity"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".activity.QRCodeScannerActivity"
+            android:exported="false"
+            android:label="QR Scanner" />
         <activity
             android:name=".activity.LoginActivity"
             android:exported="false">
@@ -82,6 +91,9 @@
             android:exported="false">
         </activity>
         <activity android:name=".activity.HomeAdminActivity"
+            android:exported="false">
+        </activity>
+        <activity android:name=".activity.ListEventActivity"
             android:exported="false">
         </activity>
         <activity android:name=".activity.SettingActivity"
