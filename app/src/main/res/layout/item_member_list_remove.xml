@@ -67,14 +67,15 @@
 
             <Button
                 android:id="@+id/button_remove"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:text="X"
-                android:textSize="11sp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_gravity="center_vertical"
+                android:background="@drawable/button_round"
+                android:backgroundTint="@color/defaultBlue"
                 android:paddingHorizontal="10dp"
+                android:text="X"
                 android:textColor="@android:color/white"
-                android:background="@drawable/button_round" />
+                android:textSize="12sp" />
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

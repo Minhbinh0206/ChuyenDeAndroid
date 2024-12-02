@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Major;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -55,6 +56,25 @@ public class MajorAPI {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e("MajorAPI", "Error getting majors.", error.toException());
+            }
+        });
+    }
+    // Lấy chuyên ngành theo tên
+    public void getMajorByName(String majorName, final MajorAPI.MajorCallback callback) {
+        majorDatabase.orderByChild("majorName").equalTo(majorName).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    Major major = snapshot.getChildren().iterator().next().getValue(Major.class);
+                    callback.onMajorReceived(major);
+                } else {
+                    callback.onMajorReceived(null); // Handle case where department not found
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("DepartmentAPI", "Error fetching department", error.toException());
             }
         });
     }

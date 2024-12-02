@@ -9,8 +9,10 @@ import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.socialmediatdcproject.R;
@@ -36,6 +38,10 @@ public class AddOrCancelButtonFragment extends Fragment {
         // Khởi tạo các nút
         Button btnAdd = view.findViewById(R.id.button_add);
         Button btnCancel = view.findViewById(R.id.button_cancel);
+
+        changeColorButtonActive(btnAdd);
+        changeColorButtonNormal(btnCancel);
+
         btnCancel.setOnClickListener(v -> {
             sharedViewModel.setEditMode(false);
             // Quay lại RepairButtonFragment
@@ -43,7 +49,17 @@ public class AddOrCancelButtonFragment extends Fragment {
             fragmentManager.popBackStack();
         });
         btnAdd.setOnClickListener(v -> {
-            // Chưa xử lý
+
         });
+    }
+
+    public void changeColorButtonActive(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.white));
+    }
+
+    public void changeColorButtonNormal(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.white));
+        btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.defaultBlue));
     }
 }

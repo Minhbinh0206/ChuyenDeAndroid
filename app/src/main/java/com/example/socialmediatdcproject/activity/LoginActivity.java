@@ -69,6 +69,9 @@ public class LoginActivity extends AppCompatActivity {
             EditText editTextEmail = findViewById(R.id.email_login);
             EditText editTextPassword = findViewById(R.id.password_login);
 
+            // kiểm tra email không phân biệt chữ
+//            String email = editTextEmail.getText().toString().trim().toLowerCase(); q
+
             String email = editTextEmail.getText().toString();
             String password = editTextPassword.getText().toString();
 

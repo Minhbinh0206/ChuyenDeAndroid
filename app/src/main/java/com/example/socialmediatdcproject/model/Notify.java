@@ -3,7 +3,7 @@ package com.example.socialmediatdcproject.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class    Notify {
+public class Notify {
     private int notifyId;
     private int userSendId;
     private String notifyTitle;
