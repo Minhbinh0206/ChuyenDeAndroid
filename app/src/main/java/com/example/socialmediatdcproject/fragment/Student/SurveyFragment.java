@@ -358,6 +358,507 @@ public class SurveyFragment extends Fragment {
             }
         });
 
+        AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+        adminBusinessAPI.getAdminBusinessByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
+            @Override
+            public void onUserReceived(AdminBusiness adminBusiness) {
+                EventAPI eventAPI = new EventAPI();
+                eventAPI.getEventById(adminId, eventId, new EventAPI.EventCallback() {
+                    @Override
+                    public void onEventReceived(Event event) {
+                        SurveyAPI surveyAPI = new SurveyAPI();
+                        surveyAPI.getSurveyByAdminAndEvent(adminId, eventId, new SurveyAPI.SurveyCallback() {
+                            @Override
+                            public void onSuccess(Survey survey) {
+                                RatingAPI ratingAPI = new RatingAPI();
+                                ratingAPI.getAllRatingRealtime(adminId, eventId, survey.getSurveyId(), new RatingAPI.AllRatingsCallback() {
+                                    @Override
+                                    public void onSuccess(List<Rating> ratings) {
+                                        double average = 0;
+                                        int sum = 0;
+
+                                        if (ratings.size() != 0) {
+                                            for (Rating r : ratings) {
+                                                sum = sum + r.getRatingStar();
+                                            }
+
+                                            average = sum / ratings.size();
+                                        }
+                                        else {
+                                            average = 5;
+                                        }
+
+                                        ratingBar.setRating((int) average);
+                                        switch ((int) average){
+                                            case 1:
+                                                review.setText("Rất tệ");
+                                                break;
+                                            case 2:
+                                                review.setText("Không tốt");
+                                                break;
+                                            case 3:
+                                                review.setText("Bình thường");
+                                                break;
+                                            case 4:
+                                                review.setText("Khá ổn");
+                                                break;
+                                            case 5:
+                                                review.setText("Rất tuyệt");
+                                                break;
+                                        }
+                                        ratingBar.setEnabled(false);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Exception e) {
+
+                                    }
+                                });
+
+                                if (survey.getQuestionSurveys() != null) {
+                                    adjustSurvey.setVisibility(View.GONE);
+                                    if (survey.getQuestionSurveys() != null) {
+                                        for (QuestionSurvey q : survey.getQuestionSurveys()) {
+                                            // Inflate layout mới từ XML cho câu hỏi và câu trả lời
+                                            View questionView = LayoutInflater.from(getContext()).inflate(R.layout.item_question_survey, layoutSurvey, false);
+                                            layoutSurvey.addView(questionView);
+
+                                            TextView question = questionView.findViewById(R.id.items_question_survey);
+                                            EditText answer = questionView.findViewById(R.id.items_answer_survey);
+                                            TextView remove = questionView.findViewById(R.id.button_remove_question);
+
+                                            question.setText(q.getQuestionContent());
+                                            answer.setEnabled(false);
+                                            remove.setVisibility(View.GONE);
+                                        }
+                                    }
+                                }
+                                else {
+                                    adjustSurvey.setVisibility(View.VISIBLE);
+                                    adjustSurvey.setOnClickListener(v -> {
+                                        adjustSurvey.setVisibility(View.GONE);
+                                        submitSurvey.setVisibility(View.VISIBLE);
+                                        addQ.setVisibility(View.VISIBLE);
+
+                                        // Inflate layout mới từ XML cho câu hỏi và câu trả lời
+                                        final View[] questionView = {LayoutInflater.from(getContext()).inflate(R.layout.item_question_survey, layoutSurvey, false)};
+                                        layoutSurvey.addView(questionView[0]);
+
+                                        // Lặp qua tất cả các câu hỏi hiện tại và điều chỉnh nút "remove"
+                                        for (int i = 0; i < layoutSurvey.getChildCount(); i++) {
+                                            View childView = layoutSurvey.getChildAt(i);
+                                            TextView removeBtn = childView.findViewById(R.id.button_remove_question);
+                                            if (removeBtn != null) {
+                                                if (i == 0) {
+                                                    removeBtn.setVisibility(View.GONE); // Ẩn nút "remove" nếu là câu hỏi đầu tiên
+                                                } else {
+                                                    removeBtn.setVisibility(View.VISIBLE); // Hiển thị nút "remove" nếu không phải câu hỏi đầu tiên
+                                                }
+                                            }
+                                        }
+
+                                        addQ.setOnClickListener(b -> {
+                                            // Kiểm tra tất cả các câu hỏi đã nhập
+                                            boolean hasEmptyQuestion = false;
+
+                                            // Lặp qua tất cả các câu hỏi hiện tại để kiểm tra nhập dữ liệu
+                                            for (int i = 0; i < layoutSurvey.getChildCount(); i++) {
+                                                View childView = layoutSurvey.getChildAt(i);
+                                                EditText editText = childView.findViewById(R.id.items_answer_survey);
+                                                if (editText != null) {
+                                                    String questionText = editText.getText().toString().trim();
+                                                    if (questionText.isEmpty()) {
+                                                        hasEmptyQuestion = true; // Có câu hỏi chưa nhập
+                                                        editText.setError("Câu hỏi không được để trống!");
+                                                    }
+                                                }
+                                            }
+
+                                            if (hasEmptyQuestion) {
+                                                // Nếu có câu hỏi chưa nhập, không thêm câu hỏi mới
+                                                return;
+                                            }
+
+                                            // Thêm câu hỏi mới
+                                            questionView[0] = LayoutInflater.from(getContext()).inflate(R.layout.item_question_survey, layoutSurvey, false);
+                                            layoutSurvey.addView(questionView[0]);
+
+                                            // Lặp qua tất cả các câu hỏi hiện tại và điều chỉnh nút "remove"
+                                            for (int i = 0; i < layoutSurvey.getChildCount(); i++) {
+                                                View childView = layoutSurvey.getChildAt(i);
+                                                TextView removeBtn = childView.findViewById(R.id.button_remove_question);
+                                                if (removeBtn != null) {
+                                                    if (i == 0) {
+                                                        removeBtn.setVisibility(View.GONE); // Ẩn nút "remove" nếu là câu hỏi đầu tiên
+                                                    } else {
+                                                        removeBtn.setVisibility(View.VISIBLE); // Hiển thị nút "remove" nếu không phải câu hỏi đầu tiên
+                                                    }
+                                                }
+                                            }
+
+                                            TextView remove = questionView[0].findViewById(R.id.button_remove_question);
+                                            remove.setOnClickListener(v1 -> {
+                                                if (layoutSurvey.getChildCount() == 1) {
+                                                    Toast.makeText(getContext(), "Bạn phải tạo ít nhất 1 câu hỏi!", Toast.LENGTH_SHORT).show();
+                                                }
+                                                // Tìm View cha chứa nút "Xóa" được nhấn
+                                                View parentView = (View) v1.getParent();
+                                                // Xóa View cha khỏi layoutSurvey
+                                                layoutSurvey.removeView(parentView);
+                                            });
+                                        });
+
+                                        submitSurvey.setOnClickListener(n -> {
+                                            SurveyAPI surveyAPI = new SurveyAPI();
+                                            List<QuestionSurvey> questionList = new ArrayList<>();
+                                            boolean hasEmptyQuestion = false;  // Biến kiểm tra câu hỏi rỗng
+
+                                            for (int i = 0; i < layoutSurvey.getChildCount(); i++) {
+                                                View childView = layoutSurvey.getChildAt(i);
+                                                TextView remove = childView.findViewById(R.id.button_remove_question);
+                                                EditText editText = childView.findViewById(R.id.items_answer_survey);
+
+                                                // Kiểm tra xem EditText có rỗng không
+                                                if (editText != null && editText.getText().toString().trim().isEmpty()) {
+                                                    hasEmptyQuestion = true;  // Nếu có câu hỏi rỗng, đánh dấu biến này là true
+                                                } else {
+                                                    remove.setVisibility(View.GONE);
+                                                    String questionText = editText.getText().toString().trim();
+                                                    if (!questionText.isEmpty()) {
+                                                        QuestionSurvey question = new QuestionSurvey();
+                                                        question.setQuestionId(questionList.size());
+                                                        question.setAnswerSurveys(new ArrayList<>());
+                                                        question.setQuestionContent(questionText);
+
+                                                        questionList.add(question);
+                                                    }
+                                                }
+                                            }
+
+                                            // Nếu có câu hỏi rỗng, không cho phép submit
+                                            if (hasEmptyQuestion) {
+                                                Toast.makeText(getContext(), "Câu hỏi không được để trống!", Toast.LENGTH_SHORT).show();
+                                                return; // Dừng việc submit khảo sát
+                                            }
+
+                                            submitSurvey.setVisibility(View.GONE);
+                                            addQ.setVisibility(View.GONE); // Ẩn nút thêm câu hỏi
+
+                                            // Tắt khả năng chỉnh sửa cho tất cả các EditText
+                                            for (int i = 0; i < layoutSurvey.getChildCount(); i++) {
+                                                View childView = layoutSurvey.getChildAt(i);
+                                                EditText editText = childView.findViewById(R.id.items_answer_survey);
+                                                if (editText != null) {
+                                                    editText.setEnabled(false); // Tắt khả năng chỉnh sửa
+                                                }
+                                            }
+
+                                            // Tạo Dialog
+                                            Dialog loadingDialog = new Dialog(getContext());
+                                            loadingDialog.setContentView(R.layout.dialog_loading);
+                                            loadingDialog.setCancelable(false); // Không cho phép người dùng tắt dialog bằng cách bấm ngoài
+                                            TextView load = loadingDialog.findViewById(R.id.textLoading);
+                                            load.setText("Đang khởi tạo bài khảo sát...");
+
+                                            // Hiển thị Dialog
+                                            loadingDialog.show();
+
+                                            surveyAPI.getSurveyByAdminAndEvent(adminId, eventId, new SurveyAPI.SurveyCallback() {
+                                                @Override
+                                                public void onSuccess(Survey surveyF) {
+                                                    if (surveyF != null) {
+                                                        surveyF.setQuestionSurveys(questionList); // Gán danh sách câu hỏi
+
+                                                        adjustSurvey.setVisibility(View.GONE);
+                                                        surveyAPI.updateSurvey(adminId, eventId, surveyF.getSurveyId(), surveyF);
+                                                        loadingDialog.dismiss();
+                                                        Toast.makeText(getContext(), "Thêm khảo sát thành công!", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onFailure(Exception e) {
+
+                                                }
+                                            });
+                                        });
+                                    });
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onEventsReceived(List<Event> events) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+            }
+
+            @Override
+            public void onError(String s) {
+
+            }
+        });
+
+        AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+        adminDefaultAPI.getAdminDefaultByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDefaultAPI.AdminDefaultCallBack() {
+            @Override
+            public void onUserReceived(AdminDefault adminDefault) {
+                EventAPI eventAPI = new EventAPI();
+                eventAPI.getEventById(adminId, eventId, new EventAPI.EventCallback() {
+                    @Override
+                    public void onEventReceived(Event event) {
+                        SurveyAPI surveyAPI = new SurveyAPI();
+                        surveyAPI.getSurveyByAdminAndEvent(adminId, eventId, new SurveyAPI.SurveyCallback() {
+                            @Override
+                            public void onSuccess(Survey survey) {
+                                RatingAPI ratingAPI = new RatingAPI();
+                                ratingAPI.getAllRatingRealtime(adminId, eventId, survey.getSurveyId(), new RatingAPI.AllRatingsCallback() {
+                                    @Override
+                                    public void onSuccess(List<Rating> ratings) {
+                                        double average = 0;
+                                        int sum = 0;
+
+                                        if (ratings.size() != 0) {
+                                            for (Rating r : ratings) {
+                                                sum = sum + r.getRatingStar();
+                                            }
+
+                                            average = sum / ratings.size();
+                                        }
+                                        else {
+                                            average = 5;
+                                        }
+
+                                        ratingBar.setRating((int) average);
+                                        switch ((int) average){
+                                            case 1:
+                                                review.setText("Rất tệ");
+                                                break;
+                                            case 2:
+                                                review.setText("Không tốt");
+                                                break;
+                                            case 3:
+                                                review.setText("Bình thường");
+                                                break;
+                                            case 4:
+                                                review.setText("Khá ổn");
+                                                break;
+                                            case 5:
+                                                review.setText("Rất tuyệt");
+                                                break;
+                                        }
+                                        ratingBar.setEnabled(false);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Exception e) {
+
+                                    }
+                                });
+
+                                if (survey.getQuestionSurveys() != null) {
+                                    adjustSurvey.setVisibility(View.GONE);
+                                    if (survey.getQuestionSurveys() != null) {
+                                        for (QuestionSurvey q : survey.getQuestionSurveys()) {
+                                            // Inflate layout mới từ XML cho câu hỏi và câu trả lời
+                                            View questionView = LayoutInflater.from(getContext()).inflate(R.layout.item_question_survey, layoutSurvey, false);
+                                            layoutSurvey.addView(questionView);
+
+                                            TextView question = questionView.findViewById(R.id.items_question_survey);
+                                            EditText answer = questionView.findViewById(R.id.items_answer_survey);
+                                            TextView remove = questionView.findViewById(R.id.button_remove_question);
+
+                                            question.setText(q.getQuestionContent());
+                                            answer.setEnabled(false);
+                                            remove.setVisibility(View.GONE);
+                                        }
+                                    }
+                                }
+                                else {
+                                    adjustSurvey.setVisibility(View.VISIBLE);
+                                    adjustSurvey.setOnClickListener(v -> {
+                                        adjustSurvey.setVisibility(View.GONE);
+                                        submitSurvey.setVisibility(View.VISIBLE);
+                                        addQ.setVisibility(View.VISIBLE);
+
+                                        // Inflate layout mới từ XML cho câu hỏi và câu trả lời
+                                        final View[] questionView = {LayoutInflater.from(getContext()).inflate(R.layout.item_question_survey, layoutSurvey, false)};
+                                        layoutSurvey.addView(questionView[0]);
+
+                                        // Lặp qua tất cả các câu hỏi hiện tại và điều chỉnh nút "remove"
+                                        for (int i = 0; i < layoutSurvey.getChildCount(); i++) {
+                                            View childView = layoutSurvey.getChildAt(i);
+                                            TextView removeBtn = childView.findViewById(R.id.button_remove_question);
+                                            if (removeBtn != null) {
+                                                if (i == 0) {
+                                                    removeBtn.setVisibility(View.GONE); // Ẩn nút "remove" nếu là câu hỏi đầu tiên
+                                                } else {
+                                                    removeBtn.setVisibility(View.VISIBLE); // Hiển thị nút "remove" nếu không phải câu hỏi đầu tiên
+                                                }
+                                            }
+                                        }
+
+                                        addQ.setOnClickListener(b -> {
+                                            // Kiểm tra tất cả các câu hỏi đã nhập
+                                            boolean hasEmptyQuestion = false;
+
+                                            // Lặp qua tất cả các câu hỏi hiện tại để kiểm tra nhập dữ liệu
+                                            for (int i = 0; i < layoutSurvey.getChildCount(); i++) {
+                                                View childView = layoutSurvey.getChildAt(i);
+                                                EditText editText = childView.findViewById(R.id.items_answer_survey);
+                                                if (editText != null) {
+                                                    String questionText = editText.getText().toString().trim();
+                                                    if (questionText.isEmpty()) {
+                                                        hasEmptyQuestion = true; // Có câu hỏi chưa nhập
+                                                        editText.setError("Câu hỏi không được để trống!");
+                                                    }
+                                                }
+                                            }
+
+                                            if (hasEmptyQuestion) {
+                                                // Nếu có câu hỏi chưa nhập, không thêm câu hỏi mới
+                                                return;
+                                            }
+
+                                            // Thêm câu hỏi mới
+                                            questionView[0] = LayoutInflater.from(getContext()).inflate(R.layout.item_question_survey, layoutSurvey, false);
+                                            layoutSurvey.addView(questionView[0]);
+
+                                            // Lặp qua tất cả các câu hỏi hiện tại và điều chỉnh nút "remove"
+                                            for (int i = 0; i < layoutSurvey.getChildCount(); i++) {
+                                                View childView = layoutSurvey.getChildAt(i);
+                                                TextView removeBtn = childView.findViewById(R.id.button_remove_question);
+                                                if (removeBtn != null) {
+                                                    if (i == 0) {
+                                                        removeBtn.setVisibility(View.GONE); // Ẩn nút "remove" nếu là câu hỏi đầu tiên
+                                                    } else {
+                                                        removeBtn.setVisibility(View.VISIBLE); // Hiển thị nút "remove" nếu không phải câu hỏi đầu tiên
+                                                    }
+                                                }
+                                            }
+
+                                            TextView remove = questionView[0].findViewById(R.id.button_remove_question);
+                                            remove.setOnClickListener(v1 -> {
+                                                if (layoutSurvey.getChildCount() == 1) {
+                                                    Toast.makeText(getContext(), "Bạn phải tạo ít nhất 1 câu hỏi!", Toast.LENGTH_SHORT).show();
+                                                }
+                                                // Tìm View cha chứa nút "Xóa" được nhấn
+                                                View parentView = (View) v1.getParent();
+                                                // Xóa View cha khỏi layoutSurvey
+                                                layoutSurvey.removeView(parentView);
+                                            });
+                                        });
+
+                                        submitSurvey.setOnClickListener(n -> {
+                                            SurveyAPI surveyAPI = new SurveyAPI();
+                                            List<QuestionSurvey> questionList = new ArrayList<>();
+                                            boolean hasEmptyQuestion = false;  // Biến kiểm tra câu hỏi rỗng
+
+                                            for (int i = 0; i < layoutSurvey.getChildCount(); i++) {
+                                                View childView = layoutSurvey.getChildAt(i);
+                                                TextView remove = childView.findViewById(R.id.button_remove_question);
+                                                EditText editText = childView.findViewById(R.id.items_answer_survey);
+
+                                                // Kiểm tra xem EditText có rỗng không
+                                                if (editText != null && editText.getText().toString().trim().isEmpty()) {
+                                                    hasEmptyQuestion = true;  // Nếu có câu hỏi rỗng, đánh dấu biến này là true
+                                                } else {
+                                                    remove.setVisibility(View.GONE);
+                                                    String questionText = editText.getText().toString().trim();
+                                                    if (!questionText.isEmpty()) {
+                                                        QuestionSurvey question = new QuestionSurvey();
+                                                        question.setQuestionId(questionList.size());
+                                                        question.setAnswerSurveys(new ArrayList<>());
+                                                        question.setQuestionContent(questionText);
+
+                                                        questionList.add(question);
+                                                    }
+                                                }
+                                            }
+
+                                            // Nếu có câu hỏi rỗng, không cho phép submit
+                                            if (hasEmptyQuestion) {
+                                                Toast.makeText(getContext(), "Câu hỏi không được để trống!", Toast.LENGTH_SHORT).show();
+                                                return; // Dừng việc submit khảo sát
+                                            }
+
+                                            submitSurvey.setVisibility(View.GONE);
+                                            addQ.setVisibility(View.GONE); // Ẩn nút thêm câu hỏi
+
+                                            // Tắt khả năng chỉnh sửa cho tất cả các EditText
+                                            for (int i = 0; i < layoutSurvey.getChildCount(); i++) {
+                                                View childView = layoutSurvey.getChildAt(i);
+                                                EditText editText = childView.findViewById(R.id.items_answer_survey);
+                                                if (editText != null) {
+                                                    editText.setEnabled(false); // Tắt khả năng chỉnh sửa
+                                                }
+                                            }
+
+                                            // Tạo Dialog
+                                            Dialog loadingDialog = new Dialog(getContext());
+                                            loadingDialog.setContentView(R.layout.dialog_loading);
+                                            loadingDialog.setCancelable(false); // Không cho phép người dùng tắt dialog bằng cách bấm ngoài
+                                            TextView load = loadingDialog.findViewById(R.id.textLoading);
+                                            load.setText("Đang khởi tạo bài khảo sát...");
+
+                                            // Hiển thị Dialog
+                                            loadingDialog.show();
+
+                                            surveyAPI.getSurveyByAdminAndEvent(adminId, eventId, new SurveyAPI.SurveyCallback() {
+                                                @Override
+                                                public void onSuccess(Survey surveyF) {
+                                                    if (surveyF != null) {
+                                                        surveyF.setQuestionSurveys(questionList); // Gán danh sách câu hỏi
+
+                                                        adjustSurvey.setVisibility(View.GONE);
+                                                        surveyAPI.updateSurvey(adminId, eventId, surveyF.getSurveyId(), surveyF);
+                                                        loadingDialog.dismiss();
+                                                        Toast.makeText(getContext(), "Thêm khảo sát thành công!", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onFailure(Exception e) {
+
+                                                }
+                                            });
+                                        });
+                                    });
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onEventsReceived(List<Event> events) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+            }
+        });
+
         StudentAPI studentAPI = new StudentAPI();
         studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
             @Override
