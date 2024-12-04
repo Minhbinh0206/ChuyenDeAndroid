@@ -62,9 +62,9 @@ public class AdminDepartmentMemberFragment extends Fragment {
     private SharedViewModel sharedViewModel;
     private EditText searchBar;
     private List<Lecturer> originalLecturers = new ArrayList<>();
-    //    private List<Lecturer> filterLecturers = new ArrayList<>();
+        private List<Lecturer> filterLecturers = new ArrayList<>();
     private List<Student> originalStudents = new ArrayList<>();
-    //    private List<Student> filterStudents = new ArrayList<>();
+        private List<Student> filterStudents = new ArrayList<>();
     private Spinner filterSpinner;
     private List<String> optionsMajor = new ArrayList<>();
 

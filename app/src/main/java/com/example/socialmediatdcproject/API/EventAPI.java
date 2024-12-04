@@ -116,14 +116,14 @@ public class EventAPI {
         eventDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<Event> eventList = new ArrayList<>();
-                for (DataSnapshot eventSnapshot : snapshot.getChildren()) {
-                    Event event = eventSnapshot.getValue(Event.class);
-                    if (event != null) {
-                        eventList.add(event);
-                    }
-                }
-                callback.onEventsReceived(eventList);
+//                List<Event> eventList = new ArrayList<>();
+//                for (DataSnapshot eventSnapshot : snapshot.getChildren()) {
+//                    Event event = eventSnapshot.getValue(Event.class);
+//                    if (event != null) {
+//                        eventList.add(event);
+//                    }
+//                }
+//                callback.onEventsReceived(eventList);
             }
 
             @Override

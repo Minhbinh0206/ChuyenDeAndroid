@@ -48,6 +48,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-recaptcha:16.0.0")
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.sun.mail:android-mail:1.6.0")
+    implementation("com.sun.mail:android-activation:1.6.0")
 
     implementation(libs.firebase.storage)
     implementation(libs.firebase.database)
