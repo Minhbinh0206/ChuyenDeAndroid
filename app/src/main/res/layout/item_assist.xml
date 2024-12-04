@@ -51,8 +51,10 @@
             android:id="@+id/submit_send_rollcall"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.4"
+            android:layout_weight="0.6"
+            android:visibility="invisible"
             android:text="Gửi"
+            android:textSize="14dp"
             android:textStyle="bold" />
     </LinearLayout>
 

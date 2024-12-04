@@ -1,5 +1,6 @@
 package com.example.socialmediatdcproject.adapter;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
@@ -44,6 +45,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -82,21 +84,74 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.GroupViewHol
     public void onBindViewHolder(@NonNull GroupViewHolder holder, int position) {
         Event event = eventList.get(position);
 
-        // Set up handler to periodically check event status
-        handler = new Handler();
-        runnable = new Runnable() {
+        // Tạo một Handler để thực hiện việc kiểm tra trạng thái mỗi giây
+        Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                fetchEventDetails(event.getEventId(), holder.status, new FetchEventCallback() {
+                EventAPI eventAPI = new EventAPI();
+                eventAPI.getEventById(event.getEventId(), event.getAdminEventId(), new EventAPI.EventCallback() {
                     @Override
-                    public void onEventEnded(boolean isEnded) {
+                    public void onEventReceived(Event event) {
+                        try {
+                            // Định dạng thời gian
+                            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+                            // Lấy thời gian hiện tại
+                            Date currentTime = sdf.parse(sdf.format(new Date()));
+
+                            // Chuyển đổi chuỗi thời gian thành đối tượng Date
+                            Date beginAt = sdf.parse(event.getBeginAt());
+                            Date finishAt = sdf.parse(event.getFinishAt());
+
+                            // So sánh thời gian hiện tại với beginAt và finishAt
+                            if (currentTime.before(beginAt)) {
+                                event.setStatus(0);
+
+                                eventAPI.updateEvent(event);
+                            } else if (currentTime.before(finishAt)) {
+                                event.setStatus(1);
+
+                                eventAPI.updateEvent(event);
+                            } else {
+                                event.setStatus(2);
+
+                                eventAPI.updateEvent(event);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onEventsReceived(List<Event> events) {
 
                     }
                 });
-                handler.postDelayed(this, 5000); // 5 seconds
+
+                // Tiếp tục kiểm tra mỗi 1 giây
+                handler.postDelayed(this, 5000);
             }
         };
-        handler.post(runnable); // Start the periodic check
+        // Bắt đầu kiểm tra ngay lập tức
+        handler.post(runnable);
+
+        EventAPI eventAPI = new EventAPI();
+        eventAPI.listenForEventStatusChange(event, new EventAPI.EventStatusCallback() {
+            @Override
+            public void onEventStatusChanged(Event event) {
+                switch (event.getStatus()){
+                    case 0:
+                        holder.status.setText("Sắp bắt đầu");
+                        break;
+                    case 1:
+                        holder.status.setText("Đang diễn ra");
+                        break;
+                    case 2:
+                        holder.status.setText("Đã kết thúc");
+                        break;
+                }
+            }
+        });
 
         Glide.with(context)
                 .load(event.getImageEvent())
@@ -106,19 +161,16 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.GroupViewHol
         String shortContent = getShortenedContent(event.getTitleEvent(), 30);
         holder.titleEvent.setText(shortContent + "...");
 
-        changeColorButtonActive(holder.detailEvent);
-
         holder.detailEvent.setOnClickListener(v -> {
             // Kiểm tra trạng thái sự kiện
-            fetchEventDetails(event.getEventId(), holder.status, isEventEnded -> {
+            fetchEventDetails(event, holder.status, isEventEnded -> {
                 if (isEventEnded) {
                     Toast.makeText(context, "Sự kiện đã kết thúc", Toast.LENGTH_SHORT).show();
                 } else {
                     // Mở Activity chi tiết
                     final int[] typeJoin = {-1};
                     Intent intent = new Intent(v.getContext(), EventDetailActivity.class);
-                    EventAPI eventAPI = new EventAPI();
-                    eventAPI.getEventById(event.getEventId(), new EventAPI.EventCallback() {
+                    eventAPI.getEventById(event.getEventId(), event.getAdminEventId(), new EventAPI.EventCallback() {
                         @Override
                         public void onEventReceived(Event event) {
                             String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -126,31 +178,31 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.GroupViewHol
                             studentAPI.getStudentByKey(userKey, new StudentAPI.StudentCallback() {
                                 @Override
                                 public void onStudentReceived(Student student) {
-                                    if (event.getUserJoin() != null) {
-                                        for (RollCall r : event.getUserJoin()) {
-                                            if (r.getStudentNumber().equals(student.getStudentNumber())){
-                                                typeJoin[0] = 0;
-                                                intent.putExtra("typeJoin", typeJoin[0]);
-                                            }
-                                        }
-                                    }
+                                    switch (event.getStatus()) { // Giả sử bạn có hàm `getStatus()`
+                                        case 0:
+                                            // Hiển thị popup custom
+                                            showCustomPopup(v.getContext(), event);
+                                            break;
+                                        case 1:
+                                            typeJoin[0] = 1;
+                                            if (event.getUserAssist() != null) {
+                                                for (Assist a : event.getUserAssist()) {
+                                                    if (a.getUserId() == student.getUserId()) {
+                                                        typeJoin[0] = 2;
 
-                                    if (event.getUserAssist() != null) {
-                                        for (Assist a : event.getUserAssist()) {
-                                            if (a.getUserId() == student.getUserId()) {
-                                                if (a.isAssist()) {
-                                                    typeJoin[0] = 1;
-                                                    intent.putExtra("typeJoin", typeJoin[0]);
-                                                } else {
-                                                    typeJoin[0] = 2;
-                                                    intent.putExtra("typeJoin", typeJoin[0]);
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }
+                                            intent.putExtra("typeJoin", typeJoin[0]);
+                                            intent.putExtra("adminId", event.getAdminEventId());
+                                            intent.putExtra("eventId", event.getEventId());
+                                            v.getContext().startActivity(intent);
 
-                                    intent.putExtra("eventId", event.getEventId());
-                                    v.getContext().startActivity(intent);
+                                            break;
+                                        default:
+                                            Toast.makeText(context, "Trạng thái không xác định", Toast.LENGTH_SHORT).show();
+                                            break;
+                                    }
                                 }
 
                                 @Override
@@ -166,6 +218,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.GroupViewHol
                                     if (event.getAdminEventId() == adminDepartment.getUserId()) {
                                         typeJoin[0] = 3;
                                         intent.putExtra("eventId", event.getEventId());
+                                        intent.putExtra("adminId", event.getAdminEventId());
                                         intent.putExtra("typeJoin", typeJoin[0]);
                                         v.getContext().startActivity(intent);
                                     }
@@ -192,6 +245,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.GroupViewHol
                                     if (event.getAdminEventId() == adminBusiness.getUserId()) {
                                         typeJoin[0] = 3;
                                         intent.putExtra("eventId", event.getEventId());
+                                        intent.putExtra("adminId", event.getAdminEventId());
                                         intent.putExtra("typeJoin", typeJoin[0]);
                                         v.getContext().startActivity(intent);
                                     }
@@ -219,6 +273,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.GroupViewHol
                                         if (event.getAdminEventId() == adminDefault.getUserId()) {
                                             typeJoin[0] = 3;
                                             intent.putExtra("eventId", event.getEventId());
+                                            intent.putExtra("adminId", event.getAdminEventId());
                                             intent.putExtra("typeJoin", typeJoin[0]);
                                             v.getContext().startActivity(intent);
                                         }
@@ -251,13 +306,114 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.GroupViewHol
         return eventList != null ? eventList.size() : 0 ;
     }
 
+    // Hàm hiển thị popup
+    private void showCustomPopup(Context context, Event event) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        View view = LayoutInflater.from(context).inflate(R.layout.custom_popup_layout, null);
+        builder.setView(view);
+
+        ImageView imageView = view.findViewById(R.id.avatar_user_popup);
+        TextView nameUser = view.findViewById(R.id.name_user_popup);
+        TextView sNumber = view.findViewById(R.id.snum_user_popup);
+        TextView status = view.findViewById(R.id.status_user);
+        TextView start = view.findViewById(R.id.start);
+
+        Button cancel = view.findViewById(R.id.button_cancel_popup);
+        Button registerAssist = view.findViewById(R.id.button_register_assist);
+
+        changeColorButtonActive(registerAssist);
+        changeColorButtonActive(cancel);
+
+        start.setText("Sự kiện sẽ bắt đầu vào lúc: " + event.getBeginAt());
+
+        builder.setCancelable(true);
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.comment_custom));
+
+        cancel.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
+
+        status.setText("Sinh viên");
+
+        StudentAPI studentAPI = new StudentAPI();
+        studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+            @Override
+            public void onStudentReceived(Student student) {
+                Glide.with(context)
+                        .load(student.getAvatar())
+                        .circleCrop()
+                        .into(imageView);
+
+                nameUser.setText(student.getFullName());
+                sNumber.setText(student.getStudentNumber());
+
+
+                if (event.getUserAssist() != null) {
+                    EventAPI eventAPI = new EventAPI();
+                    eventAPI.listenForUserAssistStatusChange(event, student.getUserId(), new EventAPI.UserAssistStatusCallback() {
+                        @Override
+                        public void onUserAssistStatusChanged(Assist assist) {
+                            if (assist.getUserId() == student.getUserId()) {
+                                if (assist.isAssist()) {
+                                    status.setText("Người hỗ trợ");
+                                } else {
+                                    status.setText("Đang chờ duyệt");
+                                }
+
+                            }
+
+                            registerAssist.setVisibility(View.INVISIBLE);
+                        }
+                    });
+                }
+                else {
+                    status.setText("Sinh viên");
+
+                    registerAssist.setOnClickListener(v -> {
+                        Assist assist = new Assist();
+                        assist.setAssist(false);
+                        assist.setUserId(student.getUserId());
+
+                        EventAPI eventAPI = new EventAPI();
+                        List<Assist> assists = new ArrayList<>();
+
+                        if (event.getUserAssist() != null) {
+                            assists = event.getUserAssist();
+                        }
+
+                        status.setText("Đang chờ duyệt");
+
+                        assists.add(assist);
+
+                        event.setUserAssist(assists);
+                        eventAPI.updateEvent(event);
+
+                        registerAssist.setVisibility(View.INVISIBLE);
+
+                        Toast.makeText(context, "Đăng kí hỗ trợ thành công", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                    });
+                }
+
+
+            }
+
+            @Override
+            public void onStudentsReceived(List<Student> students) {
+
+            }
+        });
+
+        dialog.show();
+    }
 
     // Lớp ViewHolder
     public static class GroupViewHolder extends RecyclerView.ViewHolder {
         TextView status;
         ImageView imageEvent;
         TextView titleEvent;
-        Button detailEvent;
+        TextView detailEvent;
 
         public GroupViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -268,9 +424,10 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.GroupViewHol
         }
     }
 
-    public void fetchEventDetails(int eventId, TextView textView, FetchEventCallback callback) {
+    public void fetchEventDetails(Event event, TextView textView, FetchEventCallback callback) {
+
         EventAPI eventAPI = new EventAPI();
-        eventAPI.getEventById(eventId, new EventAPI.EventCallback() {
+        eventAPI.getEventById(event.getEventId(), event.getAdminEventId(), new EventAPI.EventCallback() {
             @Override
             public void onEventReceived(Event event) {
                 // Lấy thời gian hiện tại
@@ -285,13 +442,16 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.GroupViewHol
 
                     // So sánh thời gian
                     if (currentTime.before(beginAt)) {
-                        textView.setText("Sắp diễn ra");
+                        event.setStatus(0);
+                        eventAPI.updateEvent(event);
                         callback.onEventEnded(false);
                     } else if (currentTime.before(finishAt)) {
-                        textView.setText("Đang diễn ra");
+                        event.setStatus(1);
+                        eventAPI.updateEvent(event);
                         callback.onEventEnded(false);
                     } else {
-                        textView.setText("Đã kết thúc");
+                        event.setStatus(2);
+                        eventAPI.updateEvent(event);
                         callback.onEventEnded(true);
                     }
 

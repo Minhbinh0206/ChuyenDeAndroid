@@ -1,12 +1,14 @@
 package com.example.socialmediatdcproject.fragment.Admin;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.socialmediatdcproject.API.EventAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.ListEventActivity;
 import com.example.socialmediatdcproject.adapter.EventAdapter;
 import com.example.socialmediatdcproject.model.Event;
 
@@ -40,6 +43,12 @@ public class AdminMainFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.frame_event);
 
+        ImageButton iconThreeDot = view.findViewById(R.id.detail_event_list);
+        iconThreeDot.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), ListEventActivity.class);
+            startActivity(intent);
+        });
+
         loadEventsFromFirebase();
     }
 
@@ -48,16 +57,12 @@ public class AdminMainFragment extends Fragment {
         textView.setVisibility(View.GONE);
         EventAPI eventAPI = new EventAPI();
         ArrayList<Event> eventList = new ArrayList<>();
-        eventAPI.getAllEvents(new EventAPI.EventCallback() {
+        eventAPI.listenForNewEvent(new EventAPI.OnNewEventListener() {
             @Override
-            public void onEventReceived(Event event) {
-
-            }
-
-            @Override
-            public void onEventsReceived(List<Event> events) {
-                eventList.clear();
-                eventList.addAll(events);
+            public void onNewEventAdded(Event event) {
+                if (event.getStatus() != 2) {
+                    eventList.add(event);
+                }
 
                 if (eventList.isEmpty()) {
                     textView.setVisibility(View.VISIBLE);
