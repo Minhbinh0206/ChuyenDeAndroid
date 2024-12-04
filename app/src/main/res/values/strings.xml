@@ -14,4 +14,5 @@
     <string name="confirm_new_password">Xác nhận mật khẩu mới</string>
     <string name="new_password">Mật khẩu mới</string>
     <string name="old_password">Mật khẩu cũ</string>
+    <string name="verifyOTP">Gửi OTP</string>
 </resources>

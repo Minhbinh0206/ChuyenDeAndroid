@@ -15,7 +15,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 
-public class EnterOtpActivity extends AppCompatActivity {
+public class  EnterOtpActivity extends AppCompatActivity {
 
     private EditText otpEditText;
     private Button verifyOtpButton;
