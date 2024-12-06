@@ -36,6 +36,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
     private boolean isEditMode;
     private SharedViewModel sharedViewModel;
     private int groupId;
+    private List<Integer> selectedUserIds = new ArrayList<>();
 
     public MemberAdapter(List<Student> memberList, Context context, SharedViewModel sharedViewModel) {
         this.memberList = memberList;
@@ -88,13 +89,23 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
                     .circleCrop()
                     .into(holder.memberAvatar);
 
+            // Xử lý chọn/bỏ chọn thành viên
+            boolean isSelected = selectedUserIds.contains(student.getUserId());
+            holder.itemView.setSelected(isSelected);
+            holder.cardView.setBackgroundResource(isSelected ? R.drawable.selected_background : R.color.buttonDefault);
+
             // Kiểm tra quyền isAdmin trực tiếp từ SharedPreferences
             SharedPreferences sharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
             boolean isAdmin = sharedPreferences.getBoolean("isAdmin", false);
 
             if(isAdmin){
                 holder.cardView.setOnClickListener(v -> {
-                    //Nothing here
+                    if (isSelected) {
+                        selectedUserIds.remove(Integer.valueOf(student.getUserId()));
+                    } else {
+                        selectedUserIds.add(student.getUserId());
+                    }
+                    notifyItemChanged(position); // Cập nhật giao diện
                 });
             }else{
                 holder.cardView.setOnClickListener(v -> {
@@ -102,19 +113,20 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
                 });
             }
 
-
-            Log.e("LecturerAdapter", "isEditMode: " + isEditMode );
-
             holder.removeButton.setVisibility(isEditMode ? View.VISIBLE : View.GONE);
             changeColorButtonRemove(holder.removeButton);
 
             holder.removeButton.setOnClickListener(view -> {
                 // Gọi phương thức xóa trong ViewModel và truyền vào groupId và studentId
                 sharedViewModel.removeStudentFromGroup(groupId, student.getUserId());
-                    Toast.makeText(context,"Xóa học sinh thành công khỏi nhóm", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context,"Xóa học sinh thành công khỏi nhóm", Toast.LENGTH_SHORT).show();
                 // Cập nhật danh sách hiển thị trong Adapter
-                memberList.remove(position);
-                notifyItemRemoved(position);
+                if (position >= 0 && position < memberList.size()) {
+                    memberList.remove(position);
+                    notifyItemRemoved(position);
+                } else {
+                    Log.e("MemberAdapter", "Invalid position: " + position);
+                }
             });
 
 
@@ -126,15 +138,17 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.MemberView
 
     @Override
     public int getItemCount() {
-        return memberList.size();
+        return memberList != null ? memberList.size() : 0 ;
+//        return memberList.size();
     }
 
     // Hàm lấy chức vụ
     public String getPositionJob(Student student) {
         return "Học sinh";
     }
-
-
+    public List<Integer> getSelectedUserIds() {
+        return selectedUserIds;
+    }
 
     // Lớp ViewHolder
     public static class MemberViewHolder extends RecyclerView.ViewHolder {

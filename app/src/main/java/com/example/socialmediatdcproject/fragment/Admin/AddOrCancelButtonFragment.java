@@ -1,12 +1,17 @@
 package com.example.socialmediatdcproject.fragment.Admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import androidx.annotation.LongDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -15,12 +20,26 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
+import com.example.socialmediatdcproject.API.DepartmentAPI;
+import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.activity.AddMemberToGroupActivity;
 import com.example.socialmediatdcproject.adapter.LecturerAdapter;
+import com.example.socialmediatdcproject.model.AdminDepartment;
+import com.example.socialmediatdcproject.model.Department;
+import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.shareViewModels.SharedViewModel;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.ktx.Firebase;
+
+import java.util.List;
 
 public class AddOrCancelButtonFragment extends Fragment {
     private SharedViewModel sharedViewModel;
+    private int groupId = -1;
 
     @Nullable
     @Override
@@ -42,6 +61,8 @@ public class AddOrCancelButtonFragment extends Fragment {
         changeColorButtonActive(btnAdd);
         changeColorButtonNormal(btnCancel);
 
+        setUpData();
+
         btnCancel.setOnClickListener(v -> {
             sharedViewModel.setEditMode(false);
             // Quay lại RepairButtonFragment
@@ -49,7 +70,58 @@ public class AddOrCancelButtonFragment extends Fragment {
             fragmentManager.popBackStack();
         });
         btnAdd.setOnClickListener(v -> {
+            sharedViewModel.setEditMode(false);
+            Intent intent = new Intent(requireActivity(), AddMemberToGroupActivity.class);
+            intent.putExtra("groupId" , groupId);
+            startActivity(intent);
+        });
+    }
+    private void setUpData(){
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseUser user = auth.getCurrentUser();
 
+        String key = user.getUid();
+        Log.d("Add Or Cancel Fragment" , "Key: " + key);
+
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+        adminDepartmentAPI.getAdminDepartmentByKey(key, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+            @Override
+            public void onUserReceived(AdminDepartment adminDepartment) {
+                DepartmentAPI departmentAPI = new DepartmentAPI();
+                departmentAPI.getDepartmentById(adminDepartment.getDepartmentId(), new DepartmentAPI.DepartmentCallback() {
+                    @Override
+                    public void onDepartmentReceived(Department department) {
+                        GroupAPI groupAPI = new GroupAPI();
+                        groupAPI.getGroupById(department.getGroupId(), new GroupAPI.GroupCallback() {
+                            @Override
+                            public void onGroupReceived(Group group) {
+                                groupId = group.getGroupId();
+                                Log.d("Add Or Cancel Fragment" , "GroupId: " + groupId);
+                            }
+
+                            @Override
+                            public void onGroupsReceived(List<Group> groups) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onDepartmentsReceived(List<Department> departments) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+            }
+
+            @Override
+            public void onError(String s) {
+
+            }
         });
     }
 

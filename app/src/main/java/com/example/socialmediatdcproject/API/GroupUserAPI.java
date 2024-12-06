@@ -75,18 +75,50 @@ public class GroupUserAPI {
     }
 
     // Xóa GroupUser theo groupId và groupUserId
-    public void deleteGroupUser(int groupId, String groupUserId) {
-        groupUserRef.child(String.valueOf(groupId))
-                .child(groupUserId)
-                .removeValue()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Log.d("GroupUserAPI", "GroupUser deleted successfully.");
-                    } else {
-                        Log.e("GroupUserAPI", "Failed to delete GroupUser.", task.getException());
+    public void deleteGroupUser(int groupId, int targetUserId) {
+        // Truy cập đến nhóm cần xóa
+        groupUserRef.child(String.valueOf(groupId)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    boolean userFound = false;
+
+                    // Duyệt qua các người dùng trong nhóm
+                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                        Long userId = userSnapshot.child("userId").getValue(Long.class);
+
+                        // Kiểm tra nếu userId trùng với targetUserId
+                        if (userId != null && userId == targetUserId) {
+                            Log.d("deleteGroupUser", "Deleting user " + userId + " from group " + groupId);
+
+                            // Xóa người dùng
+                            userSnapshot.getRef().removeValue().addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    Log.d("deleteGroupUser", "User " + targetUserId + " deleted successfully.");
+                                } else {
+                                    Log.e("deleteGroupUser", "Failed to delete user " + targetUserId, task.getException());
+                                }
+                            });
+                            userFound = true;
+                            break; // Dừng vòng lặp sau khi tìm thấy và xóa
+                        }
                     }
-                });
+
+                    if (!userFound) {
+                        Log.e("deleteGroupUser", "User " + targetUserId + " not found in group " + groupId);
+                    }
+                } else {
+                    Log.e("deleteGroupUser", "Group " + groupId + " does not exist.");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("deleteGroupUser", "Failed to retrieve group data.", error.toException());
+            }
+        });
     }
+
 
     // Lắng nghe người dùng mới vào nhóm
     public void listenForNewUsersInGroup(int groupId, final StudentCallback callback) {
@@ -181,6 +213,42 @@ public class GroupUserAPI {
             }
         });
     }
+    // Lấy người dùng theo userId
+    public void getUserByUserId(int userId, final UserCallback callback) {
+        groupUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                // Duyệt qua tất cả các nhóm
+                for (DataSnapshot groupSnapshot : snapshot.getChildren()) {
+                    // Duyệt qua tất cả người dùng trong mỗi nhóm
+                    for (DataSnapshot userSnapshot : groupSnapshot.getChildren()) {
+                        Integer currentUserId = userSnapshot.child("userId").getValue(Integer.class);
+
+                        // Kiểm tra nếu userId của người dùng là giống với userId cần tìm
+                        if (currentUserId != null && currentUserId == userId) {
+                            // Nếu tìm thấy người dùng, trả về thông qua callback
+                            GroupUser groupUser = userSnapshot.getValue(GroupUser.class);
+                            if (groupUser != null) {
+                                callback.onUserReceived(groupUser); // Trả về đối tượng người dùng
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("GroupUserAPI", "Failed to retrieve user by userId.", error.toException());
+            }
+        });
+    }
+
+    // Callback interface để trả về thông tin người dùng
+    public interface UserCallback {
+        void onUserReceived(GroupUser groupUser); // Callback trả về người dùng
+    }
+
+
 
     // Callback interface để trả về danh sách groupId
     public interface GroupsCallback {

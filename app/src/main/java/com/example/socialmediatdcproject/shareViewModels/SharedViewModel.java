@@ -8,8 +8,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.socialmediatdcproject.API.GroupAPI;
+import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.LecturerAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
+import com.example.socialmediatdcproject.dataModels.GroupUser;
+import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.database.DataSnapshot;
@@ -37,71 +41,100 @@ public class SharedViewModel extends ViewModel {
     }
 
     public void removeStudentFromGroup(int groupId, int studentId) {
-        databaseRef.child("UsersInGroup")
-                .orderByChild("groupId")
-                .equalTo(groupId)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
+        // Tạo đối tượng GroupUserAPI
+        GroupAPI groupAPI = new GroupAPI();
+        groupAPI.getGroupById(groupId , new GroupAPI.GroupCallback() {
+            @Override
+            public void onGroupReceived(Group group) {
+                GroupUserAPI groupUserAPI = new GroupUserAPI();
+                // Lắng nghe tất cả người dùng trong nhóm để tìm studentId cần xóa
+                groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot entrySnapshot : snapshot.getChildren()) {
-                            Integer entryStudentId = entrySnapshot.child("userId").getValue(Integer.class);
-
-                            Log.d("SharedViewModel" , "groupId: " + groupId);
-                            Log.d("SharedViewModel" , "entryStudentId: " + entryStudentId);
-
-                            // Kiểm tra nếu entry này có studentId khớp
-                            if (entryStudentId != null && entryStudentId.equals(studentId)) {
-                                // Xóa bản ghi nếu khớp cả groupId và studentId
-                                entrySnapshot.getRef().removeValue()
-                                        .addOnCompleteListener(task -> {
-                                            if (task.isSuccessful()) {
-                                                Log.d("SharedViewModel", "Xóa học sinh thành công khỏi nhóm trong Firebase");
-                                            } else {
-                                                Log.e("SharedViewModel", "Lỗi khi xóa học sinh", task.getException());
-//                                                Toast.makeText(context, "Lỗi khi xóa học sinh khỏi nhóm", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
+                    public void onUsersReceived(List<Integer> userIds) {
+                        // Kiểm tra nếu studentId có trong danh sách userIds
+                        Log.d("SharedViewModel", "Users in group: " + userIds.size());
+                        for (Integer userId : userIds) {
+                            if (userId == studentId) {
+                                // Xóa người dùng khỏi nhóm
+                                groupUserAPI.deleteGroupUser(groupId, studentId);
+                                Log.d("SharedViewModel", "Removed student with ID " + studentId + " from group " + groupId);
+                                break;
                             }
                         }
                     }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("SharedViewModel", "Lỗi khi truy vấn UserInGroup", error.toException());
-//                        Toast.makeText(context, "Lỗi khi truy vấn dữ liệu", Toast.LENGTH_SHORT).show();
-                    }
                 });
+            }
+
+            @Override
+            public void onGroupsReceived(List<Group> groups) {
+
+            }
+        });
+
     }
+
     public void removeLecturerFromGroup(int groupId, int lecturerId) {
-        databaseRef.child("UsersInGroup")
-                .orderByChild("groupId")
-                .equalTo(groupId)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot entrySnapshot : snapshot.getChildren()) {
-                            Integer entryLecturerId = entrySnapshot.child("userId").getValue(Integer.class);
-                            // Kiểm tra nếu entry này có lecturerId khớp
-                            if (entryLecturerId != null && entryLecturerId.equals(lecturerId)) {
-                                // Xóa bản ghi nếu khớp cả groupId và lecturerId
-                                entrySnapshot.getRef().removeValue()
-                                        .addOnCompleteListener(task -> {
-                                            if (task.isSuccessful()) {
-                                                Log.d("SharedViewModel", "Xóa giảng viên thành công khỏi nhóm trong Firebase");
-                                            } else {
-                                                Log.e("SharedViewModel", "Lỗi khi xóa giảng viên", task.getException());
-//                                                Toast.makeText(context, "Lỗi khi xóa giảng viên khỏi nhóm", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                            }
-                        }
-                    }
+        // Tạo đối tượng GroupUserAPI
+        GroupUserAPI groupUserAPI = new GroupUserAPI();
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("SharedViewModel", "Lỗi khi truy vấn UserInGroup", error.toException());
+        // Lắng nghe tất cả người dùng trong nhóm để tìm studentId cần xóa
+        groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
+            @Override
+            public void onUsersReceived(List<Integer> userIds) {
+                // Kiểm tra nếu studentId có trong danh sách userIds
+                for (Integer userId : userIds) {
+                    if (userId == lecturerId) {
+                        // Xóa người dùng khỏi nhóm
+                        groupUserAPI.deleteGroupUser(groupId, lecturerId );
+                        Log.d("SharedViewModel", "Removed with ID " + lecturerId + " from group " + groupId);
+                        break;
                     }
-                });
+                }
+            }
+        });
     }
+
+    public void addStudentToGroup(int groupId, int studentId) {
+        // Tạo đối tượng GroupUserAPI
+        GroupUserAPI groupUserAPI = new GroupUserAPI();
+
+        // Kiểm tra xem sinh viên đã có trong nhóm hay chưa
+        groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
+            @Override
+            public void onUsersReceived(List<Integer> userIds) {
+                // Nếu sinh viên chưa có trong nhóm, thêm sinh viên vào nhóm
+                if (!userIds.contains(studentId)) {
+                    // Tạo đối tượng GroupUser với thông tin sinh viên
+                    GroupUser groupUser = new GroupUser(groupId, studentId);
+                    groupUserAPI.addGroupUser(groupUser);  // Thêm sinh viên vào nhóm
+                    Log.d("SharedViewModel", "Added student with ID " + studentId + " to group " + groupId);
+                } else {
+                    Log.d("SharedViewModel", "Student with ID " + studentId + " is already in group " + groupId);
+                }
+            }
+        });
+    }
+
+    public void addLecturerToGroup(int groupId, int lecturerId) {
+        // Tạo đối tượng GroupUserAPI
+        GroupUserAPI groupUserAPI = new GroupUserAPI();
+
+        // Kiểm tra xem giảng viên đã có trong nhóm hay chưa
+        groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
+            @Override
+            public void onUsersReceived(List<Integer> userIds) {
+                // Nếu giảng viên chưa có trong nhóm, thêm giảng viên vào nhóm
+                if (!userIds.contains(lecturerId)) {
+                    // Tạo đối tượng GroupUser với thông tin giảng viên
+                    GroupUser groupUser = new GroupUser(groupId, lecturerId);
+                    groupUserAPI.addGroupUser(groupUser);  // Thêm giảng viên vào nhóm
+                    Log.d("SharedViewModel", "Added lecturer with ID " + lecturerId + " to group " + groupId);
+                } else {
+                    Log.d("SharedViewModel", "Lecturer with ID " + lecturerId + " is already in group " + groupId);
+                }
+            }
+        });
+    }
+
 
 }

@@ -113,6 +113,9 @@
         <activity android:name=".activity.EventDetailActivity"
             android:exported="false">
         </activity>
+        <activity android:name=".activity.AddMemberToGroupActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>

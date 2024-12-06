@@ -97,14 +97,15 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
 
             if(isAdmin){
                 holder.cardView.setOnClickListener(v -> {
-                    //Nothing here
+                    sharedViewModel.addLecturerToGroup(groupId , lecturer.getUserId());
+
+                    Toast.makeText(context,"Thêm giảng viên thành công vào nhóm", Toast.LENGTH_SHORT).show();
+                    lecturerList.remove(position);
+                    notifyItemRemoved(position);
                 });
             }else{
                 holder.cardView.setOnClickListener(v -> openPersonalPage(lecturer.getUserId()));
             }
-
-            Log.e("LecturerAdapter", "isEditMode: " + isEditMode );
-
             holder.removeButton.setVisibility(isEditMode ? View.VISIBLE : View.GONE);
             changeColorButtonRemove(holder.removeButton);
             holder.removeButton.setOnClickListener(view -> {
@@ -112,8 +113,10 @@ public class LecturerAdapter extends RecyclerView.Adapter<LecturerAdapter.Lectur
                 sharedViewModel.removeLecturerFromGroup(groupId, lecturer.getUserId());
                 Toast.makeText(context, "Xóa giảng viên thành công khỏi nhóm", Toast.LENGTH_SHORT).show();
                 // Cập nhật danh sách hiển thị trong Adapter
-                lecturerList.remove(position);
-                notifyItemRemoved(position);
+                if (position >= 0 && position < lecturerList.size()) {
+                    lecturerList.remove(position);
+                    notifyItemRemoved(position);
+                }
             });
 
         } else {
