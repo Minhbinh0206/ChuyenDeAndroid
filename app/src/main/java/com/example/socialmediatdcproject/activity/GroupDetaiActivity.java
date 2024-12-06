@@ -24,6 +24,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminBusinessAPI;
+import com.example.socialmediatdcproject.API.AdminDefaultAPI;
+import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
@@ -35,6 +38,9 @@ import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
 import com.example.socialmediatdcproject.fragment.Student.GroupDefaultFragment;
 import com.example.socialmediatdcproject.fragment.Student.GroupFollowedFragment;
 import com.example.socialmediatdcproject.fragment.Student.GroupNotFollowFragment;
+import com.example.socialmediatdcproject.model.AdminBusiness;
+import com.example.socialmediatdcproject.model.AdminDefault;
+import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Student;
 import com.google.firebase.auth.FirebaseAuth;
@@ -105,6 +111,9 @@ public class GroupDetaiActivity extends AppCompatActivity {
         });
 
         StudentAPI studentAPI = new StudentAPI();
+        AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+        AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
 
         if (groupId != -1) {
             // Thực hiện việc lấy dữ liệu và kiểm tra người dùng có tham gia group không
@@ -114,6 +123,235 @@ public class GroupDetaiActivity extends AppCompatActivity {
                 public void onUsersReceived(List<Integer> userIds) {
                     Log.d("NM", "onUsersReceived: " + userIds);
                     String key = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                    adminDefaultAPI.getAdminDefaultByKey(key, new AdminDefaultAPI.AdminDefaultCallBack() {
+                        @Override
+                        public void onUserReceived(AdminDefault adminDefault) {
+                            boolean isJoin = intent.getBooleanExtra("isJoin", false);
+
+                            // Kiểm tra xem user đã tham gia nhóm chưa
+                            for (Integer s : userIds) {
+                                if (s == adminDefault.getUserId()) {
+                                    isJoin = true;
+                                }
+                            }
+
+                            FragmentManager fragmentManager = getSupportFragmentManager();
+                            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                            // Nếu người dùng đã tham gia, hiển thị GroupFollowedFragment
+                            if (isJoin) {
+                                // Nếu người dùng chưa tham gia, gọi API để lấy thông tin nhóm
+                                GroupAPI groupAPI = new GroupAPI();
+                                groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                                    @Override
+                                    public void onGroupReceived(Group group) {
+                                        // Nếu nhóm là nhóm mặc định, chuyển trực tiếp sang GroupFollowedFragment
+                                        if (group.isGroupDefault()) {
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupDefaultFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        } else {
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onGroupsReceived(List<Group> groups) {
+                                        // Xử lý nếu cần khi nhận được danh sách nhóm
+                                    }
+                                });
+
+                            } else {
+                                // Nếu người dùng chưa tham gia, gọi API để lấy thông tin nhóm
+                                GroupAPI groupAPI = new GroupAPI();
+                                groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                                    @Override
+                                    public void onGroupReceived(Group group) {
+                                        // Nếu nhóm là nhóm mặc định, chuyển trực tiếp sang GroupFollowedFragment
+                                        if (group.isGroupDefault()) {
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupDefaultFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        } else {
+                                            // Nếu nhóm không phải mặc định, hiển thị GroupNotFollowFragment trước
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupNotFollowFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onGroupsReceived(List<Group> groups) {
+                                        // Xử lý nếu cần khi nhận được danh sách nhóm
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+                        }
+                    });
+
+                    adminDepartmentAPI.getAdminDepartmentByKey(key, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                        @Override
+                        public void onUserReceived(AdminDepartment adminDepartment) {
+                            boolean isJoin = intent.getBooleanExtra("isJoin", false);
+
+                            // Kiểm tra xem user đã tham gia nhóm chưa
+                            for (Integer s : userIds) {
+                                if (s == adminDepartment.getUserId()) {
+                                    isJoin = true;
+                                }
+                            }
+
+                            FragmentManager fragmentManager = getSupportFragmentManager();
+                            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                            // Nếu người dùng đã tham gia, hiển thị GroupFollowedFragment
+                            if (isJoin) {
+                                // Nếu người dùng chưa tham gia, gọi API để lấy thông tin nhóm
+                                GroupAPI groupAPI = new GroupAPI();
+                                groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                                    @Override
+                                    public void onGroupReceived(Group group) {
+                                        // Nếu nhóm là nhóm mặc định, chuyển trực tiếp sang GroupFollowedFragment
+                                        if (group.isGroupDefault()) {
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupDefaultFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        } else {
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onGroupsReceived(List<Group> groups) {
+                                        // Xử lý nếu cần khi nhận được danh sách nhóm
+                                    }
+                                });
+
+                            } else {
+                                // Nếu người dùng chưa tham gia, gọi API để lấy thông tin nhóm
+                                GroupAPI groupAPI = new GroupAPI();
+                                groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                                    @Override
+                                    public void onGroupReceived(Group group) {
+                                        // Nếu nhóm là nhóm mặc định, chuyển trực tiếp sang GroupFollowedFragment
+                                        if (group.isGroupDefault()) {
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupDefaultFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        } else {
+                                            // Nếu nhóm không phải mặc định, hiển thị GroupNotFollowFragment trước
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupNotFollowFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onGroupsReceived(List<Group> groups) {
+                                        // Xử lý nếu cần khi nhận được danh sách nhóm
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+                        }
+
+                        @Override
+                        public void onError(String s) {
+
+                        }
+                    });
+
+                    adminBusinessAPI.getAdminBusinessByKey(key, new AdminBusinessAPI.AdminBusinessCallBack() {
+                        @Override
+                        public void onUserReceived(AdminBusiness adminBusiness) {
+                            boolean isJoin = intent.getBooleanExtra("isJoin", false);
+
+                            // Kiểm tra xem user đã tham gia nhóm chưa
+                            for (Integer s : userIds) {
+                                if (s == adminBusiness.getUserId()) {
+                                    isJoin = true;
+                                }
+                            }
+
+                            FragmentManager fragmentManager = getSupportFragmentManager();
+                            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                            // Nếu người dùng đã tham gia, hiển thị GroupFollowedFragment
+                            if (isJoin) {
+                                // Nếu người dùng chưa tham gia, gọi API để lấy thông tin nhóm
+                                GroupAPI groupAPI = new GroupAPI();
+                                groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                                    @Override
+                                    public void onGroupReceived(Group group) {
+                                        // Nếu nhóm là nhóm mặc định, chuyển trực tiếp sang GroupFollowedFragment
+                                        if (group.isGroupDefault()) {
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupDefaultFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        } else {
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupFollowedFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onGroupsReceived(List<Group> groups) {
+                                        // Xử lý nếu cần khi nhận được danh sách nhóm
+                                    }
+                                });
+
+                            } else {
+                                // Nếu người dùng chưa tham gia, gọi API để lấy thông tin nhóm
+                                GroupAPI groupAPI = new GroupAPI();
+                                groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+                                    @Override
+                                    public void onGroupReceived(Group group) {
+                                        // Nếu nhóm là nhóm mặc định, chuyển trực tiếp sang GroupFollowedFragment
+                                        if (group.isGroupDefault()) {
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupDefaultFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        } else {
+                                            // Nếu nhóm không phải mặc định, hiển thị GroupNotFollowFragment trước
+                                            fragmentTransaction.replace(R.id.first_content_fragment, new GroupNotFollowFragment());
+                                            // Gọi commit() sau khi tất cả các thay đổi đã được thực hiện
+                                            fragmentTransaction.commit();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onGroupsReceived(List<Group> groups) {
+                                        // Xử lý nếu cần khi nhận được danh sách nhóm
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                        }
+
+                        @Override
+                        public void onError(String s) {
+
+                        }
+                    });
 
                     studentAPI.getStudentByKey(key, new StudentAPI.StudentCallback() {
                         @Override

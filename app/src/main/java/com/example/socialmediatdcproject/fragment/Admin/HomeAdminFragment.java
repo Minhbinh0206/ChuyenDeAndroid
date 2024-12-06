@@ -102,25 +102,7 @@ public class HomeAdminFragment extends Fragment {
         fragmentTransaction.replace(R.id.third_content_fragment, new AdminMainFragment());
         fragmentTransaction.commit();
 
-        UserAPI userAPI = new UserAPI();
-        userAPI.getAllUsers(new UserAPI.UserCallback() {
-            @Override
-            public void onUserReceived(User user) {
-
-            }
-
-            @Override
-            public void onUsersReceived(List<User> users) {
-                for (User user : users) {
-                    if (user.getRoleId() == 2 || user.getRoleId() == 3 || user.getRoleId() == 4 || user.getRoleId() == 5) {
-                        third.setVisibility(View.GONE);
-                    }
-                    else {
-                        third.setVisibility(View.VISIBLE);
-                    }
-                }
-            }
-        });
+        third.setVisibility(View.VISIBLE);
 
         loadPostsFromFirebase();
     }

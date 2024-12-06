@@ -121,16 +121,17 @@ public class SplashScreenActivity extends AppCompatActivity {
                     adminDefaultAPI.getAdminDefaultByKey(currentUser.getUid(), new AdminDefaultAPI.AdminDefaultCallBack() {
                         @Override
                         public void onUserReceived(AdminDefault adminDefault) {
-                            if (!adminDefault.getAdminType().equals("Super")) {
-                                if (adminDefault.getUserId() != -1) {
-                                    Intent intent = new Intent(SplashScreenActivity.this, HomeAdminActivity.class);
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
-                                    startActivity(intent);
-                                    finish();
-                                }
-                                else {
-
-                                }
+                            if (adminDefault.getUserId() != -1) {
+                                Intent intent = new Intent(SplashScreenActivity.this, HomeAdminActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                                startActivity(intent);
+                                finish();
+                            }
+                            else {
+                                Intent intent = new Intent(SplashScreenActivity.this, SuperAdminActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+                                startActivity(intent);
+                                finish();
                             }
                         }
 

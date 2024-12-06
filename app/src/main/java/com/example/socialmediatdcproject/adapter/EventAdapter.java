@@ -162,139 +162,145 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.GroupViewHol
         holder.titleEvent.setText(shortContent + "...");
 
         holder.detailEvent.setOnClickListener(v -> {
-            // Kiểm tra trạng thái sự kiện
-            fetchEventDetails(event, holder.status, isEventEnded -> {
-                if (isEventEnded) {
-                    Toast.makeText(context, "Sự kiện đã kết thúc", Toast.LENGTH_SHORT).show();
-                } else {
-                    // Mở Activity chi tiết
-                    final int[] typeJoin = {-1};
-                    Intent intent = new Intent(v.getContext(), EventDetailActivity.class);
-                    eventAPI.getEventById(event.getEventId(), event.getAdminEventId(), new EventAPI.EventCallback() {
+            // Mở Activity chi tiết
+            final int[] typeJoin = {-1};
+            Intent intent = new Intent(v.getContext(), EventDetailActivity.class);
+            eventAPI.getEventById(event.getEventId(), event.getAdminEventId(), new EventAPI.EventCallback() {
+                @Override
+                public void onEventReceived(Event event) {
+                    String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    StudentAPI studentAPI = new StudentAPI();
+                    studentAPI.getStudentByKey(userKey, new StudentAPI.StudentCallback() {
                         @Override
-                        public void onEventReceived(Event event) {
-                            String userKey = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                            StudentAPI studentAPI = new StudentAPI();
-                            studentAPI.getStudentByKey(userKey, new StudentAPI.StudentCallback() {
-                                @Override
-                                public void onStudentReceived(Student student) {
-                                    switch (event.getStatus()) { // Giả sử bạn có hàm `getStatus()`
-                                        case 0:
-                                            // Hiển thị popup custom
-                                            showCustomPopup(v.getContext(), event);
-                                            break;
-                                        case 1:
-                                            typeJoin[0] = 1;
-                                            if (event.getUserAssist() != null) {
-                                                for (Assist a : event.getUserAssist()) {
-                                                    if (a.getUserId() == student.getUserId()) {
-                                                        typeJoin[0] = 2;
+                        public void onStudentReceived(Student student) {
+                            switch (event.getStatus()) { // Giả sử bạn có hàm `getStatus()`
+                                case 0:
+                                    // Hiển thị popup custom
+                                    showCustomPopup(v.getContext(), event);
+                                    break;
+                                case 1:
+                                    typeJoin[0] = 1;
+                                    if (event.getUserAssist() != null) {
+                                        for (Assist a : event.getUserAssist()) {
+                                            if (a.getUserId() == student.getUserId()) {
+                                                typeJoin[0] = 2;
 
-                                                    }
-                                                }
                                             }
-                                            intent.putExtra("typeJoin", typeJoin[0]);
-                                            intent.putExtra("adminId", event.getAdminEventId());
-                                            intent.putExtra("eventId", event.getEventId());
-                                            v.getContext().startActivity(intent);
-
-                                            break;
-                                        default:
-                                            Toast.makeText(context, "Trạng thái không xác định", Toast.LENGTH_SHORT).show();
-                                            break;
-                                    }
-                                }
-
-                                @Override
-                                public void onStudentsReceived(List<Student> students) {
-                                    // Handle if needed
-                                }
-                            });
-
-                            AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
-                            adminDepartmentAPI.getAdminDepartmentByKey(userKey, new AdminDepartmentAPI.AdminDepartmentCallBack() {
-                                @Override
-                                public void onUserReceived(AdminDepartment adminDepartment) {
-                                    if (event.getAdminEventId() == adminDepartment.getUserId()) {
-                                        typeJoin[0] = 3;
-                                        intent.putExtra("eventId", event.getEventId());
-                                        intent.putExtra("adminId", event.getAdminEventId());
-                                        intent.putExtra("typeJoin", typeJoin[0]);
-                                        v.getContext().startActivity(intent);
-                                    }
-                                    else {
-                                        Toast.makeText(context, "Sự kiện này không thuộc quản lý của bạn", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-
-                                @Override
-                                public void onUsersReceived(List<AdminDepartment> adminDepartment) {
-
-                                }
-
-                                @Override
-                                public void onError(String s) {
-
-                                }
-                            });
-
-                            AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
-                            adminBusinessAPI.getAdminBusinessByKey(userKey, new AdminBusinessAPI.AdminBusinessCallBack() {
-                                @Override
-                                public void onUserReceived(AdminBusiness adminBusiness) {
-                                    if (event.getAdminEventId() == adminBusiness.getUserId()) {
-                                        typeJoin[0] = 3;
-                                        intent.putExtra("eventId", event.getEventId());
-                                        intent.putExtra("adminId", event.getAdminEventId());
-                                        intent.putExtra("typeJoin", typeJoin[0]);
-                                        v.getContext().startActivity(intent);
-                                    }
-                                    else {
-                                        Toast.makeText(context, "Sự kiện này không thuộc quản lý của bạn", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-
-                                @Override
-                                public void onUsersReceived(List<AdminBusiness> adminBusiness) {
-
-                                }
-
-                                @Override
-                                public void onError(String s) {
-
-                                }
-                            });
-
-                            AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
-                            adminDefaultAPI.getAdminDefaultByKey(userKey, new AdminDefaultAPI.AdminDefaultCallBack() {
-                                @Override
-                                public void onUserReceived(AdminDefault adminDefault) {
-                                    if (!adminDefault.getAdminType().equals("Super")) {
-                                        if (event.getAdminEventId() == adminDefault.getUserId()) {
-                                            typeJoin[0] = 3;
-                                            intent.putExtra("eventId", event.getEventId());
-                                            intent.putExtra("adminId", event.getAdminEventId());
-                                            intent.putExtra("typeJoin", typeJoin[0]);
-                                            v.getContext().startActivity(intent);
-                                        }
-                                        else {
-                                            Toast.makeText(context, "Sự kiện này không thuộc quản lý của bạn", Toast.LENGTH_SHORT).show();
                                         }
                                     }
-                                }
+                                    intent.putExtra("typeJoin", typeJoin[0]);
+                                    intent.putExtra("adminId", event.getAdminEventId());
+                                    intent.putExtra("eventId", event.getEventId());
+                                    v.getContext().startActivity(intent);
 
-                                @Override
-                                public void onUsersReceived(List<AdminDefault> adminDefault) {
+                                    break;
+                                case 2:
+                                    typeJoin[0] = 1;
+                                    if (event.getUserAssist() != null) {
+                                        for (Assist a : event.getUserAssist()) {
+                                            if (a.getUserId() == student.getUserId()) {
+                                                typeJoin[0] = 2;
 
-                                }
-                            });
+                                            }
+                                        }
+                                    }
+                                    intent.putExtra("typeJoin", typeJoin[0]);
+                                    intent.putExtra("adminId", event.getAdminEventId());
+                                    intent.putExtra("eventId", event.getEventId());
+                                    v.getContext().startActivity(intent);
+
+                                    break;
+                            }
                         }
 
                         @Override
-                        public void onEventsReceived(List<Event> events) {
+                        public void onStudentsReceived(List<Student> students) {
                             // Handle if needed
                         }
                     });
+
+                    AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+                    adminDepartmentAPI.getAdminDepartmentByKey(userKey, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                        @Override
+                        public void onUserReceived(AdminDepartment adminDepartment) {
+                            if (event.getAdminEventId() == adminDepartment.getUserId()) {
+                                typeJoin[0] = 3;
+                                intent.putExtra("eventId", event.getEventId());
+                                intent.putExtra("adminId", event.getAdminEventId());
+                                intent.putExtra("typeJoin", typeJoin[0]);
+                                v.getContext().startActivity(intent);
+                            }
+                            else {
+                                Toast.makeText(context, "Sự kiện này không thuộc quản lý của bạn", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+                        }
+
+                        @Override
+                        public void onError(String s) {
+
+                        }
+                    });
+
+                    AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+                    adminBusinessAPI.getAdminBusinessByKey(userKey, new AdminBusinessAPI.AdminBusinessCallBack() {
+                        @Override
+                        public void onUserReceived(AdminBusiness adminBusiness) {
+                            if (event.getAdminEventId() == adminBusiness.getUserId()) {
+                                typeJoin[0] = 3;
+                                intent.putExtra("eventId", event.getEventId());
+                                intent.putExtra("adminId", event.getAdminEventId());
+                                intent.putExtra("typeJoin", typeJoin[0]);
+                                v.getContext().startActivity(intent);
+                            }
+                            else {
+                                Toast.makeText(context, "Sự kiện này không thuộc quản lý của bạn", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                        }
+
+                        @Override
+                        public void onError(String s) {
+
+                        }
+                    });
+
+                    AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+                    adminDefaultAPI.getAdminDefaultByKey(userKey, new AdminDefaultAPI.AdminDefaultCallBack() {
+                        @Override
+                        public void onUserReceived(AdminDefault adminDefault) {
+                            if (!adminDefault.getAdminType().equals("Super")) {
+                                if (event.getAdminEventId() == adminDefault.getUserId()) {
+                                    typeJoin[0] = 3;
+                                    intent.putExtra("eventId", event.getEventId());
+                                    intent.putExtra("adminId", event.getAdminEventId());
+                                    intent.putExtra("typeJoin", typeJoin[0]);
+                                    v.getContext().startActivity(intent);
+                                }
+                                else {
+                                    Toast.makeText(context, "Sự kiện này không thuộc quản lý của bạn", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onEventsReceived(List<Event> events) {
+                    // Handle if needed
                 }
             });
         });

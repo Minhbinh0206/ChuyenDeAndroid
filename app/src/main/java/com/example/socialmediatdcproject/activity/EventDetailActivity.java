@@ -126,59 +126,83 @@ public class EventDetailActivity extends AppCompatActivity {
 
                 content.setText(event.getContentEvent());
 
-                if (typeJoin == 3) {
-                    // Admin
-                    iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_assist));
+                if (event.getStatus() == 1) {
+                    if (typeJoin == 3) {
+                        // Admin
+                        iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_assist));
 
-                    iconAssistEvent.setOnClickListener(v -> {
-                        adminShowPopupAssist(EventDetailActivity.this, event);
-                    });
+                        iconAssistEvent.setOnClickListener(v -> {
+                            adminShowPopupAssist(EventDetailActivity.this, event);
+                        });
 
-                    position.setText("Admin sự kiện");
-                }
-                else if (typeJoin == 2) {
-                    eventAPI.listenForEventStatusChange(event, new EventAPI.EventStatusCallback() {
-                        @Override
-                        public void onEventStatusChanged(Event event) {
-                            if (event.getStatus() == 2) {
-                                // Hiển thị popup yêu cầu người dùng rời đi
-                                showExitPopup();
+                        position.setText("Admin sự kiện");
+                    }
+                    else if (typeJoin == 2) {
+                        eventAPI.listenForEventStatusChange(event, new EventAPI.EventStatusCallback() {
+                            @Override
+                            public void onEventStatusChanged(Event event) {
+                                if (event.getStatus() == 2) {
+                                    // Hiển thị popup yêu cầu người dùng rời đi
+                                    showExitPopup();
+                                }
                             }
-                        }
-                    });
+                        });
 
-                    // Người hỗ trợ
-                    iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_qrcode));
+                        // Người hỗ trợ
+                        iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_qrcode));
 
-                    iconAssistEvent.setOnClickListener(v -> {
-                        assistShowPopupQR(EventDetailActivity.this, event);
-                    });
+                        iconAssistEvent.setOnClickListener(v -> {
+                            assistShowPopupQR(EventDetailActivity.this, event);
+                        });
 
-                    position.setText("Người hỗ trợ");
+                        position.setText("Người hỗ trợ");
 
-                }
-                else {
-                    eventAPI.listenForEventStatusChange(event, new EventAPI.EventStatusCallback() {
-                        @Override
-                        public void onEventStatusChanged(Event event) {
-                            if (event.getStatus() == 2) {
-                                // Hiển thị popup yêu cầu người dùng rời đi
-                                showExitPopup();
+                    }
+                    else {
+                        eventAPI.listenForEventStatusChange(event, new EventAPI.EventStatusCallback() {
+                            @Override
+                            public void onEventStatusChanged(Event event) {
+                                if (event.getStatus() == 2) {
+                                    // Hiển thị popup yêu cầu người dùng rời đi
+                                    showExitPopup();
+                                }
                             }
-                        }
-                    });
+                        });
 
-                    // Sinh viên
-                    iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_qrcode));
+                        // Sinh viên
+                        iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_qrcode));
 
-                    iconAssistEvent.setOnClickListener(v -> {
-                        // Bắt đầu quét QR nếu chưa điểm danh
-                        Intent scanIntent = new Intent(EventDetailActivity.this, CaptureActivity.class); // Dùng CaptureActivity mặc định
-                        startActivityForResult(scanIntent, QR_REQUEST_CODE);
-                    });
+                        iconAssistEvent.setOnClickListener(v -> {
+                            // Bắt đầu quét QR nếu chưa điểm danh
+                            Intent scanIntent = new Intent(EventDetailActivity.this, CaptureActivity.class); // Dùng CaptureActivity mặc định
+                            startActivityForResult(scanIntent, QR_REQUEST_CODE);
+                        });
 
-                    position.setText("Sinh viên");
+                        position.setText("Sinh viên");
+                    }
+                } else if (event.getStatus() == 2) {
+                    iconAssistEvent.setEnabled(false);
+                    if (typeJoin == 3) {
+                        // Admin
+                        iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_assist));
+
+                        position.setText("Admin sự kiện");
+                    }
+                    else if (typeJoin == 2) {
+                        // Người hỗ trợ
+                        iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_qrcode));
+
+                        position.setText("Người hỗ trợ");
+
+                    }
+                    else {
+                        // Sinh viên
+                        iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_qrcode));
+
+                        position.setText("Sinh viên");
+                    }
                 }
+
             }
 
             @Override

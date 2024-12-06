@@ -67,9 +67,6 @@ public class AdminGroupFragment extends Fragment {
         Fragment searchGroupFragment = new TextGroupFragment();
         FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
-
-        Fragment createNewGroup = new CreateNewGroupFragment();
-        fragmentTransaction.replace(R.id.four_content_fragment, createNewGroup);
         fragmentTransaction.commit();
 
         AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
@@ -200,32 +197,14 @@ public class AdminGroupFragment extends Fragment {
         GroupAPI groupAPI = new GroupAPI();
         GroupUserAPI groupUserAPI = new GroupUserAPI();
 
-        groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
+        groupUserAPI.getAllGroupsByUserId(userId, new GroupUserAPI.GroupsCallback() {
             @Override
-            public void onUsersReceived(List<Integer> userIds) {
-                List<Integer> userGroupIds = new ArrayList<>();
-
-                // Lọc danh sách các GroupUser có userId phù hợp
-                for (Integer gu : userIds) {
-                    if (gu == userId) {
-                        userGroupIds.add(Integer.valueOf(gu));
-                    }
-                }
-
-                // Nếu không có groupId nào, hiển thị thông báo
-                if (userGroupIds.isEmpty()) {
-                    textView.setVisibility(View.VISIBLE);
-                    textView.setText("Hiện bạn chưa quản lý nhóm nào!");
-                    recyclerView.setAdapter(null); // Đặt adapter thành null để không hiển thị gì
-                    return; // Không cần tiếp tục nếu không có nhóm
-                }
-
-                // Lấy thông tin nhóm từ các groupId
-                for (int groupId : userGroupIds) {
-                    groupAPI.getGroupById(groupId, new GroupAPI.GroupCallback() {
+            public void onGroupsReceived(List<Integer> groupIds) {
+                for (Integer i : groupIds) {
+                    groupAPI.getGroupById(i, new GroupAPI.GroupCallback() {
                         @Override
                         public void onGroupReceived(Group group) {
-                            if (group != null) {
+                            if (!group.isGroupDefault()) {
                                 groupsList.add(group);
                             }
 
@@ -245,13 +224,11 @@ public class AdminGroupFragment extends Fragment {
 
                         @Override
                         public void onGroupsReceived(List<Group> groups) {
-                            // Không cần sử dụng phương thức này trong trường hợp này
+
                         }
                     });
                 }
             }
         });
     }
-
-
 }

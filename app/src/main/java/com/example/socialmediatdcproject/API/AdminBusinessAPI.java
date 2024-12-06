@@ -42,9 +42,8 @@ public class AdminBusinessAPI {
     }
 
     // Thêm người dùng mới vào Firebase
-    public void addAdminDepartment(AdminDepartment adminDepartment) {
-        String userId = String.valueOf(adminDepartment.getUserId());
-        userDatabase.child(userId).setValue(adminDepartment)
+    public void addAdminBusiness(String uid, AdminBusiness adminBusiness) {
+        userDatabase.child(uid).setValue(adminBusiness)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         // Thêm thành công

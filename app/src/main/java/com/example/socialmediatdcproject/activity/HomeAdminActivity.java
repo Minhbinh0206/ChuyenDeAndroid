@@ -3,6 +3,7 @@ package com.example.socialmediatdcproject.activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -33,15 +35,20 @@ import com.example.socialmediatdcproject.API.FilterNotifyAPI;
 import com.example.socialmediatdcproject.API.FilterPostsAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.NotifyAPI;
+import com.example.socialmediatdcproject.API.NotifyQuicklyAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.API.UserAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.NotifyAdapter;
+import com.example.socialmediatdcproject.adapter.NotifyQuicklyAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
+import com.example.socialmediatdcproject.dataModels.NotifyQuickly;
 import com.example.socialmediatdcproject.fragment.Admin.AdminDepartmentMemberFragment;
 import com.example.socialmediatdcproject.fragment.Admin.AdminFragment;
 import com.example.socialmediatdcproject.fragment.Admin.AdminGroupFragment;
+import com.example.socialmediatdcproject.fragment.Admin.AdminMainFragment;
+import com.example.socialmediatdcproject.fragment.Admin.CollabFragment;
 import com.example.socialmediatdcproject.fragment.Admin.HomeAdminFragment;
 import com.example.socialmediatdcproject.fragment.Admin.MainFeatureFragment;
 import com.example.socialmediatdcproject.fragment.Admin.RepairButtonFragment;
@@ -121,31 +128,21 @@ public class HomeAdminActivity extends AppCompatActivity {
 
             fragmentTransaction.commit();
         });
+
         // Thêm item vào NavigationView
         addNavigationItems(navigationView);
-
 
         // Thiết lập sự kiện click cho icon_back
         ImageButton backButton = navigationView.getHeaderView(0).findViewById(R.id.icon_back);
         backButton.setOnClickListener(v -> drawerLayout.closeDrawer(GravityCompat.START));
     }
-//    private void implementFragmentDefault(){
-//        FragmentManager fragmentManager = getSupportFragmentManager();
-//        Fragment fragment = new AdminFragment();
-//
-//        // Thay thế nội dung của FrameLayout bằng Fragment tương ứng
-//        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-//        fragmentTransaction.replace(R.id.first_content_fragment, fragment);
-//
-//        fragmentTransaction.commit();
-//    }
 
     private void addNavigationItems(NavigationView navigationView) {
         LinearLayout navLayout = (LinearLayout) navigationView.getHeaderView(0).findViewById(R.id.nav_container);
 
         // Danh sách item để thêm vào Navigation Drawer
-        int[] icons = {R.drawable.icon_home, R.drawable.icon_survey, R.drawable.icon_group, R.drawable.icon_flag, R.drawable.icon_setting, R.drawable.icon_logout};
-        String[] titles = {"Trang chủ", "Quản lý", "Thành viên", "Nhóm", "Cài đặt", "Đăng xuất"};
+        int[] icons = {R.drawable.icon_home, R.drawable.icon_survey, R.drawable.icon_group, R.drawable.icon_flag, R.drawable.icon_department, R.drawable.icon_logout};
+        String[] titles = {"Trang chủ", "Quản lý", "Thành viên", "Nhóm", "Hợp tác", "Đăng xuất"};
 
         // Khởi tạo FragmentManager
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -182,7 +179,8 @@ public class HomeAdminActivity extends AppCompatActivity {
                         fragment = new AdminGroupFragment();
                         break;
                     case 4:
-                        // Setting
+                        // Group
+                        fragment = new CollabFragment();
                         break;
                     case 5:
                         // Đăng xuất người dùng và chuyển đến LoginActivity
@@ -222,6 +220,67 @@ public class HomeAdminActivity extends AppCompatActivity {
         }
     }
 
+    private void showNotifyQuicklyPopup(int id ,List<NotifyQuickly> notifications) {
+        if (notifications == null || notifications.isEmpty()) {
+            return;  // Nếu không có thông báo thì không làm gì
+        }
+
+        // Tạo View từ layout của PopupWindow
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.notify_quickly_popup, null);
+
+        // Tạo PopupWindow
+        final PopupWindow popupWindow = new PopupWindow(popupView,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                true); // Thiết lập true để cho phép tắt PopupWindow khi nhấn bên ngoài
+
+        // Thiết lập RecyclerView bên trong PopupWindow
+        RecyclerView recyclerView = popupView.findViewById(R.id.recycler_notify_quickly);
+        NotifyQuicklyAdapter notifyQuicklyAdapter = new NotifyQuicklyAdapter(new ArrayList<>());
+        recyclerView.setAdapter(notifyQuicklyAdapter);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(HomeAdminActivity.this);
+        recyclerView.setLayoutManager(linearLayoutManager);
+
+        // Hiển thị PopupWindow ở vị trí mong muốn
+        View notifyButton = findViewById(R.id.icon_notify);
+        popupWindow.showAsDropDown(notifyButton, 0, 0);
+
+        // Handler để hiển thị từng thông báo tuần tự
+        final Handler handler = new Handler();
+        final int[] currentIndex = {0}; // Chỉ mục hiện tại của thông báo
+
+        // Hàm để cập nhật thông báo hiện tại
+        Runnable updateNotification = new Runnable() {
+            @Override
+            public void run() {
+                if (currentIndex[0] < notifications.size()) {
+                    // Cập nhật danh sách thông báo với thông báo hiện tại
+                    NotifyQuickly currentNotification = notifications.get(currentIndex[0]);
+                    notifyQuicklyAdapter.clearNotifications(); // Xóa thông báo cũ
+                    notifyQuicklyAdapter.addNotification(currentNotification); // Thêm thông báo mới
+                    notifyQuicklyAdapter.notifyDataSetChanged();
+
+                    // Gọi API để xóa thông báo khỏi Firebase
+                    NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+                    notifyQuicklyAPI.deleteNotification(id ,currentNotification.getNotifyId()); // Gọi phương thức xóa với ID của thông báo
+
+                    // Tăng chỉ mục lên cho thông báo tiếp theo
+                    currentIndex[0]++;
+
+                    // Gọi lại runnable sau 5 giây để hiển thị thông báo tiếp theo
+                    handler.postDelayed(this, 5000); // Điều chỉnh thời gian nếu cần
+                } else {
+                    // Đã hiển thị hết thông báo, đóng PopupWindow
+                    popupWindow.dismiss();
+                }
+            }
+        };
+
+        // Bắt đầu hiển thị thông báo đầu tiên sau khi popup được mở
+        handler.post(updateNotification);
+    }
+
     // Xử lý khi người dùng nhấn nút Back
     @Override
     public void onBackPressed() {
@@ -256,7 +315,7 @@ public class HomeAdminActivity extends AppCompatActivity {
         adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
             @Override
             public void onUserReceived(AdminDepartment adminDepartment) {
-                if (adminDepartment.getAvatar() == null) {
+                if (adminDepartment.getAvatar().isEmpty()) {
                     ImageView imageView = findViewById(R.id.nav_avatar_user);
                     Glide.with(HomeAdminActivity.this)
                             .load(R.drawable.avatar_macdinh)
@@ -270,6 +329,17 @@ public class HomeAdminActivity extends AppCompatActivity {
                             .circleCrop()
                             .into(imageView);
                 }
+
+                NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+
+                // Thiết lập listener để theo dõi thông báo cho người dùng hiện tại
+                notifyQuicklyAPI.setNotificationListener(adminDepartment.getUserId(), new NotifyQuicklyAPI.NotificationCallback() {
+                    @Override
+                    public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                        // Hiển thị thông báo nhanh qua PopupWindow
+                        showNotifyQuicklyPopup(adminDepartment.getUserId(), notifications);
+                    }
+                });
 
                 notifyAPI.getAllNotifies(new NotifyAPI.NotificationCallback() {
                     @Override
@@ -312,7 +382,7 @@ public class HomeAdminActivity extends AppCompatActivity {
             public void onUserReceived(AdminBusiness adminBusiness) {
                 loadPostsFromFirebase();
 
-                if (adminBusiness.getAvatar() == null) {
+                if (adminBusiness.getAvatar().isEmpty()) {
                     ImageView imageView = findViewById(R.id.nav_avatar_user);
                     Glide.with(HomeAdminActivity.this)
                             .load(R.drawable.avatar_macdinh)
@@ -326,6 +396,17 @@ public class HomeAdminActivity extends AppCompatActivity {
                             .circleCrop()
                             .into(imageView);
                 }
+
+                NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+
+                // Thiết lập listener để theo dõi thông báo cho người dùng hiện tại
+                notifyQuicklyAPI.setNotificationListener(adminBusiness.getUserId(), new NotifyQuicklyAPI.NotificationCallback() {
+                    @Override
+                    public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                        // Hiển thị thông báo nhanh qua PopupWindow
+                        showNotifyQuicklyPopup(adminBusiness.getUserId(), notifications);
+                    }
+                });
 
                 notifyAPI.getAllNotifies(new NotifyAPI.NotificationCallback() {
                     @Override
@@ -367,7 +448,7 @@ public class HomeAdminActivity extends AppCompatActivity {
                 if (!adminDefault.getAdminType().equals("Super")) {
                     loadPostsFromFirebase();
 
-                    if (adminDefault.getAvatar() == null) {
+                    if (adminDefault.getAvatar().isEmpty()) {
                         ImageView imageView = findViewById(R.id.nav_avatar_user);
                         Glide.with(HomeAdminActivity.this)
                                 .load(R.drawable.avatar_macdinh)
@@ -381,6 +462,17 @@ public class HomeAdminActivity extends AppCompatActivity {
                                 .circleCrop()
                                 .into(imageView);
                     }
+
+                    NotifyQuicklyAPI notifyQuicklyAPI = new NotifyQuicklyAPI();
+
+                    // Thiết lập listener để theo dõi thông báo cho người dùng hiện tại
+                    notifyQuicklyAPI.setNotificationListener(adminDefault.getUserId(), new NotifyQuicklyAPI.NotificationCallback() {
+                        @Override
+                        public void onNotificationsReceived(List<NotifyQuickly> notifications) {
+                            // Hiển thị thông báo nhanh qua PopupWindow
+                            showNotifyQuicklyPopup(adminDefault.getUserId(), notifications);
+                        }
+                    });
 
                     notifyAPI.getAllNotifies(new NotifyAPI.NotificationCallback() {
                         @Override

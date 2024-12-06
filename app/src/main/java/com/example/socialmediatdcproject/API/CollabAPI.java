@@ -88,7 +88,7 @@ public class CollabAPI {
 
     // Lấy tất cả GroupUser
     public void getAllCollab(final CollabCallback callback) {
-        collabRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        collabRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Collab> collabList = new ArrayList<>();

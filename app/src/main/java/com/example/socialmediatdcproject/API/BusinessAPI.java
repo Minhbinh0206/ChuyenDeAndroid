@@ -26,17 +26,16 @@ public class BusinessAPI {
 
     // Create (Add a new business)
     public void addBusiness(Business business) {
-        String businessId = databaseReference.push().getKey(); // Generate unique ID
-        if (businessId != null) {
-            databaseReference.child(businessId).setValue(business)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Log.d("BusinessAPI", "Business added successfully.");
-                        } else {
-                            Log.e("BusinessAPI", "Failed to add business.", task.getException());
-                        }
-                    });
-        }
+        String businessId = business.getBusinessId()+ "";
+
+        databaseReference.child(businessId).setValue(business)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("BusinessAPI", "Business added successfully.");
+                    } else {
+                        Log.e("BusinessAPI", "Failed to add business.", task.getException());
+                    }
+                });
     }
 
     // Get all businesses

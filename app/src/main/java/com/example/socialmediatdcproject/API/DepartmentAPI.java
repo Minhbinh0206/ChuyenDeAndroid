@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Department;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -27,11 +28,19 @@ public class DepartmentAPI {
         databaseReference = database.getReference("Departments"); // Reference to "Departments" node
     }
 
-    // Create (Add a new department)
-    public void addDepartment(Department department, OnCompleteListener<Void> onCompleteListener) {
-        String departmentId = databaseReference.push().getKey();  // Generate unique ID
-        department.setDepartmentId(departmentId.hashCode()); // Set the unique ID for the department
-        databaseReference.child(departmentId).setValue(department).addOnCompleteListener(onCompleteListener);
+    // Thêm Department
+    public void addDepartment(Department department) {
+        String key = department.getDepartmentId() + ""; // Sử dụng adminDepartmentId làm key
+        databaseReference.child(key).setValue(department)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // Thêm thành công
+                        Log.d("UserAPI", "User added successfully.");
+                    } else {
+                        // Xảy ra lỗi
+                        Log.e("UserAPI", "Failed to add user.", task.getException());
+                    }
+                });
     }
 
     // Get all departments
