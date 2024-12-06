@@ -19,15 +19,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.DepartmentAPI;
+import com.example.socialmediatdcproject.API.EventAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.PostAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.adapter.EventAdapter;
 import com.example.socialmediatdcproject.adapter.MemberAdapter;
 import com.example.socialmediatdcproject.adapter.PostAdapter;
 import com.example.socialmediatdcproject.dataModels.GroupUser;
 import com.example.socialmediatdcproject.model.Department;
+import com.example.socialmediatdcproject.model.Event;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
@@ -99,6 +102,7 @@ public class DepartmentFragment extends Fragment {
 
                                 // Set màu mặc định cho nút "Bài viết"
                                 changeColorButtonActive(postButton);
+                                changeColorButtonNormal(eventButton);
 
                                 // Sự kiện khi nhấn vào nút memberButton
                                 int finalGroupId = groupId;
@@ -109,6 +113,15 @@ public class DepartmentFragment extends Fragment {
 
                                     // Cập nhật màu cho các nút
                                     changeColorButtonActive(postButton);
+                                    changeColorButtonNormal(eventButton);
+                                });
+
+                                eventButton.setOnClickListener(v -> {
+                                    loadEventFromFirebase(finalGroupId);
+
+                                    // Cập nhật màu cho các nút
+                                    changeColorButtonActive(postButton);
+                                    changeColorButtonNormal(eventButton);
                                 });
                             }
 
@@ -134,12 +147,14 @@ public class DepartmentFragment extends Fragment {
     }
 
     public void loadPostFromFirebase(int id) {
-        ArrayList<Post> postsList = new ArrayList<>(); // Danh sách bài viết
+        // Khởi tạo danh sách bài đăng
+        ArrayList<Post> postsTraining = new ArrayList<>();
 
-        // Tạo instance của PostAPI
+        // Lấy RecyclerView từ layout của Activity (shared_layout)
+        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+
+        // Mặc định vào bài viết trước
         PostAPI postAPI = new PostAPI();
-
-        // Lấy bài viết theo groupId
         postAPI.getPostsByGroupId(id, new PostAPI.PostCallback() {
             @Override
             public void onPostReceived(Post post) {
@@ -148,25 +163,68 @@ public class DepartmentFragment extends Fragment {
 
             @Override
             public void onPostsReceived(List<Post> posts) {
-                // Kiểm tra nếu có bài viết
-                if (posts.size() > 0) {
-                    for (Post p : posts) {
-                        if (p != null) {
-                            postsList.add(p); // Thêm bài viết vào danh sách
-                        }
-                    }
+                // Duyệt qua tất cả các bài viết
+                for (Post p : posts) {
+                    postsTraining.add(p); // Thêm vào danh sách
+                }
 
-                    // Cập nhật RecyclerView với dữ liệu bài viết
-                    PostAdapter postAdapter = new PostAdapter(postsList, requireContext());
-                    recyclerView.setAdapter(postAdapter);
-                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-                } else {
-                    ArrayList<Post> postsList = new ArrayList<>();
+                // Lấy dữ liệu bài viết
+                PostAdapter postAdapter = new PostAdapter(postsTraining, requireContext());
 
-                    // Cập nhật RecyclerView với dữ liệu bài viết
-                    PostAdapter postAdapter = new PostAdapter(postsList, requireContext());
-                    recyclerView.setAdapter(postAdapter);
-                    recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                recyclerView.setAdapter(postAdapter);
+
+                // Thiết lập LayoutManager cho RecyclerView
+                recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+                if (postsTraining.isEmpty()) {
+                    TextView textView = requireActivity().findViewById(R.id.null_content_notify);
+                    textView.setVisibility(View.VISIBLE);
+                    textView.setText("Hiện chưa có bài đăng nào");
+                }
+                else {
+                    TextView textView = requireActivity().findViewById(R.id.null_content_notify);
+                    textView.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+
+    public void loadEventFromFirebase(int id) {
+        // Khởi tạo danh sách bài đăng
+        ArrayList<Event> eventList = new ArrayList<>();
+
+        // Lấy RecyclerView từ layout của Activity (shared_layout)
+        RecyclerView recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
+
+        // Lấy Group của phòng đào tạo
+        EventAPI eventAPI = new EventAPI();
+        eventAPI.getAllEventByOneAdmin(id, new EventAPI.EventCallback() {
+            @Override
+            public void onEventReceived(Event event) {
+
+            }
+
+            @Override
+            public void onEventsReceived(List<Event> events) {
+                // Duyệt qua tất cả các bài viết
+                eventList.addAll(events);
+
+                // Lấy dữ liệu bài viết
+                EventAdapter eventAdapter = new EventAdapter(eventList, requireContext());
+
+                recyclerView.setAdapter(eventAdapter);
+
+                // Thiết lập LayoutManager cho RecyclerView
+                recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+                if (eventList.isEmpty()) {
+                    TextView textView = requireActivity().findViewById(R.id.null_content_notify);
+                    textView.setVisibility(View.VISIBLE);
+                    textView.setText("Hiện chưa tổ chức sự kiện nào");
+                }
+                else {
+                    TextView textView = requireActivity().findViewById(R.id.null_content_notify);
+                    textView.setVisibility(View.GONE);
                 }
             }
         });

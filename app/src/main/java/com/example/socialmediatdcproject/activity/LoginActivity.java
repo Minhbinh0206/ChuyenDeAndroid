@@ -157,10 +157,18 @@ public class LoginActivity extends AppCompatActivity {
                                                             adminDefaultAPI.getAdminDefaultById(userId, new AdminDefaultAPI.AdminDefaultCallBack() {
                                                                 @Override
                                                                 public void onUserReceived(AdminDefault adminDefault) {
-                                                                    Intent intent = new Intent(LoginActivity.this, HomeAdminActivity.class);
-                                                                    intent.putExtra("admin", userId);
-                                                                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                                                                    startActivity(intent);
+                                                                    if (adminDefault.getAdminType().equals("Super")) {
+                                                                        Intent intent = new Intent(LoginActivity.this, SuperAdminActivity.class);
+                                                                        intent.putExtra("admin", userId);
+                                                                        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                                                        startActivity(intent);
+                                                                    }
+                                                                    else {
+                                                                        Intent intent = new Intent(LoginActivity.this, HomeAdminActivity.class);
+                                                                        intent.putExtra("admin", userId);
+                                                                        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                                                        startActivity(intent);
+                                                                    }
                                                                 }
 
                                                                 @Override

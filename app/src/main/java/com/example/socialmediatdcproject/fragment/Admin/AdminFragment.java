@@ -95,7 +95,7 @@ public class AdminFragment extends Fragment {
         adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
             @Override
             public void onUserReceived(AdminDepartment adminDepartment) {
-                if (adminDepartment.getAvatar() == null) {
+                if (adminDepartment.getAvatar().isEmpty()) {
                     Glide.with(getContext())
                             .load(R.drawable.avatar_macdinh)
                             .circleCrop()
@@ -136,7 +136,7 @@ public class AdminFragment extends Fragment {
         adminBusinessAPI.getAdminBusinessByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
             @Override
             public void onUserReceived(AdminBusiness adminBusiness) {
-                if (adminBusiness.getAvatar() == null) {
+                if (adminBusiness.getAvatar().isEmpty()) {
                     Glide.with(getContext())
                             .load(R.drawable.avatar_macdinh)
                             .circleCrop()
@@ -179,7 +179,7 @@ public class AdminFragment extends Fragment {
             @Override
             public void onUserReceived(AdminDefault adminDefault) {
                 if (!adminDefault.getAdminType().equals("Super")) {
-                    if (adminDefault.getAvatar() == null) {
+                    if (adminDefault.getAvatar().isEmpty()) {
                         Glide.with(getContext())
                                 .load(R.drawable.avatar_macdinh)
                                 .circleCrop()

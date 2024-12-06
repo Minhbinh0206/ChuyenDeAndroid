@@ -62,9 +62,9 @@
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.QRCodeScannerActivity"
+            android:name=".activity.SuperAdminActivity"
             android:exported="false"
-            android:label="QR Scanner" />
+            />
         <activity
             android:name=".activity.LoginActivity"
             android:exported="false">

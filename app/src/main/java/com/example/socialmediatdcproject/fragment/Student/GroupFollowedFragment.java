@@ -21,6 +21,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.socialmediatdcproject.API.AdminBusinessAPI;
+import com.example.socialmediatdcproject.API.AdminDefaultAPI;
+import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
 import com.example.socialmediatdcproject.API.FilterPostsAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
@@ -33,6 +36,9 @@ import com.example.socialmediatdcproject.adapter.PostAdapter;
 import com.example.socialmediatdcproject.adapter.PostApproveAdapter;
 import com.example.socialmediatdcproject.adapter.PostMyselfAdapter;
 import com.example.socialmediatdcproject.dataModels.GroupUser;
+import com.example.socialmediatdcproject.model.AdminBusiness;
+import com.example.socialmediatdcproject.model.AdminDefault;
+import com.example.socialmediatdcproject.model.AdminDepartment;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Post;
 import com.example.socialmediatdcproject.model.Student;
@@ -67,7 +73,6 @@ public class GroupFollowedFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
-        frameLayout.setVisibility(view.GONE);
         postList = new ArrayList<>();
         recyclerView = requireActivity().findViewById(R.id.second_content_fragment);
         recyclerView.setVisibility(View.VISIBLE);
@@ -84,6 +89,13 @@ public class GroupFollowedFragment extends Fragment {
 
         changeColorButtonActive(postBtn);
         changeColorButtonNormal(myselfBtn);
+
+        frameLayout.setVisibility(View.VISIBLE);
+
+        Fragment searchGroupFragment = new CreateNewPostFragment();
+        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
+        fragmentTransaction.commit();
 
         TextView textView = requireActivity().findViewById(R.id.null_content_notify);
 
@@ -125,6 +137,149 @@ public class GroupFollowedFragment extends Fragment {
                 nameGroup.setText(group.getGroupName());
 
                 StudentAPI studentAPI = new StudentAPI();
+                AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+                AdminBusinessAPI adminBusinessAPI = new AdminBusinessAPI();
+                AdminDefaultAPI adminDefaultAPI = new AdminDefaultAPI();
+
+                adminDefaultAPI.getAdminDefaultByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDefaultAPI.AdminDefaultCallBack() {
+                    @Override
+                    public void onUserReceived(AdminDefault adminDefault) {
+                        if (group.getAdminUserId() == adminDefault.getUserId()) {
+
+                            myselfBtn.setText("Quản lý");
+
+                            postBtn.setOnClickListener(v -> {
+                                frameLayout.setVisibility(View.VISIBLE);
+
+                                Fragment searchGroupFragment = new CreateNewPostFragment();
+                                FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
+                                fragmentTransaction.commit();
+
+                                loadPostFromFirebase(groupId, textView);
+
+                                changeColorButtonActive(postBtn);
+                                changeColorButtonNormal(myselfBtn);
+                            });
+
+                            myselfBtn.setOnClickListener(v -> {
+                                if (group.isPrivate()) {
+                                    Fragment searchGroupFragment = new ManagerGroupFragment();
+                                    FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                    fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
+                                    fragmentTransaction.commit();
+                                }else {
+                                    frameLayout.setVisibility(View.GONE);
+                                }
+
+                                changeColorButtonActive(myselfBtn);
+                                changeColorButtonNormal(postBtn);
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onUsersReceived(List<AdminDefault> adminDefault) {
+
+                    }
+                });
+
+                adminBusinessAPI.getAdminBusinessByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminBusinessAPI.AdminBusinessCallBack() {
+                    @Override
+                    public void onUserReceived(AdminBusiness adminBusiness) {
+                        if (group.getAdminUserId() == adminBusiness.getUserId()) {
+
+                            myselfBtn.setText("Quản lý");
+
+                            postBtn.setOnClickListener(v -> {
+                                frameLayout.setVisibility(View.VISIBLE);
+
+                                Fragment searchGroupFragment = new CreateNewPostFragment();
+                                FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
+                                fragmentTransaction.commit();
+
+                                loadPostFromFirebase(groupId, textView);
+
+                                changeColorButtonActive(postBtn);
+                                changeColorButtonNormal(myselfBtn);
+                            });
+
+                            myselfBtn.setOnClickListener(v -> {
+                                if (group.isPrivate()) {
+                                    Fragment searchGroupFragment = new ManagerGroupFragment();
+                                    FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                    fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
+                                    fragmentTransaction.commit();
+                                }else {
+                                    frameLayout.setVisibility(View.GONE);
+                                }
+
+                                changeColorButtonActive(myselfBtn);
+                                changeColorButtonNormal(postBtn);
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onUsersReceived(List<AdminBusiness> adminBusiness) {
+
+                    }
+
+                    @Override
+                    public void onError(String s) {
+
+                    }
+                });
+
+                adminDepartmentAPI.getAdminDepartmentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new AdminDepartmentAPI.AdminDepartmentCallBack() {
+                    @Override
+                    public void onUserReceived(AdminDepartment adminDepartment) {
+                        if (group.getAdminUserId() == adminDepartment.getUserId()) {
+
+                            myselfBtn.setText("Quản lý");
+
+                            postBtn.setOnClickListener(v -> {
+                                frameLayout.setVisibility(View.VISIBLE);
+
+                                Fragment searchGroupFragment = new CreateNewPostFragment();
+                                FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
+                                fragmentTransaction.commit();
+
+                                loadPostFromFirebase(groupId, textView);
+
+                                changeColorButtonActive(postBtn);
+                                changeColorButtonNormal(myselfBtn);
+                            });
+
+                            myselfBtn.setOnClickListener(v -> {
+                                if (group.isPrivate()) {
+                                    Fragment searchGroupFragment = new ManagerGroupFragment();
+                                    FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                                    fragmentTransaction.replace(R.id.third_content_fragment, searchGroupFragment);
+                                    fragmentTransaction.commit();
+                                }else {
+                                    frameLayout.setVisibility(View.GONE);
+                                }
+
+                                changeColorButtonActive(myselfBtn);
+                                changeColorButtonNormal(postBtn);
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+                    }
+
+                    @Override
+                    public void onError(String s) {
+
+                    }
+                });
+
                 studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
                     @Override
                     public void onStudentReceived(Student student) {

@@ -41,9 +41,8 @@ public class AdminDepartmentAPI {
     }
 
     // Thêm người dùng mới vào Firebase
-    public void addAdminDepartment(AdminDepartment adminDepartment) {
-        String userId = String.valueOf(adminDepartment.getUserId());
-        userDatabase.child(userId).setValue(adminDepartment)
+    public void addAdminDepartment(String uid, AdminDepartment adminDepartment) {
+        userDatabase.child(uid).setValue(adminDepartment)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         // Thêm thành công
