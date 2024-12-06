@@ -8,6 +8,8 @@
     android:layout_marginHorizontal="10dp"
     android:padding="10dp">
 
+
+
     <androidx.cardview.widget.CardView
         android:id="@+id/item_member"
         android:layout_width="match_parent"
@@ -81,3 +83,4 @@
     </androidx.cardview.widget.CardView>
 
 </LinearLayout>
+

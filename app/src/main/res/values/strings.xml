@@ -15,4 +15,10 @@
     <string name="new_password">Mật khẩu mới</string>
     <string name="old_password">Mật khẩu cũ</string>
     <string name="verifyOTP">Gửi OTP</string>
+    <string name="addNewMember">Thêm Thành Viên Mới</string>
+    <string name="fullName">Họ tên:</string>
+    <string name="hint_fullName">Họ tên</string>
+    <string name="cancel">Hủy</string>
+    <string name="add">Thêm</string>
+    <string name="searching_for_member">Tìm kiếm thành viên</string>
 </resources>
