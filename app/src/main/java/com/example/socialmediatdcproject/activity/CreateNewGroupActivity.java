@@ -258,6 +258,9 @@ public class CreateNewGroupActivity extends AppCompatActivity {
         Switch fieldIsPrivate = findViewById(R.id.content_private_group);
         imgFromGallery = findViewById(R.id.content_avatar_group); // Ánh xạ hình ảnh từ layout
 
+        changeColorButtonActive(submitAction);
+        changeColorButtonNormal(cancleAction);
+
         // Khi nhấn vào ảnh, chọn ảnh từ Gallery hoặc chụp ảnh bằng Camera
         imgFromGallery.setOnClickListener(v -> showImageSourceDialog());
 
@@ -462,6 +465,16 @@ public class CreateNewGroupActivity extends AppCompatActivity {
         Random random = new Random();
         // nextInt(10) sẽ trả về giá trị ngẫu nhiên trong khoảng từ 0 đến 9
         return random.nextInt(10);
+    }
+
+    public void changeColorButtonActive(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(CreateNewGroupActivity.this, R.color.defaultBlue));
+        btn.setTextColor(ContextCompat.getColorStateList(CreateNewGroupActivity.this, R.color.white));
+    }
+
+    public void changeColorButtonNormal(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(CreateNewGroupActivity.this, R.color.buttonDefault));
+        btn.setTextColor(ContextCompat.getColorStateList(CreateNewGroupActivity.this, R.color.black));
     }
 
 }

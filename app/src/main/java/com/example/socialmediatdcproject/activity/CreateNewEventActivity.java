@@ -77,6 +77,9 @@ public class CreateNewEventActivity extends AppCompatActivity {
         Button cancle = findViewById(R.id.cancle_create);
         Button submit = findViewById(R.id.submit_create);
 
+        changeColorButtonActive(submit);
+        changeColorButtonNormal(cancle);
+
         imgFromGallery = findViewById(R.id.content_avatar_event);
 
         // Khi nhấn vào ảnh, chọn ảnh từ Gallery hoặc chụp ảnh bằng Camera
@@ -414,5 +417,15 @@ public class CreateNewEventActivity extends AppCompatActivity {
         minDate.add(Calendar.DAY_OF_MONTH, 3); // Thêm 3 ngày vào ngày hiện tại
         datePickerDialog.getDatePicker().setMinDate(minDate.getTimeInMillis());
         datePickerDialog.show();
+    }
+
+    public void changeColorButtonActive(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(CreateNewEventActivity.this, R.color.defaultBlue));
+        btn.setTextColor(ContextCompat.getColorStateList(CreateNewEventActivity.this, R.color.white));
+    }
+
+    public void changeColorButtonNormal(Button btn){
+        btn.setBackgroundTintList(ContextCompat.getColorStateList(CreateNewEventActivity.this, R.color.buttonDefault));
+        btn.setTextColor(ContextCompat.getColorStateList(CreateNewEventActivity.this, R.color.black));
     }
 }

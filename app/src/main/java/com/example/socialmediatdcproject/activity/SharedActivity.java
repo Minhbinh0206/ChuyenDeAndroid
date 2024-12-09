@@ -343,8 +343,12 @@ public class SharedActivity extends AppCompatActivity {
                 notifyQuicklyAPI.setNotificationListener(student.getUserId(), new NotifyQuicklyAPI.NotificationCallback() {
                     @Override
                     public void onNotificationsReceived(List<NotifyQuickly> notifications) {
-                        // Hiển thị thông báo nhanh qua PopupWindow
-                        showNotifyQuicklyPopup(student.getUserId(), notifications);
+                        // Kiểm tra trạng thái Activity trước khi hiển thị PopupWindow
+                        if (!isFinishing() && !isDestroyed()) {
+                            showNotifyQuicklyPopup(student.getUserId(), notifications);
+                        } else {
+                            Log.w("NotifyQuickly", "Cannot show popup, activity is not running.");
+                        }
                     }
                 });
             }
