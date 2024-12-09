@@ -288,6 +288,8 @@ public class GroupFollowedFragment extends Fragment {
                             myselfBtn.setText("Quản lý");
 
                             postBtn.setOnClickListener(v -> {
+                                clearRecyclerView();
+
                                 frameLayout.setVisibility(View.VISIBLE);
 
                                 Fragment searchGroupFragment = new CreateNewPostFragment();
@@ -302,6 +304,8 @@ public class GroupFollowedFragment extends Fragment {
                             });
 
                             myselfBtn.setOnClickListener(v -> {
+                                clearRecyclerView();
+
                                 if (group.isPrivate()) {
                                     Fragment searchGroupFragment = new ManagerGroupFragment();
                                     FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
@@ -309,6 +313,8 @@ public class GroupFollowedFragment extends Fragment {
                                     fragmentTransaction.commit();
                                 }else {
                                     frameLayout.setVisibility(View.GONE);
+
+                                    loadPostApproveFromFirebase(groupId, textView);
                                 }
 
                                 changeColorButtonActive(myselfBtn);
@@ -320,6 +326,8 @@ public class GroupFollowedFragment extends Fragment {
                             myselfBtn.setText("Tôi");
 
                             postBtn.setOnClickListener(v -> {
+                                clearRecyclerView();
+
                                 loadPostFromFirebase(groupId, textView);
 
                                 changeColorButtonActive(postBtn);
@@ -327,6 +335,8 @@ public class GroupFollowedFragment extends Fragment {
                             });
 
                             myselfBtn.setOnClickListener(v -> {
+                                clearRecyclerView();
+
                                 loadPostMyselfFromFirebase(groupId, textView);
 
                                 changeColorButtonActive(myselfBtn);
@@ -357,6 +367,51 @@ public class GroupFollowedFragment extends Fragment {
     public void changeColorButtonNormal(Button btn){
         btn.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.buttonDefault));
         btn.setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.black));
+    }
+
+    public void loadPostApproveFromFirebase(int id, TextView textView) {
+        ArrayList<Post> postsApprove = new ArrayList<>();
+        GroupAPI groupAPI = new GroupAPI();
+        groupAPI.getGroupById(id ,new GroupAPI.GroupCallback() {
+            @Override
+            public void onGroupReceived(Group group) {
+                PostAPI postAPI = new PostAPI();
+                postAPI.getPostsByGroupId(group.getGroupId(), new PostAPI.PostCallback() {
+                    @Override
+                    public void onPostReceived(Post post) {
+
+                    }
+
+                    @Override
+                    public void onPostsReceived(List<Post> posts) {
+                        postsApprove.clear();
+
+                        for (Post p : posts) {
+                            if (p.getStatus() == 0) {
+                                postsApprove.add(p);
+                            }
+                        }
+
+                        if (postsApprove.isEmpty()) {
+                            textView.setVisibility(View.VISIBLE);
+                            textView.setText("Chưa có bài viết nào cần duyệt");
+                        }
+                        else {
+                            textView.setVisibility(View.GONE);
+                        }
+
+                        PostApproveAdapter postMyselfAdapter = new PostApproveAdapter(postsApprove, requireContext());
+                        recyclerView.setAdapter(postMyselfAdapter);
+                        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+                    }
+                });
+            }
+
+            @Override
+            public void onGroupsReceived(List<Group> groups) {
+
+            }
+        });
     }
 
     public void loadPostFromFirebase(int id, TextView textView) {
@@ -390,7 +445,7 @@ public class GroupFollowedFragment extends Fragment {
                         if (!isAdded()) return; // Đảm bảo Fragment vẫn còn hoạt động
 
                         Post post = snapshot.getValue(Post.class);
-                        if (post != null) {
+                        if (post != null && post.getStatus() == 1) { // Lọc thêm ở đây
                             handlePostAddition(post);
                             if (textView.getVisibility() == View.VISIBLE) {
                                 textView.setVisibility(View.GONE); // Ẩn thông báo
@@ -400,20 +455,10 @@ public class GroupFollowedFragment extends Fragment {
 
                     @Override
                     public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                        if (!isAdded()) return; // Đảm bảo Fragment vẫn còn hoạt động
-
-                        Post updatedPost = snapshot.getValue(Post.class);
-                        if (updatedPost != null) {
-                            handlePostUpdate(updatedPost);
-                        }
                     }
 
                     @Override
                     public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                        Post removedPost = snapshot.getValue(Post.class);
-                        if (removedPost != null) {
-                            handlePostRemoval(removedPost);
-                        }
                     }
 
                     @Override
@@ -440,24 +485,6 @@ public class GroupFollowedFragment extends Fragment {
             postList.add(0, post); // Thêm bài viết vào đầu danh sách
             postAdapter.notifyItemInserted(0); // Thông báo RecyclerView
             recyclerView.scrollToPosition(0); // Cuộn lên đầu
-        }
-    }
-
-    private void handlePostUpdate(Post updatedPost) {
-        if (updatedPost.getStatus() == 1) {
-            postList.add(0, updatedPost); // Thêm bài viết vào đầu danh sách
-            postAdapter.notifyItemInserted(0); // Thông báo RecyclerView
-            recyclerView.scrollToPosition(0); // Cuộn lên đầu
-        }
-    }
-
-    private void handlePostRemoval(Post removedPost) {
-        for (int i = 0; i < postList.size(); i++) {
-            if (postList.get(i).getPostId() == removedPost.getPostId()) {
-                postList.remove(i);
-                postAdapter.notifyItemRemoved(i);
-                break;
-            }
         }
     }
 
@@ -516,35 +543,10 @@ public class GroupFollowedFragment extends Fragment {
         });
     }
 
-    public void loadUsersByGroupId(int groupId){
-        ArrayList<Student> memberList = new ArrayList<>();
-
-        // Cập nhật RecyclerView với dữ liệu bài viết
-        MemberAdapter memberAdapter = new MemberAdapter(memberList, requireContext());
-        recyclerView.setAdapter(memberAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-        GroupUserAPI groupUserAPI = new GroupUserAPI();
-        groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
-            @Override
-            public void onUsersReceived(List<Integer> userIds) {
-                for (Integer i : userIds) {
-                    StudentAPI studentAPI = new StudentAPI();
-                    studentAPI.getStudentById(i, new StudentAPI.StudentCallback() {
-                        @Override
-                        public void onStudentReceived(Student student) {
-                            memberList.add(student);
-                            memberAdapter.notifyDataSetChanged();
-                        }
-
-                        @Override
-                        public void onStudentsReceived(List<Student> students) {
-
-                        }
-                    });
-                }
-            }
-        });
+    private void clearRecyclerView() {
+        if (recyclerView != null) {
+            recyclerView.setAdapter(null);
+        }
     }
 
 }

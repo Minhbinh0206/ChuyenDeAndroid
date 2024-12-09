@@ -89,7 +89,7 @@ public class PostAPI {
 
     // Lấy tất cả bài viết trong một nhóm
     public void getPostsByGroupId(int groupId, PostCallback callback) {
-        postDatabase.child(String.valueOf(groupId)).addValueEventListener(new ValueEventListener() {
+        postDatabase.child(String.valueOf(groupId)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Post> postList = new ArrayList<>();

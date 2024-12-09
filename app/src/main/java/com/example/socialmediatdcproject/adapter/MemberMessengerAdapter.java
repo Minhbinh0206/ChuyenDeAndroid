@@ -153,7 +153,9 @@ public class MemberMessengerAdapter extends RecyclerView.Adapter<MemberMessenger
                         @Override
                         public void onMessagesReceived(List<Message> messages) {
                             for (Message m : messages) {
-                                messageAPI.setMessageRead(me.getUserId(), m.getMessageId());
+                                if (m.getYourUserId() == student.getUserId()) {
+                                    messageAPI.setMessageRead(me.getUserId(), m.getMessageId());
+                                }
                             }
                             intent.putExtra("studentId", student.getUserId());
                             intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
