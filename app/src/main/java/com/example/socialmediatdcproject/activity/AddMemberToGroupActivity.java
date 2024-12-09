@@ -49,12 +49,17 @@ public class AddMemberToGroupActivity extends AppCompatActivity {
         // Ánh xạ view
         init();
 
-        Intent intent = getIntent();
-        groupId = intent.getIntExtra("groupId" , -1);
+        if (savedInstanceState != null) {
+            // Khôi phục groupId từ savedInstanceState
+            groupId = savedInstanceState.getInt("groupId", -1);
+        } else {
+            Intent intent = getIntent();
+            groupId = intent.getIntExtra("groupId", -1);
+        }
 
         // Load danh sách thành viên chưa có trong nhóm
         loadStudentsByGroupId(groupId);
-        loadLecturersByGroupId(groupId);
+//        loadLecturersByGroupId(groupId);
 
         memberAdapter = new MemberAdapter(filteredMembers , this);
         memberAdapter.updateList(filteredMembers);
@@ -129,49 +134,49 @@ public class AddMemberToGroupActivity extends AppCompatActivity {
         });
     }
 
-    private void loadLecturersByGroupId(int id) {
-        LecturerAPI lecturerAPI = new LecturerAPI();
-        // Lấy danh sách tất cả giang viên
-        lecturerAPI.getAllLecturers(new LecturerAPI.LecturerCallback() {
-            @Override
-            public void onLecturerReceived(Lecturer lecturer) {
-
-            }
-
-            @Override
-            public void onLecturersReceived(List<Lecturer> lecturers) {
-                GroupUserAPI groupUserAPI = new GroupUserAPI();
-                groupUserAPI.getAllUsersInGroup(id, new GroupUserAPI.GroupUsersCallback() {
-                    @Override
-                    public void onUsersReceived(List<Integer> userIds) {
-                        List<Lecturer> unassignedLecturers = new ArrayList<>();
-                        // Duyệt qua danh sách userIds để kiểm tra sinh viên
-                        for (Lecturer lecturer : lecturers) {
-                            if (!unassignedLecturers.contains(lecturer)
-//                                    &&
-//                                    !userIds.contains(lecturer.getUserId())
-                            ) {
-                                unassignedLecturers.add(lecturer);
-                            }
-                        }
-                        filteredLecturers.clear();
-                        filteredLecturers.addAll(unassignedLecturers);
-                        lecturerAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                // Nothing
-            }
-
-            @Override
-            public void onLecturerDeleted(int lecturerId) {
-                // Nothing
-            }
-        });
-    }
+//    private void loadLecturersByGroupId(int id) {
+//        LecturerAPI lecturerAPI = new LecturerAPI();
+//        // Lấy danh sách tất cả giang viên
+//        lecturerAPI.getAllLecturers(new LecturerAPI.LecturerCallback() {
+//            @Override
+//            public void onLecturerReceived(Lecturer lecturer) {
+//
+//            }
+//
+//            @Override
+//            public void onLecturersReceived(List<Lecturer> lecturers) {
+//                GroupUserAPI groupUserAPI = new GroupUserAPI();
+//                groupUserAPI.getAllUsersInGroup(id, new GroupUserAPI.GroupUsersCallback() {
+//                    @Override
+//                    public void onUsersReceived(List<Integer> userIds) {
+//                        List<Lecturer> unassignedLecturers = new ArrayList<>();
+//                        // Duyệt qua danh sách userIds để kiểm tra sinh viên
+//                        for (Lecturer lecturer : lecturers) {
+//                            if (!unassignedLecturers.contains(lecturer)
+////                                    &&
+////                                    !userIds.contains(lecturer.getUserId())
+//                            ) {
+//                                unassignedLecturers.add(lecturer);
+//                            }
+//                        }
+//                        filteredLecturers.clear();
+//                        filteredLecturers.addAll(unassignedLecturers);
+//                        lecturerAdapter.notifyDataSetChanged();
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            public void onError(String errorMessage) {
+//                // Nothing
+//            }
+//
+//            @Override
+//            public void onLecturerDeleted(int lecturerId) {
+//                // Nothing
+//            }
+//        });
+//    }
 
 
      private void filterMembers(String keyword) {
@@ -192,12 +197,50 @@ public class AddMemberToGroupActivity extends AppCompatActivity {
         memberAdapter.notifyDataSetChanged();  // Cập nhật RecyclerView
     }
 
-    private void init(){
+    private void init() {
         submitBtn = findViewById(R.id.btn_add);
         cancelBtn = findViewById(R.id.btn_cancel);
         memberRecyclerView = findViewById(R.id.memberRecyclerView);
         searchField = findViewById(R.id.searchField);
+
+        // Xử lý nút hủy
         cancelBtn.setOnClickListener(v -> finish());
-        submitBtn.setOnClickListener(v -> finish());
+
+        // Xử lý nút submit
+        submitBtn.setOnClickListener(v -> {
+            List<Integer> selectedIds = memberAdapter.getSelectedUserIds();
+            if (!selectedIds.isEmpty()) {
+                SharedViewModel sharedViewModel = new SharedViewModel();
+                for (int userId : selectedIds) {
+                    Log.d("Them thanh Vien " , "Tong so luong duoc chon" + selectedIds.size());
+                    sharedViewModel.addStudentToGroup(groupId, userId);
+                }
+                Toast.makeText(this, "Đã thêm thành viên vào nhóm!", Toast.LENGTH_SHORT).show();
+                finish(); // Đóng Activity sau khi thêm
+            } else {
+                Toast.makeText(this, "Chưa chọn thành viên nào!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("groupId", groupId); // Lưu groupId
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Kiểm tra nếu groupId hợp lệ
+        if (groupId != -1) {
+            filteredMembers.clear();
+            loadStudentsByGroupId(groupId);
+            memberAdapter.notifyDataSetChanged();
+        } else {
+            Log.e("AddMemberToGroup", "groupId is invalid");
+        }
     }
 }
+
