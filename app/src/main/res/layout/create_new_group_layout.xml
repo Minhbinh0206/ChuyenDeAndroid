@@ -180,7 +180,6 @@
             android:layout_weight="5"
             android:gravity="center"
             android:paddingHorizontal="5dp"
-            android:background="@drawable/button_first_style"
             android:layout_height="match_parent">
             <Button
                 android:id="@+id/cancle_create"
@@ -204,7 +203,6 @@
             android:layout_weight="5"
             android:gravity="center"
             android:paddingHorizontal="5dp"
-            android:background="@drawable/button_first_style"
             android:layout_height="match_parent">
             <Button
                 android:id="@+id/submit_create"

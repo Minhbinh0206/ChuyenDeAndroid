@@ -35,10 +35,6 @@ public class SettingActivity extends AppCompatActivity {
             intent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
             startActivity(intent);
         });
-
-
-
-
     }
 
 
