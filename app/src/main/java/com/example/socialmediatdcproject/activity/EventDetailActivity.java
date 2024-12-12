@@ -133,7 +133,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
                 content.setText(event.getContentEvent());
 
-                if (event.getStatus() == 1) {
+                if (event.getStatus() == 1 || event.getStatus() == 0) {
                     if (typeJoin == 3) {
                         // Admin
                         iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_assist));
