@@ -26,21 +26,28 @@ import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.socialmediatdcproject.API.EventAPI;
 import com.example.socialmediatdcproject.API.StudentAPI;
+import com.example.socialmediatdcproject.API.SurveyAPI;
 import com.example.socialmediatdcproject.R;
+import com.example.socialmediatdcproject.adapter.AnswerAdapter;
+import com.example.socialmediatdcproject.adapter.AnswerSurveyAdapter;
 import com.example.socialmediatdcproject.adapter.AssistAdapter;
+import com.example.socialmediatdcproject.adapter.CommentAdapter;
 import com.example.socialmediatdcproject.fragment.Admin.HomeAdminFragment;
 import com.example.socialmediatdcproject.fragment.Student.HomeFragment;
 import com.example.socialmediatdcproject.fragment.Student.SurveyFragment;
 import com.example.socialmediatdcproject.model.Assist;
 import com.example.socialmediatdcproject.model.Event;
+import com.example.socialmediatdcproject.model.QuestionSurvey;
 import com.example.socialmediatdcproject.model.RollCall;
 import com.example.socialmediatdcproject.model.Student;
+import com.example.socialmediatdcproject.model.Survey;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
@@ -173,22 +180,77 @@ public class EventDetailActivity extends AppCompatActivity {
                         iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_qrcode));
 
                         iconAssistEvent.setOnClickListener(v -> {
-                            // Bắt đầu quét QR nếu chưa điểm danh
-                            Intent scanIntent = new Intent(EventDetailActivity.this, CaptureActivity.class); // Dùng CaptureActivity mặc định
-                            startActivityForResult(scanIntent, QR_REQUEST_CODE);
+                            StudentAPI studentAPI = new StudentAPI();
+                            studentAPI.getStudentByKey(FirebaseAuth.getInstance().getCurrentUser().getUid(), new StudentAPI.StudentCallback() {
+                                @Override
+                                public void onStudentReceived(Student student) {
+                                    List<RollCall> rollCalls = event.getUserJoin();
+
+                                    boolean isDone = false;
+
+                                    if (rollCalls != null) {
+                                        for (RollCall r : rollCalls) {
+                                            if (r.getStudentNumber().equals(student.getStudentNumber())) {
+                                                isDone = true;
+                                                Toast.makeText(EventDetailActivity.this, "Bạn đã điểm danh rồi.", Toast.LENGTH_SHORT).show();
+                                                return;
+                                            }
+                                        }
+
+                                        if (!isDone) {
+                                            // Bắt đầu quét QR nếu chưa điểm danh
+                                            Intent scanIntent = new Intent(EventDetailActivity.this, CaptureActivity.class); // Dùng CaptureActivity mặc định
+                                            startActivityForResult(scanIntent, QR_REQUEST_CODE);
+                                        }
+                                    }
+                                    else {
+                                        // Bắt đầu quét QR nếu chưa điểm danh
+                                        Intent scanIntent = new Intent(EventDetailActivity.this, CaptureActivity.class); // Dùng CaptureActivity mặc định
+                                        startActivityForResult(scanIntent, QR_REQUEST_CODE);
+                                    }
+                                }
+
+                                @Override
+                                public void onStudentsReceived(List<Student> students) {
+
+                                }
+                            });
                         });
 
                         position.setText("Sinh viên");
                     }
                 } else if (event.getStatus() == 2) {
-                    iconAssistEvent.setEnabled(false);
                     if (typeJoin == 3) {
+                        iconAssistEvent.setEnabled(true);
+
                         // Admin
-                        iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_assist));
+                        iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_survey_white));
+
+                        iconAssistEvent.setOnClickListener(v -> {
+                            SurveyAPI surveyAPI = new SurveyAPI();
+                            surveyAPI.getSurveyByAdminAndEvent(event.getAdminEventId(), event.getEventId(), new SurveyAPI.SurveyCallback() {
+                                @Override
+                                public void onSuccess(Survey survey) {
+                                    if (survey.getQuestionSurveys() != null) {
+                                        adminShowPopupSurvey(EventDetailActivity.this, event);
+                                    }
+                                    else {
+                                        Toast.makeText(EventDetailActivity.this, "Không có khảo sát nào được tạo", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+
+                                }
+                            });
+                        });
 
                         position.setText("Admin sự kiện");
                     }
                     else if (typeJoin == 2) {
+                        iconAssistEvent.setEnabled(false);
+
                         // Người hỗ trợ
                         iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_qrcode));
 
@@ -196,6 +258,8 @@ public class EventDetailActivity extends AppCompatActivity {
 
                     }
                     else {
+                        iconAssistEvent.setEnabled(false);
+
                         // Sinh viên
                         iconAssistEvent.setBackground(ContextCompat.getDrawable(EventDetailActivity.this, R.drawable.icon_qrcode));
 
@@ -246,6 +310,66 @@ public class EventDetailActivity extends AppCompatActivity {
 
             changeColorButtonActive(listApply);
             changeColorButtonNormal(listAssist);
+        });
+
+        dialog.show();
+    }
+
+    private void adminShowPopupSurvey(Context context, Event event) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        View view = LayoutInflater.from(context).inflate(R.layout.survey_admin, null);
+        builder.setView(view);
+
+        LinearLayout linearLayout = view.findViewById(R.id.layout_contain_item);
+        Button cancel = view.findViewById(R.id.cancel_manager);
+
+        changeColorButtonActive(cancel);
+
+        builder.setCancelable(true);
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.comment_custom));
+
+        cancel.setOnClickListener(v -> dialog.dismiss());
+
+        SurveyAPI surveyAPI = new SurveyAPI();
+        surveyAPI.getSurveyByAdminAndEvent(event.getAdminEventId(), event.getEventId(), new SurveyAPI.SurveyCallback() {
+            @Override
+            public void onSuccess(Survey survey) {
+                if (survey.getQuestionSurveys() != null) {
+                    for (QuestionSurvey questionSurvey : survey.getQuestionSurveys()) {
+                        // Inflate the question layout
+                        View questionView = LayoutInflater.from(context).inflate(R.layout.item_list_question_survey, null);
+
+                        // Set the question text
+                        TextView questionTitle = questionView.findViewById(R.id.question_title);
+                        TextView nullAnswer = questionView.findViewById(R.id.null_answer);
+                        questionTitle.setText((questionSurvey.getQuestionId() + 1) + ". " + questionSurvey.getQuestionContent());
+
+                        // Set up the RecyclerView for answers
+                        RecyclerView recyclerView = questionView.findViewById(R.id.items_answer_survey_list);
+
+                        if (questionSurvey.getAnswerSurveys() != null) {
+                            nullAnswer.setVisibility(View.GONE);
+
+                            GridLayoutManager gridLayoutManager = new GridLayoutManager(EventDetailActivity.this, 1, RecyclerView.HORIZONTAL, false);
+                            recyclerView.setLayoutManager(gridLayoutManager);
+                            recyclerView.setAdapter(new AnswerSurveyAdapter(questionSurvey.getAnswerSurveys(), EventDetailActivity.this));
+                        }
+                        else {
+                            nullAnswer.setVisibility(View.VISIBLE);
+                        }
+
+                        // Add the inflated layout to the LinearLayout
+                        linearLayout.addView(questionView);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // Handle the failure case
+                Toast.makeText(context, "Failed to load survey", Toast.LENGTH_SHORT).show();
+            }
         });
 
         dialog.show();

@@ -120,8 +120,8 @@ public class DepartmentFragment extends Fragment {
                                     loadEventFromFirebase(finalGroupId);
 
                                     // Cập nhật màu cho các nút
-                                    changeColorButtonActive(postButton);
-                                    changeColorButtonNormal(eventButton);
+                                    changeColorButtonActive(eventButton);
+                                    changeColorButtonNormal(postButton);
                                 });
                             }
 

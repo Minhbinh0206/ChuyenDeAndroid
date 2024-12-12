@@ -63,6 +63,7 @@ public class AdminGroupFragment extends Fragment {
         textView.setVisibility(View.GONE);
 
         frameLayout = requireActivity().findViewById(R.id.third_content_fragment);
+        frameLayout.setVisibility(View.VISIBLE);
 
         Fragment searchGroupFragment = new TextGroupFragment();
         FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
