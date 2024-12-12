@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.socialmediatdcproject.API.AdminDepartmentAPI;
+import com.example.socialmediatdcproject.API.DepartmentAPI;
 import com.example.socialmediatdcproject.API.GroupAPI;
 import com.example.socialmediatdcproject.API.GroupUserAPI;
 import com.example.socialmediatdcproject.API.LecturerAPI;
@@ -20,10 +22,13 @@ import com.example.socialmediatdcproject.API.StudentAPI;
 import com.example.socialmediatdcproject.R;
 import com.example.socialmediatdcproject.adapter.LecturerAdapter;
 import com.example.socialmediatdcproject.adapter.MemberAdapter;
+import com.example.socialmediatdcproject.model.AdminDepartment;
+import com.example.socialmediatdcproject.model.Department;
 import com.example.socialmediatdcproject.model.Group;
 import com.example.socialmediatdcproject.model.Lecturer;
 import com.example.socialmediatdcproject.model.Student;
 import com.example.socialmediatdcproject.shareViewModels.SharedViewModel;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,18 +54,51 @@ public class AddMemberToGroupActivity extends AppCompatActivity {
         // Ánh xạ view
         init();
 
-        if (savedInstanceState != null) {
-            // Khôi phục groupId từ savedInstanceState
-            groupId = savedInstanceState.getInt("groupId", -1);
-        } else {
-            Intent intent = getIntent();
-            groupId = intent.getIntExtra("groupId", -1);
-        }
+        FirebaseAuth auth =  FirebaseAuth.getInstance();
+        String key = auth.getCurrentUser().getUid();
+
+        AdminDepartmentAPI adminDepartmentAPI = new AdminDepartmentAPI();
+        adminDepartmentAPI.getAdminDepartmentByKey(key, new AdminDepartmentAPI.AdminDepartmentCallBack() {
+            @Override
+            public void onUserReceived(AdminDepartment adminDepartment) {
+                DepartmentAPI departmentAPI = new DepartmentAPI();
+                departmentAPI.getDepartmentById(adminDepartment.getDepartmentId(), new DepartmentAPI.DepartmentCallback() {
+                    @Override
+                    public void onDepartmentReceived(Department department) {
+                        GroupAPI groupAPI = new GroupAPI();
+                        groupAPI.getGroupById(department.getGroupId(), new GroupAPI.GroupCallback() {
+                            @Override
+                            public void onGroupReceived(Group group) {
+                                groupId = group.getGroupId();
+                            }
+
+                            @Override
+                            public void onGroupsReceived(List<Group> groups) {
+
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onDepartmentsReceived(List<Department> departments) {
+                        // Nothing
+                    }
+                });
+            }
+
+            @Override
+            public void onUsersReceived(List<AdminDepartment> adminDepartment) {
+
+            }
+
+            @Override
+            public void onError(String s) {
+
+            }
+        });
 
         // Load danh sách thành viên chưa có trong nhóm
         loadStudentsByGroupId(groupId);
-//        loadLecturersByGroupId(groupId);
-
         memberAdapter = new MemberAdapter(filteredMembers , this);
         memberAdapter.updateList(filteredMembers);
         memberAdapter.getItemCount();
@@ -81,19 +119,7 @@ public class AddMemberToGroupActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        submitBtn.setOnClickListener(v -> {
-            List<Integer> selectedIds = memberAdapter.getSelectedUserIds();
-            if (!selectedIds.isEmpty()) {
-                SharedViewModel sharedViewModel = new SharedViewModel();
-                for (int userId : selectedIds) {
-                    sharedViewModel.addStudentToGroup(groupId, userId);
-                }
-                Toast.makeText(this, "Đã thêm thành viên vào nhóm!", Toast.LENGTH_SHORT).show();
-                memberAdapter.updateList(memberAdapter.getMembers()); // Làm mới danh sách
-            } else {
-                Toast.makeText(this, "Chưa chọn thành viên nào!", Toast.LENGTH_SHORT).show();
-            }
-        });
+
     }
 
     private void loadStudentsByGroupId(int id) {
@@ -134,51 +160,6 @@ public class AddMemberToGroupActivity extends AppCompatActivity {
         });
     }
 
-//    private void loadLecturersByGroupId(int id) {
-//        LecturerAPI lecturerAPI = new LecturerAPI();
-//        // Lấy danh sách tất cả giang viên
-//        lecturerAPI.getAllLecturers(new LecturerAPI.LecturerCallback() {
-//            @Override
-//            public void onLecturerReceived(Lecturer lecturer) {
-//
-//            }
-//
-//            @Override
-//            public void onLecturersReceived(List<Lecturer> lecturers) {
-//                GroupUserAPI groupUserAPI = new GroupUserAPI();
-//                groupUserAPI.getAllUsersInGroup(id, new GroupUserAPI.GroupUsersCallback() {
-//                    @Override
-//                    public void onUsersReceived(List<Integer> userIds) {
-//                        List<Lecturer> unassignedLecturers = new ArrayList<>();
-//                        // Duyệt qua danh sách userIds để kiểm tra sinh viên
-//                        for (Lecturer lecturer : lecturers) {
-//                            if (!unassignedLecturers.contains(lecturer)
-////                                    &&
-////                                    !userIds.contains(lecturer.getUserId())
-//                            ) {
-//                                unassignedLecturers.add(lecturer);
-//                            }
-//                        }
-//                        filteredLecturers.clear();
-//                        filteredLecturers.addAll(unassignedLecturers);
-//                        lecturerAdapter.notifyDataSetChanged();
-//                    }
-//                });
-//            }
-//
-//            @Override
-//            public void onError(String errorMessage) {
-//                // Nothing
-//            }
-//
-//            @Override
-//            public void onLecturerDeleted(int lecturerId) {
-//                // Nothing
-//            }
-//        });
-//    }
-
-
      private void filterMembers(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             filteredMembers.clear();
@@ -212,11 +193,11 @@ public class AddMemberToGroupActivity extends AppCompatActivity {
             if (!selectedIds.isEmpty()) {
                 SharedViewModel sharedViewModel = new SharedViewModel();
                 for (int userId : selectedIds) {
-                    Log.d("Them thanh Vien " , "Tong so luong duoc chon" + selectedIds.size());
+                    Log.d("AddMemberToGroup", "userId: " + userId);
                     sharedViewModel.addStudentToGroup(groupId, userId);
                 }
                 Toast.makeText(this, "Đã thêm thành viên vào nhóm!", Toast.LENGTH_SHORT).show();
-                finish(); // Đóng Activity sau khi thêm
+                memberAdapter.updateList(memberAdapter.getMembers()); // Làm mới danh sách
             } else {
                 Toast.makeText(this, "Chưa chọn thành viên nào!", Toast.LENGTH_SHORT).show();
             }

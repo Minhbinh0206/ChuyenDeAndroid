@@ -102,15 +102,16 @@ public class SharedViewModel extends ViewModel {
         groupUserAPI.getAllUsersInGroup(groupId, new GroupUserAPI.GroupUsersCallback() {
             @Override
             public void onUsersReceived(List<Integer> userIds) {
-                // Nếu sinh viên chưa có trong nhóm, thêm sinh viên vào nhóm
-                if (!userIds.contains(studentId)) {
-                    // Tạo đối tượng GroupUser với thông tin sinh viên
-                    GroupUser groupUser = new GroupUser(groupId, studentId);
-                    groupUserAPI.addGroupUser(groupUser);  // Thêm sinh viên vào nhóm
-                    Log.d("SharedViewModel", "Added student with ID " + studentId + " to group " + groupId);
-                } else {
-                    Log.d("SharedViewModel", "Student with ID " + studentId + " is already in group " + groupId);
-                }
+
+                    if (!userIds.contains(studentId)) {
+                        // Tạo đối tượng GroupUser với thông tin sinh viên
+                        GroupUser groupUser = new GroupUser(groupId, studentId);
+                        groupUserAPI.addGroupUser(groupUser);  // Thêm sinh viên vào nhóm
+                        Log.d("SharedViewModel", "Added student with ID " + studentId + " to group " + groupId);
+                    } else {
+                        Log.d("SharedViewModel", "Student with ID " + studentId + " is already in group " + groupId);
+                    }
+
             }
         });
     }
