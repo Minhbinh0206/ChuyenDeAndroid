@@ -1,0 +1,4 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#FF2942"/> <!-- Màu nền của nút (có thể thay đổi theo yêu cầu) -->
+    <corners android:radius="15dp"/> <!-- Tạo hình tròn bằng cách chỉnh sửa bán kính góc -->
+</shape>

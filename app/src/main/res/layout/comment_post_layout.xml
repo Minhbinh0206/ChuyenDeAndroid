@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Thanh navigation bar được đặt phía trên và cố định -->
+        <LinearLayout
+            android:id="@+id/navComment"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:background="@color/defaultBlue"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+            <ImageButton
+                android:id="@+id/icon_back"
+                android:layout_width="40dp"
+                android:layout_height="35dp"
+                android:layout_gravity="center"
+                android:layout_marginHorizontal="20dp"
+                android:background="@android:color/transparent"
+                android:scaleType="fitXY"
+                android:src="@drawable/icon_arrow_back" />
+        </LinearLayout>
+
+        <!-- Nội dung cuộn nằm dưới thanh navigation bar -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/navComment"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <!-- Content 1 -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/first_content_comment_post"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="-30dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="---------- Comment ----------"
+                    android:textColor="#D9D9D9"
+                    android:textSize="20dp"
+                    android:textStyle="italic"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/first_content_comment_post"
+                    app:layout_constraintBottom_toTopOf="@id/line_split_first"/>
+
+                <TextView
+                    android:id="@+id/line_split_first"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="5dp"
+                    android:background="@drawable/line_split_post"
+                    app:layout_constraintBottom_toTopOf="@+id/parent_enter_comment"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/text" />
+
+                <LinearLayout
+                    android:id="@+id/parent_enter_comment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginVertical="10dp"
+                    android:paddingVertical="5dp"
+                    android:layout_marginLeft="50dp"
+                    android:layout_marginRight="5dp"
+                    android:gravity="center"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toTopOf="@+id/second_content_comment_post"
+                    app:layout_constraintTop_toBottomOf="@id/line_split_first">
+
+                    <ImageView
+                        android:id="@+id/avatar_user_comment_create"
+                        android:layout_width="35dp"
+                        android:layout_gravity="top"
+                        android:layout_height="35dp"
+                        android:layout_weight="0.5"
+                        android:src="@drawable/image_youth_avatar" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:background="@drawable/comment_custom"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="5dp"
+                            android:layout_weight="10"
+                            >
+                            <EditText
+                                android:id="@+id/content_user_comment_create"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="10"
+                                android:layout_marginHorizontal="5dp"
+                                android:background="@android:color/transparent"
+                                android:textSize="12dp"
+                                android:paddingHorizontal="15dp"
+                                android:paddingVertical="10dp"
+                                android:hint="Enter your comment" />
+
+                            <Button
+                                android:id="@+id/button_submit_comment"
+                                android:layout_width="0dp"
+                                android:gravity="center"
+                                android:layout_gravity="center"
+                                android:layout_height="40dp"
+                                android:layout_weight="3.5"
+                                android:text="Gửi"
+                                android:textSize="11dp"
+                                android:backgroundTint="@color/defaultBlue"
+                                />
+                        </LinearLayout>
+                </LinearLayout>
+
+                <!-- Content 2 -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/second_content_comment_post"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/parent_enter_comment" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- NavigationView nằm bên cạnh -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:headerLayout="@layout/nav_header_layout"
+        android:background="#F9E8B1"
+        app:itemBackground="@drawable/nav_item_background"
+        android:fitsSystemWindows="true" />
+</androidx.drawerlayout.widget.DrawerLayout>

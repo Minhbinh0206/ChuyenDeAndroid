@@ -1,3 +1,24 @@
 <resources>
-    <string name="app_name">ChuyenDeAndroid</string>
+    <string name="app_name">SocialMediaTDCProject</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="welcome_text">Đạo đức - Tri thức - Kỹ năng</string>
+    <string name="filter_by">Lọc theo:</string>
+    <string name="searchingFor">Tìm kiếm ...</string>
+    <string name="thu_duc_collage">Thủ Đức Collage</string>
+    <string name="change_password_text">Đổi mật khẩu</string>
+    <string name="send">Gửi</string>
+    <string name="confirm">Xác nhận</string>
+    <string name="confirm_new_password">Xác nhận mật khẩu mới</string>
+    <string name="new_password">Mật khẩu mới</string>
+    <string name="old_password">Mật khẩu cũ</string>
+    <string name="verifyOTP">Gửi OTP</string>
+    <string name="addNewMember">Thêm Thành Viên Mới</string>
+    <string name="fullName">Họ tên:</string>
+    <string name="hint_fullName">Họ tên</string>
+    <string name="cancel">Hủy</string>
+    <string name="add">Thêm</string>
+    <string name="searching_for_member">Tìm kiếm thành viên</string>
 </resources>
